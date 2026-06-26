@@ -1,26 +1,158 @@
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --background: #f6f8fc;
+  --foreground: #10193a;
+  --surface: rgba(255, 255, 255, 0.86);
+  --surface-strong: #ffffff;
+  --line: rgba(148, 163, 184, 0.2);
+  --brand-teal: #0fc7a1;
+  --brand-blue: #4058ff;
+  --brand-sun: #ffd166;
+  --brand-coral: #ff6b6b;
+  --brand-ink: #111935;
 }
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --font-sans: var(--font-sans-modern), "Inter", "Segoe UI", sans-serif;
+  --font-display: var(--font-sans-modern), "Inter", "Segoe UI", sans-serif;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+* {
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+  font-size: 15px;
+  overflow-x: clip;
+}
+
+@media (min-width: 1280px) {
+  html {
+    font-size: 14.5px;
   }
 }
 
 body {
-  background: var(--background);
+  min-height: 100vh;
+  overflow-x: clip;
+  background:
+    radial-gradient(circle at top right, rgba(64, 88, 255, 0.07), transparent 24%),
+    radial-gradient(circle at top left, rgba(15, 199, 161, 0.06), transparent 26%),
+    linear-gradient(180deg, #ffffff 0%, #f9fbff 18%, var(--background) 100%);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-sans-modern), "Inter", "Segoe UI", sans-serif;
+  font-weight: 430;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+.font-display {
+  font-family: var(--font-sans-modern), "Inter", "Segoe UI", sans-serif;
+}
+
+.font-black {
+  font-weight: 650 !important;
+}
+
+.font-extrabold {
+  font-weight: 620 !important;
+}
+
+.font-bold {
+  font-weight: 570 !important;
+}
+
+.font-semibold {
+  font-weight: 530 !important;
+}
+
+.font-tamil {
+  font-family: var(--font-tamil-ui), "Noto Sans Tamil", "Nirmala UI", "Latha", sans-serif;
+  font-weight: 540;
+  letter-spacing: 0;
+}
+
+.locale-ta {
+  font-family: var(--font-tamil-ui), "Noto Sans Tamil", "Nirmala UI", "Latha", sans-serif;
+  font-weight: 460;
+  text-rendering: optimizeLegibility;
+}
+
+.locale-ta .font-display,
+.locale-ta h1,
+.locale-ta h2,
+.locale-ta h3,
+.locale-ta h4,
+.locale-ta h5,
+.locale-ta h6,
+.locale-ta button,
+.locale-ta a,
+.locale-ta label,
+.locale-ta input,
+.locale-ta textarea,
+.locale-ta select {
+  font-family: var(--font-tamil-ui), "Noto Sans Tamil", "Nirmala UI", "Latha", sans-serif;
+}
+
+.locale-ta h1,
+.locale-ta h2,
+.locale-ta h3 {
+  line-height: 1.08;
+  letter-spacing: -0.015em;
+  font-weight: 620;
+}
+
+.locale-ta p,
+.locale-ta span,
+.locale-ta li,
+.locale-ta a,
+.locale-ta button,
+.locale-ta label {
+  letter-spacing: 0;
+}
+
+.locale-ta .uppercase {
+  letter-spacing: 0.04em;
+}
+
+.locale-ta .tracking-\[0\.28em\],
+.locale-ta .tracking-\[0\.26em\],
+.locale-ta .tracking-\[0\.24em\],
+.locale-ta .tracking-\[0\.22em\],
+.locale-ta .tracking-\[0\.2em\],
+.locale-ta .tracking-\[0\.18em\],
+.locale-ta .tracking-\[0\.16em\],
+.locale-ta .tracking-\[0\.14em\] {
+  letter-spacing: 0.04em;
+}
+
+.locale-ta .text-5xl,
+.locale-ta .text-6xl,
+.locale-ta .text-7xl {
+  line-height: 1.02;
+}
+
+.locale-ta .font-black {
+  font-weight: 650 !important;
+}
+
+.locale-ta .font-extrabold {
+  font-weight: 620 !important;
+}
+
+.locale-ta .font-bold {
+  font-weight: 570 !important;
+}
+
+.locale-ta .font-semibold {
+  font-weight: 530 !important;
+}
+
+::selection {
+  background: rgba(64, 88, 255, 0.18);
+  color: var(--brand-ink);
 }
