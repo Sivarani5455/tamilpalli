@@ -732,7 +732,9 @@ export function DictionaryIndex({
   }, [didLoadLocalState, progress]);
 
   useEffect(() => {
-    if (!supabase) {
+    const client = supabase;
+
+    if (!client) {
       return;
     }
 
@@ -741,7 +743,7 @@ export function DictionaryIndex({
     async function loadRemoteProgress() {
       const {
         data: { user },
-      } = await supabase.auth.getUser();
+      } = await client!.auth.getUser();
 
       if (!isActive || !user) {
         return;
@@ -749,7 +751,7 @@ export function DictionaryIndex({
 
       setUserId(user.id);
 
-      const { data } = await supabase
+      const { data } = await client!
         .from("dictionary_progress")
         .select("views_count, learned_count, last_seen_day, last_learned_day, dictionary_entries!inner(slug)")
         .eq("user_id", user.id);
@@ -823,7 +825,7 @@ export function DictionaryIndex({
         .filter((value): value is NonNullable<typeof value> => Boolean(value));
 
       if (payload.length > 0) {
-        await supabase.from("dictionary_progress").upsert(payload, {
+        await client!.from("dictionary_progress").upsert(payload, {
           onConflict: "user_id,entry_id",
         });
       }
@@ -837,7 +839,9 @@ export function DictionaryIndex({
   }, [dayNumber, entryIdBySlug, supabase]);
 
   async function syncProgressToSupabase(slug: string, snapshot: ProgressSnapshot[string]) {
-    if (!supabase || !userId) {
+    const client = supabase;
+
+    if (!client || !userId) {
       return;
     }
 
@@ -847,7 +851,7 @@ export function DictionaryIndex({
       return;
     }
 
-    await supabase.from("dictionary_progress").upsert(
+    await client!.from("dictionary_progress").upsert(
       {
         user_id: userId,
         entry_id: entryId,
