@@ -88,6 +88,7 @@ export type WordSearchGrid = {
   gridData: string[][];
   words: WordSearchWord[];
   isActive?: boolean;
+  createdAt?: string;
 };
 
 export type FillBlankQuestion = {

@@ -43,6 +43,7 @@ type WordSearchRow = {
   time_limit_seconds: number;
   grid_data: string[][];
   words: WordSearchGrid["words"];
+  created_at?: string;
   allowed_plans?: Array<"discovery" | "standard" | "elite">;
 };
 
@@ -200,6 +201,7 @@ function mapWordSearchRows(rows: WordSearchRow[]) {
     timeLimitSeconds: row.time_limit_seconds,
     gridData: row.grid_data,
     words: row.words,
+    createdAt: row.created_at,
   }));
 }
 
@@ -363,7 +365,7 @@ export async function getWordSearchGrids() {
 
   const { data } = await supabase
     .from("word_search_grids")
-    .select("id, slug, title, description, difficulty, time_limit_seconds, grid_data, words, allowed_plans")
+    .select("id, slug, title, description, difficulty, time_limit_seconds, grid_data, words, created_at, allowed_plans")
     .eq("is_active", true)
     .order("created_at", { ascending: false });
 
@@ -379,7 +381,7 @@ export async function getWordSearchGrids() {
 
   const { data: adminData } = await adminClient
     .from("word_search_grids")
-    .select("id, slug, title, description, difficulty, time_limit_seconds, grid_data, words, allowed_plans")
+    .select("id, slug, title, description, difficulty, time_limit_seconds, grid_data, words, created_at, allowed_plans")
     .eq("is_active", true)
     .order("created_at", { ascending: false });
 
