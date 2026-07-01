@@ -17,16 +17,16 @@ export function BrandMark({
       >
         <defs>
           <linearGradient id="brandSun" x1="0%" y1="0%" x2="100%" y2="100%">
-            <stop offset="0%" stopColor="#f59e0b" />
-            <stop offset="100%" stopColor="#ffd166" />
+            <stop offset="0%" stopColor="#e8c876" />
+            <stop offset="100%" stopColor="#b9793f" />
           </linearGradient>
           <linearGradient id="brandBlue" x1="0%" y1="0%" x2="100%" y2="100%">
-            <stop offset="0%" stopColor="#162a62" />
-            <stop offset="100%" stopColor="#284a97" />
+            <stop offset="0%" stopColor="#3a271b" />
+            <stop offset="100%" stopColor="#8a5a2e" />
           </linearGradient>
           <linearGradient id="brandFlame" x1="0%" y1="0%" x2="0%" y2="100%">
-            <stop offset="0%" stopColor="#ffe29a" />
-            <stop offset="100%" stopColor="#f97316" />
+            <stop offset="0%" stopColor="#fff2bd" />
+            <stop offset="100%" stopColor="#b9793f" />
           </linearGradient>
         </defs>
 
@@ -57,11 +57,11 @@ export function BrandMark({
           க
         </text>
 
-        <path d="M16 92c11-14 24-22 38-24-2 10-10 20-20 28-7-1-12-2-18-4Z" fill="#ffe1a3" />
-        <path d="M104 92c-11-14-24-22-38-24 2 10 10 20 20 28 7-1 12-2 18-4Z" fill="#ffe1a3" />
+        <path d="M16 92c11-14 24-22 38-24-2 10-10 20-20 28-7-1-12-2-18-4Z" fill="#fff2dd" />
+        <path d="M104 92c-11-14-24-22-38-24 2 10 10 20 20 28 7-1 12-2 18-4Z" fill="#fff2dd" />
         <path d="M12 95c14-2 28 1 42 9-13 3-28 3-42-1Z" fill="url(#brandBlue)" />
         <path d="M108 95c-14-2-28 1-42 9 13 3 28 3 42-1Z" fill="url(#brandBlue)" />
-        <ellipse cx="60" cy="96" rx="15" ry="6" fill="#8a4b24" />
+        <ellipse cx="60" cy="96" rx="15" ry="6" fill="#654632" />
         <path d="M60 72c7 9 9 17 0 28-9-11-7-19 0-28Z" fill="url(#brandFlame)" />
         <path d="M60 79c4 5 5 10 0 17-5-7-4-12 0-17Z" fill="#fff3b0" />
       </svg>
@@ -69,7 +69,7 @@ export function BrandMark({
       <div className="min-w-0">
         <div
           className={cn(
-            "font-display leading-none text-[var(--brand-ink)]",
+            "font-display leading-none bg-[linear-gradient(180deg,#5a3d2a,#2a1a11)] bg-clip-text text-transparent",
             compact
               ? "text-[1.8rem] font-semibold tracking-[-0.03em]"
               : "text-[2.7rem] font-semibold tracking-[-0.04em]",
@@ -80,11 +80,11 @@ export function BrandMark({
 
         {!compact ? (
           <div className="mt-2 flex items-center gap-3">
-            <span className="h-px w-10 bg-[#f59e0b]" />
-            <div className="font-tamil text-[1.2rem] font-medium tracking-[0.02em] text-[#9a531f]">
+            <span className="h-px w-10 bg-[#b9793f]" />
+            <div className="font-tamil text-[1.2rem] font-medium tracking-[0.02em] text-[#8a5a2e]">
               கல்விக்கூடம்
             </div>
-            <span className="h-px w-10 bg-[#f59e0b]" />
+            <span className="h-px w-10 bg-[#b9793f]" />
           </div>
         ) : null}
       </div>

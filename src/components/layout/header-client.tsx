@@ -179,7 +179,7 @@ export function HeaderClient({
   }, []);
 
   return (
-    <header className="sticky top-0 z-50 border-b border-slate-200/80 bg-white/95 backdrop-blur-xl">
+    <header className="sticky top-0 z-50 border-b border-[rgba(185,121,63,0.22)] bg-[#fff7ea]/92 backdrop-blur-xl">
       <div
         ref={rootRef}
         className="relative mx-auto flex min-h-[86px] w-full max-w-[120rem] items-center gap-5 px-4 sm:px-6 xl:px-8"
@@ -192,7 +192,7 @@ export function HeaderClient({
           <Link
             href={`/${locale}`}
             className={cn(
-              "rounded-xl px-4 py-2 text-[0.98rem] text-slate-700 transition hover:bg-[#f3f6ff] hover:text-[#4058ff]",
+              "rounded-xl px-4 py-2 text-[0.98rem] text-[#654632] transition hover:bg-[#f4dfb6] hover:text-[#2a1a11]",
               navTextClass(isTamil),
             )}
           >
@@ -208,8 +208,8 @@ export function HeaderClient({
               type="button"
               onClick={() => setDesktopDropdown((current) => (current === "learning" ? null : "learning"))}
               className={cn(
-                "flex items-center gap-2 rounded-xl px-4 py-2 text-[0.98rem] text-slate-700 transition hover:bg-[#f3f6ff] hover:text-[#4058ff]",
-                desktopDropdown === "learning" && "bg-[#f3f6ff] text-[#4058ff]",
+                "flex items-center gap-2 rounded-xl px-4 py-2 text-[0.98rem] text-[#654632] transition hover:bg-[#f4dfb6] hover:text-[#2a1a11]",
+                desktopDropdown === "learning" && "bg-[#f4dfb6] text-[#2a1a11]",
                 navTextClass(isTamil),
               )}
             >
@@ -219,15 +219,15 @@ export function HeaderClient({
 
             {desktopDropdown === "learning" ? (
               <div className="absolute left-1/2 top-full z-50 w-[40rem] max-w-[calc(100vw-4rem)] -translate-x-1/2 pt-4">
-                <div className="overflow-hidden rounded-[1.6rem] border border-slate-200 bg-white shadow-[0_30px_70px_-40px_rgba(17,25,53,0.28)]">
-                  <div className="bg-slate-50/80 px-7 py-7">
-                    <p className="text-xs font-semibold uppercase tracking-[0.24em] text-slate-500">
+                <div className="overflow-hidden rounded-[1.6rem] border border-[rgba(185,121,63,0.22)] bg-[#fff8ec] shadow-[0_30px_70px_-42px_rgba(74,51,36,0.38)]">
+                  <div className="bg-[#f4dfb6]/45 px-7 py-7">
+                    <p className="text-xs font-semibold uppercase tracking-[0.24em] text-[#8a6a4c]">
                       {copy.dropdown.learningEyebrow}
                     </p>
                     <p className="mt-5 max-w-sm text-[1.55rem] font-semibold leading-tight tracking-[-0.02em] text-[var(--brand-ink)]">
                       {copy.dropdown.learningEmpty}
                     </p>
-                    <p className="mt-4 max-w-sm text-sm leading-7 text-slate-600">{copy.dropdown.learningHint}</p>
+                    <p className="mt-4 max-w-sm text-sm leading-7 text-[#6f553d]">{copy.dropdown.learningHint}</p>
                   </div>
                 </div>
               </div>
@@ -243,8 +243,8 @@ export function HeaderClient({
               type="button"
               onClick={() => setDesktopDropdown((current) => (current === "games" ? null : "games"))}
               className={cn(
-                "flex items-center gap-2 rounded-xl px-4 py-2 text-[0.98rem] text-slate-700 transition hover:bg-[#f3f6ff] hover:text-[#4058ff]",
-                desktopDropdown === "games" && "bg-[#f3f6ff] text-[#4058ff]",
+                "flex items-center gap-2 rounded-xl px-4 py-2 text-[0.98rem] text-[#654632] transition hover:bg-[#f4dfb6] hover:text-[#2a1a11]",
+                desktopDropdown === "games" && "bg-[#f4dfb6] text-[#2a1a11]",
                 navTextClass(isTamil),
               )}
             >
@@ -254,24 +254,24 @@ export function HeaderClient({
 
             {desktopDropdown === "games" ? (
               <div className="absolute left-1/2 top-full z-50 w-[56rem] max-w-[calc(100vw-4rem)] -translate-x-1/2 pt-4">
-                <div className="overflow-hidden rounded-[1.6rem] border border-slate-200 bg-white shadow-[0_30px_70px_-40px_rgba(17,25,53,0.28)]">
+                <div className="overflow-hidden rounded-[1.6rem] border border-[rgba(185,121,63,0.22)] bg-[#fff8ec] shadow-[0_30px_70px_-42px_rgba(74,51,36,0.38)]">
                   <div className="grid gap-0 md:grid-cols-[0.78fr_1.22fr]">
-                    <div className="border-r border-slate-200 bg-slate-50/80 px-7 py-7">
-                      <p className="text-xs font-semibold uppercase tracking-[0.24em] text-slate-500">
+                    <div className="border-r border-[rgba(185,121,63,0.16)] bg-[#f4dfb6]/45 px-7 py-7">
+                      <p className="text-xs font-semibold uppercase tracking-[0.24em] text-[#8a6a4c]">
                         {copy.dropdown.gamesEyebrow}
                       </p>
                       <p className="mt-5 max-w-sm text-[1.55rem] font-semibold leading-tight tracking-[-0.02em] text-[var(--brand-ink)]">
                         {copy.dropdown.games}
                       </p>
-                      <p className="mt-4 max-w-sm text-sm leading-7 text-slate-600">{copy.dropdown.gamesHint}</p>
+                      <p className="mt-4 max-w-sm text-sm leading-7 text-[#6f553d]">{copy.dropdown.gamesHint}</p>
                     </div>
 
                     <div className="px-7 py-7">
                       <div className="mb-4 flex items-center justify-between gap-4">
-                        <p className="text-xs font-semibold uppercase tracking-[0.24em] text-slate-500">
+                        <p className="text-xs font-semibold uppercase tracking-[0.24em] text-[#8a6a4c]">
                           {copy.dropdown.gamesListTitle}
                         </p>
-                        <span className="rounded-full bg-[#eef2ff] px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.18em] text-[#4058ff]">
+                        <span className="rounded-full bg-[#f4dfb6] px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.18em] text-[#8a5a2e]">
                           {copy.dropdown.newBadge}
                         </span>
                       </div>
@@ -289,29 +289,29 @@ export function HeaderClient({
                               className={cn(
                                 "group flex items-start justify-between gap-4 rounded-[1.15rem] border px-5 py-4 transition",
                                 isCurrentPage
-                                  ? "border-[#cfd8ff] bg-[#f8faff]"
-                                  : "border-slate-200 bg-white hover:border-[#cfd8ff] hover:bg-[#f8faff]",
+                                  ? "border-[#d3a238] bg-[#fff7ea]"
+                                  : "border-[rgba(185,121,63,0.18)] bg-[#fffdf8] hover:border-[#d3a238] hover:bg-[#fff7ea]",
                               )}
                             >
                               <div>
                                 <div className="flex items-center gap-3">
-                                  <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-[#eef2ff] text-sm font-semibold text-[#4058ff]">
+                                  <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-[#f4dfb6] text-sm font-semibold text-[#8a5a2e]">
                                     {index + 1}
                                   </span>
-                                  <h3 className="text-lg font-semibold text-[var(--brand-ink)] transition group-hover:text-[#4058ff]">
+                                  <h3 className="text-lg font-semibold text-[var(--brand-ink)] transition group-hover:text-[#8a5a2e]">
                                     {copy.games[gameItem.key]}
                                   </h3>
                                   {isCurrentPage ? (
-                                    <span className="rounded-full bg-[#eef2ff] px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.18em] text-[#4058ff]">
+                                    <span className="rounded-full bg-[#f4dfb6] px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.18em] text-[#8a5a2e]">
                                       {copy.dropdown.currentPage}
                                     </span>
                                   ) : null}
                                 </div>
-                                <p className="mt-3 pl-12 text-sm leading-6 text-slate-600">
+                                <p className="mt-3 pl-12 text-sm leading-6 text-[#6f553d]">
                                   {copy.dropdown.gameDescriptions[gameItem.key]}
                                 </p>
                               </div>
-                              <span className="pt-2 text-slate-300 transition group-hover:text-[#4058ff]">→</span>
+                              <span className="pt-2 text-[#b9793f]/45 transition group-hover:text-[#8a5a2e]">→</span>
                             </Link>
                           );
                         })}
@@ -326,8 +326,8 @@ export function HeaderClient({
           <Link
             href={`/${locale}/agarathi`}
             className={cn(
-              "rounded-xl px-4 py-2 text-[0.98rem] text-slate-700 transition hover:bg-[#f3f6ff] hover:text-[#4058ff]",
-              pathname === `/${locale}/agarathi` && "bg-[#f3f6ff] text-[#4058ff]",
+              "rounded-xl px-4 py-2 text-[0.98rem] text-[#654632] transition hover:bg-[#f4dfb6] hover:text-[#2a1a11]",
+              pathname === `/${locale}/agarathi` && "bg-[#f4dfb6] text-[#2a1a11]",
               navTextClass(isTamil),
             )}
           >
@@ -339,8 +339,8 @@ export function HeaderClient({
               key={item.href}
               href={`/${locale}${item.href}`}
               className={cn(
-                "rounded-xl px-4 py-2 text-[0.98rem] text-slate-700 transition hover:bg-[#f3f6ff] hover:text-[#4058ff]",
-                pathname === `/${locale}${item.href}` && "bg-[#f3f6ff] text-[#4058ff]",
+                "rounded-xl px-4 py-2 text-[0.98rem] text-[#654632] transition hover:bg-[#f4dfb6] hover:text-[#2a1a11]",
+                pathname === `/${locale}${item.href}` && "bg-[#f4dfb6] text-[#2a1a11]",
                 navTextClass(isTamil),
               )}
             >
@@ -354,7 +354,7 @@ export function HeaderClient({
             <Link
               href={`/${locale}/auth/login`}
               className={cn(
-                "rounded-xl px-4 py-2 text-slate-700 transition hover:bg-slate-100 hover:text-slate-950",
+                "rounded-xl px-4 py-2 text-[#654632] transition hover:bg-[#f4dfb6] hover:text-[#2a1a11]",
                 isTamil ? "text-[0.98rem] font-medium tracking-[0.01em]" : "text-[0.98rem] font-medium",
               )}
             >
@@ -370,7 +370,7 @@ export function HeaderClient({
         <button
           type="button"
           className={cn(
-            "ml-auto rounded-xl border border-slate-200 bg-white px-4 py-2 text-slate-700 shadow-sm transition hover:bg-slate-50 lg:hidden",
+            "ml-auto rounded-xl border border-[rgba(185,121,63,0.22)] bg-[#fff8ec] px-4 py-2 text-[#654632] shadow-sm transition hover:bg-[#f4dfb6] lg:hidden",
             isTamil ? "text-[0.98rem] font-medium tracking-[0.01em]" : "text-sm font-medium",
           )}
           onClick={() => setOpen((value) => !value)}
@@ -379,12 +379,12 @@ export function HeaderClient({
         </button>
       </div>
 
-      <div className={cn("border-t border-slate-200/80 bg-white/98 lg:hidden", open ? "block" : "hidden")}>
+      <div className={cn("border-t border-[rgba(185,121,63,0.18)] bg-[#fff7ea]/98 lg:hidden", open ? "block" : "hidden")}>
         <div className="mx-auto flex max-w-[120rem] flex-col gap-1 px-4 py-4 sm:px-6">
           <Link
             href={`/${locale}`}
             className={cn(
-              "rounded-xl px-4 py-3 text-slate-700 transition hover:bg-[#f3f6ff] hover:text-[#4058ff]",
+              "rounded-xl px-4 py-3 text-[#654632] transition hover:bg-[#f4dfb6] hover:text-[#2a1a11]",
               isTamil ? "text-[1rem] font-medium tracking-[0.01em]" : "text-sm font-medium",
             )}
             onClick={() => setOpen(false)}
@@ -392,15 +392,15 @@ export function HeaderClient({
             {copy.nav.home}
           </Link>
 
-          <div className="mt-2 rounded-xl border border-slate-200 bg-slate-50 px-4 py-3">
-            <p className="text-xs font-semibold uppercase tracking-[0.24em] text-slate-500">
+          <div className="mt-2 rounded-xl border border-[rgba(185,121,63,0.18)] bg-[#f4dfb6]/45 px-4 py-3">
+            <p className="text-xs font-semibold uppercase tracking-[0.24em] text-[#8a6a4c]">
               {copy.dropdown.learningEyebrow}
             </p>
-            <p className="mt-2 text-sm leading-6 text-slate-600">{copy.dropdown.learningEmpty}</p>
+            <p className="mt-2 text-sm leading-6 text-[#6f553d]">{copy.dropdown.learningEmpty}</p>
           </div>
 
-          <div className="mt-2 rounded-xl border border-slate-200 bg-slate-50 px-4 py-3">
-            <p className="text-xs font-semibold uppercase tracking-[0.24em] text-slate-500">
+          <div className="mt-2 rounded-xl border border-[rgba(185,121,63,0.18)] bg-[#f4dfb6]/45 px-4 py-3">
+            <p className="text-xs font-semibold uppercase tracking-[0.24em] text-[#8a6a4c]">
               {copy.dropdown.gamesEyebrow}
             </p>
             <div className="mt-2 flex flex-col gap-1">
@@ -409,7 +409,7 @@ export function HeaderClient({
                   key={item.href}
                   href={`/${locale}${item.href}`}
                   className={cn(
-                    "rounded-lg px-3 py-2 text-slate-700 transition hover:bg-white hover:text-[#4058ff]",
+                    "rounded-lg px-3 py-2 text-[#654632] transition hover:bg-[#fff8ec] hover:text-[#2a1a11]",
                     isTamil ? "text-[0.98rem] font-medium tracking-[0.01em]" : "text-sm font-medium",
                   )}
                   onClick={() => setOpen(false)}
@@ -423,7 +423,7 @@ export function HeaderClient({
           <Link
             href={`/${locale}/agarathi`}
             className={cn(
-              "mt-2 rounded-xl px-4 py-3 text-slate-700 transition hover:bg-[#f3f6ff] hover:text-[#4058ff]",
+              "mt-2 rounded-xl px-4 py-3 text-[#654632] transition hover:bg-[#f4dfb6] hover:text-[#2a1a11]",
               isTamil ? "text-[1rem] font-medium tracking-[0.01em]" : "text-sm font-medium",
             )}
             onClick={() => setOpen(false)}
@@ -436,7 +436,7 @@ export function HeaderClient({
               key={item.href}
               href={`/${locale}${item.href}`}
               className={cn(
-                "rounded-xl px-4 py-3 text-slate-700 transition hover:bg-[#f3f6ff] hover:text-[#4058ff]",
+                "rounded-xl px-4 py-3 text-[#654632] transition hover:bg-[#f4dfb6] hover:text-[#2a1a11]",
                 isTamil ? "text-[1rem] font-medium tracking-[0.01em]" : "text-sm font-medium",
               )}
               onClick={() => setOpen(false)}
@@ -445,12 +445,12 @@ export function HeaderClient({
             </Link>
           ))}
 
-          <div className="mt-2 flex flex-wrap items-center gap-3 border-t border-slate-200 pt-3">
+          <div className="mt-2 flex flex-wrap items-center gap-3 border-t border-[rgba(185,121,63,0.18)] pt-3">
             {!isLoggedIn ? (
               <Link
                 href={`/${locale}/auth/login`}
                 className={cn(
-                  "rounded-xl px-4 py-2 text-slate-700 transition hover:bg-slate-100 hover:text-slate-950",
+                  "rounded-xl px-4 py-2 text-[#654632] transition hover:bg-[#f4dfb6] hover:text-[#2a1a11]",
                   isTamil ? "text-[0.98rem] font-medium tracking-[0.01em]" : "text-sm font-medium",
                 )}
                 onClick={() => setOpen(false)}

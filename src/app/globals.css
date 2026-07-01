@@ -1,16 +1,19 @@
 @import "tailwindcss";
 
 :root {
-  --background: #f6f8fc;
-  --foreground: #10193a;
-  --surface: rgba(255, 255, 255, 0.86);
-  --surface-strong: #ffffff;
-  --line: rgba(148, 163, 184, 0.2);
-  --brand-teal: #0fc7a1;
-  --brand-blue: #4058ff;
-  --brand-sun: #ffd166;
-  --brand-coral: #ff6b6b;
-  --brand-ink: #111935;
+  --background: #f7ead6;
+  --foreground: #24170f;
+  --surface: rgba(255, 247, 234, 0.9);
+  --surface-strong: #fff8ec;
+  --line: rgba(148, 92, 45, 0.18);
+  --brand-teal: #8f6c36;
+  --brand-blue: #8a5a2e;
+  --brand-sun: #e8c876;
+  --brand-coral: #9c3b2e;
+  --brand-ink: #2a1a11;
+  --brand-bronze: #b9793f;
+  --brand-ochre: #d3a238;
+  --brand-ivory: #fff2dd;
 }
 
 @theme inline {
@@ -40,9 +43,9 @@ body {
   min-height: 100vh;
   overflow-x: clip;
   background:
-    radial-gradient(circle at top right, rgba(64, 88, 255, 0.07), transparent 24%),
-    radial-gradient(circle at top left, rgba(15, 199, 161, 0.06), transparent 26%),
-    linear-gradient(180deg, #ffffff 0%, #f9fbff 18%, var(--background) 100%);
+    radial-gradient(ellipse 900px 520px at 50% -8%, rgba(211, 162, 56, 0.24), transparent 62%),
+    radial-gradient(ellipse 720px 520px at 100% 8%, rgba(185, 121, 63, 0.13), transparent 58%),
+    linear-gradient(180deg, #fff7ea 0%, #f7ead6 42%, #ead7bd 100%);
   color: var(--foreground);
   font-family: var(--font-sans-modern), "Inter", "Segoe UI", sans-serif;
   font-weight: 430;
@@ -153,6 +156,6 @@ body {
 }
 
 ::selection {
-  background: rgba(64, 88, 255, 0.18);
+  background: rgba(211, 162, 56, 0.28);
   color: var(--brand-ink);
 }

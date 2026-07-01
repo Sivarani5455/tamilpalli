@@ -66,9 +66,9 @@ export function HomeSplashScreen({
   const tallyLabel = `${formatTamilNumber(currentStep)} / ${formatTamilNumber(totalSteps)}`;
 
   return (
-    <div className="fixed inset-0 z-[120] overflow-y-auto overflow-x-hidden bg-[#120c08] text-[#f1e6d3]">
-      <div className="pointer-events-none fixed inset-0 bg-[radial-gradient(ellipse_900px_500px_at_50%_-10%,rgba(211,162,56,0.10),transparent_60%),radial-gradient(ellipse_700px_600px_at_100%_100%,rgba(156,59,46,0.08),transparent_60%),linear-gradient(180deg,#120c08_0%,#1b120c_100%)]" />
-      <div className="pointer-events-none fixed inset-0 opacity-[0.05] mix-blend-overlay [background-image:repeating-linear-gradient(90deg,rgba(241,230,211,0.4)_0px,transparent_1px,transparent_3px),repeating-linear-gradient(0deg,rgba(241,230,211,0.4)_0px,transparent_1px,transparent_3px)] [background-size:3px_3px]" />
+    <div className="fixed inset-0 z-[120] overflow-y-auto overflow-x-hidden bg-[#4a3324] text-[#fff2dd]">
+      <div className="pointer-events-none fixed inset-0 bg-[radial-gradient(ellipse_900px_500px_at_50%_-10%,rgba(255,222,145,0.24),transparent_64%),radial-gradient(ellipse_700px_600px_at_100%_100%,rgba(211,146,82,0.22),transparent_64%),linear-gradient(180deg,#5a3d2a_0%,#493122_52%,#3a271b_100%)]" />
+      <div className="pointer-events-none fixed inset-0 opacity-[0.025] mix-blend-overlay [background-image:repeating-linear-gradient(90deg,rgba(255,242,221,0.45)_0px,transparent_1px,transparent_3px),repeating-linear-gradient(0deg,rgba(255,242,221,0.45)_0px,transparent_1px,transparent_3px)] [background-size:3px_3px]" />
 
       <div className="relative z-10 mx-auto flex min-h-screen w-full max-w-[560px] flex-col px-4 pb-24 pt-6 sm:justify-center sm:px-6 sm:py-10">
         <div className="mb-5 flex items-center justify-between sm:mb-7">
@@ -79,11 +79,11 @@ export function HomeSplashScreen({
                 className={`h-[7px] w-4 rounded-[0_60%_0_60%] border transition sm:h-[9px] sm:w-5 ${
                   index <= screenIndex
                     ? "border-[#d3a238] bg-[linear-gradient(135deg,#e8c876,#b9793f)] shadow-[0_0_8px_rgba(211,162,56,0.35)]"
-                    : "border-[rgba(211,162,56,0.28)] bg-[#211710]"
+                    : "border-[rgba(232,200,118,0.38)] bg-[#654632]"
                 }`}
               />
             ))}
-            <span className="ml-1.5 font-serif text-[11px] italic tracking-[0.02em] text-[#c9b89b] sm:ml-2 sm:text-[13px]">
+            <span className="ml-1.5 font-serif text-[11px] italic tracking-[0.02em] text-[#ead2ae] sm:ml-2 sm:text-[13px]">
               {tallyLabel}
             </span>
           </div>
@@ -91,7 +91,7 @@ export function HomeSplashScreen({
           <button
             type="button"
             onClick={closeSplash}
-            className="border border-[rgba(211,162,56,0.28)] bg-transparent px-3.5 py-1.5 font-serif text-[11px] uppercase tracking-[0.12em] text-[#c9b89b] transition hover:border-[#d3a238] hover:bg-[rgba(211,162,56,0.06)] hover:text-[#e8c876] sm:px-[18px] sm:py-[7px] sm:text-[13px] sm:tracking-[0.16em]"
+            className="border border-[rgba(232,200,118,0.38)] bg-[rgba(255,242,221,0.03)] px-3.5 py-1.5 font-serif text-[11px] uppercase tracking-[0.12em] text-[#ead2ae] transition hover:border-[#e8c876] hover:bg-[rgba(255,222,145,0.08)] hover:text-[#fff2dd] sm:px-[18px] sm:py-[7px] sm:text-[13px] sm:tracking-[0.16em]"
           >
             Skip
           </button>
@@ -106,12 +106,12 @@ export function HomeSplashScreen({
               <h1 className="bg-[linear-gradient(180deg,#e8c876_10%,#b9793f_90%)] bg-clip-text text-[clamp(30px,9.5vw,54px)] font-semibold leading-[1.15] text-transparent drop-shadow-[0_2px_14px_rgba(211,162,56,0.18)]">
                 கல்விக்கூடம்
               </h1>
-              <p className="mt-2 text-[13px] tracking-[0.02em] text-[#c9b89b] sm:text-sm">தமிழ் அறிவின் தொடக்கம்</p>
+              <p className="mt-2 text-[13px] tracking-[0.02em] text-[#ead2ae] sm:text-sm">தமிழ் அறிவின் தொடக்கம்</p>
             </div>
 
             <div className="mx-auto my-5 flex w-40 items-center justify-center gap-2.5 sm:my-6 sm:w-[220px]">
               <span className="h-px flex-1 bg-[linear-gradient(90deg,transparent,#b9793f)]" />
-              <span className="h-2 w-2 rotate-45 border border-[#d3a238] bg-[#120c08]" />
+              <span className="h-2 w-2 rotate-45 border border-[#d3a238] bg-[#4a3324]" />
               <span className="h-px flex-1 bg-[linear-gradient(90deg,#b9793f,transparent)]" />
             </div>
 
@@ -122,7 +122,7 @@ export function HomeSplashScreen({
               <span className="absolute bottom-0.5 left-0.5 h-[18px] w-[18px] border-b-2 border-l-2 border-[#d3a238] sm:h-[26px] sm:w-[26px]" />
               <span className="absolute bottom-0.5 right-0.5 h-[18px] w-[18px] border-b-2 border-r-2 border-[#d3a238] sm:h-[26px] sm:w-[26px]" />
 
-              <div className="relative overflow-hidden rounded-sm bg-[#211710] shadow-[0_30px_60px_-20px_rgba(0,0,0,0.7),0_0_0_1px_rgba(211,162,56,0.15)]">
+              <div className="relative overflow-hidden rounded-sm bg-[#654632] shadow-[0_30px_60px_-28px_rgba(0,0,0,0.5),0_0_0_1px_rgba(232,200,118,0.22)]">
                 {imageReady ? (
                   <Image
                     src={currentSlide.imageUrl}
@@ -143,17 +143,17 @@ export function HomeSplashScreen({
                     </p>
                   </div>
                 )}
-                <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(180deg,rgba(18,12,8,0)_60%,rgba(18,12,8,0.55)_100%)]" />
+                <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(180deg,rgba(74,51,36,0)_62%,rgba(74,51,36,0.24)_100%)]" />
                 <span className="absolute bottom-2.5 left-2.5 z-10 font-serif text-xs italic tracking-[0.04em] text-[#e8c876] sm:bottom-3.5 sm:left-3.5 sm:text-[13px]">
                   திருவள்ளுவர்
                 </span>
               </div>
             </div>
 
-            <div className="relative mt-5 border border-[rgba(211,162,56,0.28)] bg-[linear-gradient(160deg,rgba(185,121,63,0.10),rgba(0,0,0,0)_50%),#211710] px-[18px] py-5 text-center shadow-[inset_0_0_0_1px_rgba(0,0,0,0.3),0_20px_40px_-25px_rgba(0,0,0,0.6)] sm:mt-6 sm:px-[30px] sm:py-[26px]">
+            <div className="relative mt-5 border border-[rgba(232,200,118,0.38)] bg-[linear-gradient(160deg,rgba(255,222,145,0.16),rgba(255,255,255,0.04)_52%),#654632] px-[18px] py-5 text-center shadow-[inset_0_0_0_1px_rgba(255,255,255,0.04),0_20px_40px_-28px_rgba(0,0,0,0.42)] sm:mt-6 sm:px-[30px] sm:py-[26px]">
               <span className="absolute -left-[5px] -top-[5px] h-2.5 w-2.5 rounded-full bg-[#d3a238] shadow-[0_0_10px_rgba(211,162,56,0.5)]" />
               <span className="absolute -right-[5px] -top-[5px] h-2.5 w-2.5 rounded-full bg-[#d3a238] shadow-[0_0_10px_rgba(211,162,56,0.5)]" />
-              <p className="whitespace-pre-line text-[16px] font-semibold leading-[1.75] tracking-[0.01em] text-[#f1e6d3] sm:text-[19px] sm:leading-[1.85]">
+              <p className="whitespace-pre-line text-[16px] font-semibold leading-[1.75] tracking-[0.01em] text-[#fff2dd] sm:text-[19px] sm:leading-[1.85]">
                 {QUOTE}
               </p>
               <p className="mt-2.5 font-serif text-[11px] italic uppercase tracking-[0.14em] text-[#b9793f] sm:mt-3.5 sm:text-xs">
@@ -162,7 +162,7 @@ export function HomeSplashScreen({
             </div>
           </>
         ) : (
-          <div className="relative min-h-[calc(100vh-10rem)] overflow-hidden rounded-sm border border-[rgba(211,162,56,0.28)] bg-[#211710] shadow-[0_30px_60px_-20px_rgba(0,0,0,0.7)]">
+          <div className="relative min-h-[calc(100vh-10rem)] overflow-hidden rounded-sm border border-[rgba(232,200,118,0.38)] bg-[#654632] shadow-[0_30px_60px_-28px_rgba(0,0,0,0.5)]">
             {imageReady ? (
               <Image
                 src={currentSlide.imageUrl}
@@ -182,7 +182,7 @@ export function HomeSplashScreen({
                 </p>
               </div>
             )}
-            <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(18,12,8,0.05),rgba(18,12,8,0.28))]" />
+            <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(74,51,36,0.01),rgba(74,51,36,0.12))]" />
           </div>
         )}
 
@@ -192,7 +192,7 @@ export function HomeSplashScreen({
               type="button"
               onClick={goToPreviousScreen}
               aria-label="Écran précédent"
-              className="pointer-events-auto flex h-12 w-12 items-center justify-center rounded-full border border-[rgba(211,162,56,0.28)] bg-[rgba(33,23,16,0.6)] p-0 text-[#e8c876] shadow-[0_18px_50px_-28px_rgba(0,0,0,0.75)] backdrop-blur-md transition hover:scale-105 hover:border-[#d3a238] hover:shadow-[0_0_22px_rgba(211,162,56,0.25)] sm:h-[52px] sm:w-[52px]"
+              className="pointer-events-auto flex h-12 w-12 items-center justify-center rounded-full border border-[rgba(232,200,118,0.42)] bg-[rgba(101,70,50,0.78)] p-0 text-[#ffe19c] shadow-[0_18px_50px_-30px_rgba(0,0,0,0.52)] backdrop-blur-md transition hover:scale-105 hover:border-[#e8c876] hover:shadow-[0_0_22px_rgba(211,162,56,0.25)] sm:h-[52px] sm:w-[52px]"
             >
               <SplashChevronIcon direction="previous" />
             </button>
@@ -205,7 +205,7 @@ export function HomeSplashScreen({
               type="button"
               onClick={goToNextScreen}
               aria-label="Écran suivant"
-              className="pointer-events-auto flex h-12 w-12 items-center justify-center rounded-full border border-[rgba(211,162,56,0.28)] bg-[rgba(33,23,16,0.6)] p-0 text-[#e8c876] shadow-[0_18px_50px_-28px_rgba(0,0,0,0.75)] backdrop-blur-md transition hover:scale-105 hover:border-[#d3a238] hover:shadow-[0_0_22px_rgba(211,162,56,0.25)] sm:h-[52px] sm:w-[52px]"
+              className="pointer-events-auto flex h-12 w-12 items-center justify-center rounded-full border border-[rgba(232,200,118,0.42)] bg-[rgba(101,70,50,0.78)] p-0 text-[#ffe19c] shadow-[0_18px_50px_-30px_rgba(0,0,0,0.52)] backdrop-blur-md transition hover:scale-105 hover:border-[#e8c876] hover:shadow-[0_0_22px_rgba(211,162,56,0.25)] sm:h-[52px] sm:w-[52px]"
             >
               <SplashChevronIcon direction="next" />
             </button>

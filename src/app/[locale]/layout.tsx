@@ -24,7 +24,7 @@ export default async function LocaleLayout({
 
   return (
     <I18nProvider locale={locale} messages={messages}>
-      <div className={`min-h-screen bg-[#f4f5fb] text-slate-950 ${locale === "ta" ? "locale-ta" : ""}`}>
+      <div className={`min-h-screen bg-transparent text-[var(--brand-ink)] ${locale === "ta" ? "locale-ta" : ""}`}>
         <Header locale={locale} />
         <main>{children}</main>
         <HomeFooterGate />

@@ -108,22 +108,22 @@ export function AuthForm({
 
   return (
     <div className="mx-auto flex min-h-[calc(100vh-8rem)] w-full max-w-[120rem] items-center px-4 py-6 sm:px-6 xl:px-8">
-      <div className="mx-auto w-full max-w-3xl rounded-[1.75rem] border border-slate-200 bg-white px-6 py-7 shadow-[0_20px_60px_-40px_rgba(17,25,53,0.16)] sm:px-8 sm:py-8">
+      <div className="mx-auto w-full max-w-3xl rounded-[1.75rem] border border-[rgba(185,121,63,0.22)] bg-[#fff8ec]/95 px-6 py-7 shadow-[0_20px_60px_-40px_rgba(74,51,36,0.36)] sm:px-8 sm:py-8">
         <div>
           <h1 className="text-4xl font-black tracking-[-0.05em] text-[var(--brand-ink)] sm:text-[3.1rem]">
             {isLogin ? copy.loginTitle : copy.registerTitle}
           </h1>
-          <p className="mt-2 text-base text-slate-600 sm:text-lg">
+          <p className="mt-2 text-base text-[#6f553d] sm:text-lg">
             {isLogin ? copy.loginSubtitle : copy.registerSubtitle}
           </p>
         </div>
 
-        <div className="mt-6 rounded-[1rem] border border-slate-200 bg-slate-50 p-2">
+        <div className="mt-6 rounded-[1rem] border border-[rgba(185,121,63,0.18)] bg-[#f4dfb6]/45 p-2">
           <div className="grid grid-cols-2 gap-2">
             <Link
               href={`/${locale}/auth/login`}
               className={`rounded-[0.8rem] px-5 py-3.5 text-center text-base transition sm:text-lg ${
-                isLogin ? "bg-white text-[var(--brand-ink)] shadow-sm" : "text-slate-600 hover:text-[var(--brand-ink)]"
+                isLogin ? "bg-[#fff8ec] text-[var(--brand-ink)] shadow-sm" : "text-[#8a6a4c] hover:text-[var(--brand-ink)]"
               }`}
             >
               {copy.loginTab}
@@ -131,7 +131,7 @@ export function AuthForm({
             <Link
               href={`/${locale}/auth/register`}
               className={`rounded-[0.8rem] px-5 py-3.5 text-center text-base transition sm:text-lg ${
-                !isLogin ? "bg-white text-[var(--brand-ink)] shadow-sm" : "text-slate-600 hover:text-[var(--brand-ink)]"
+                !isLogin ? "bg-[#fff8ec] text-[var(--brand-ink)] shadow-sm" : "text-[#8a6a4c] hover:text-[var(--brand-ink)]"
               }`}
             >
               {copy.registerTab}
@@ -144,10 +144,10 @@ export function AuthForm({
 
           {isLogin ? null : (
             <label className="block">
-              <span className="mb-2.5 block text-lg text-slate-700 sm:text-xl">{copy.fullName}</span>
+              <span className="mb-2.5 block text-lg text-[#654632] sm:text-xl">{copy.fullName}</span>
               <input
                 name="fullName"
-                className="w-full rounded-[1rem] border border-slate-300 bg-white px-5 py-4 text-lg text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-[#4058ff] focus:ring-4 focus:ring-[#e7ebff] sm:px-6 sm:py-4.5 sm:text-xl"
+                className="w-full rounded-[1rem] border border-[rgba(185,121,63,0.24)] bg-[#fffdf8] px-5 py-4 text-lg text-[#2a1a11] outline-none transition placeholder:text-[#b49a7c] focus:border-[#b9793f] focus:ring-4 focus:ring-[#f4dfb6] sm:px-6 sm:py-4.5 sm:text-xl"
                 placeholder={copy.fullNamePlaceholder}
                 required
               />
@@ -155,24 +155,24 @@ export function AuthForm({
           )}
 
           <label className="block">
-            <span className="mb-2.5 block text-lg text-slate-700 sm:text-xl">{copy.email}</span>
+            <span className="mb-2.5 block text-lg text-[#654632] sm:text-xl">{copy.email}</span>
             <input
               type="email"
               name="email"
-              className="w-full rounded-[1rem] border border-slate-300 bg-white px-5 py-4 text-lg text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-[#4058ff] focus:ring-4 focus:ring-[#e7ebff] sm:px-6 sm:py-4.5 sm:text-xl"
+              className="w-full rounded-[1rem] border border-[rgba(185,121,63,0.24)] bg-[#fffdf8] px-5 py-4 text-lg text-[#2a1a11] outline-none transition placeholder:text-[#b49a7c] focus:border-[#b9793f] focus:ring-4 focus:ring-[#f4dfb6] sm:px-6 sm:py-4.5 sm:text-xl"
               placeholder={copy.emailPlaceholder}
               required
             />
           </label>
 
           <label className="block">
-            <span className="mb-2.5 block text-lg text-slate-700 sm:text-xl">
+            <span className="mb-2.5 block text-lg text-[#654632] sm:text-xl">
               {isLogin ? copy.password : copy.passwordChoose}
             </span>
             <input
               type="password"
               name="password"
-              className="w-full rounded-[1rem] border border-slate-300 bg-white px-5 py-4 text-lg text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-[#4058ff] focus:ring-4 focus:ring-[#e7ebff] sm:px-6 sm:py-4.5 sm:text-xl"
+              className="w-full rounded-[1rem] border border-[rgba(185,121,63,0.24)] bg-[#fffdf8] px-5 py-4 text-lg text-[#2a1a11] outline-none transition placeholder:text-[#b49a7c] focus:border-[#b9793f] focus:ring-4 focus:ring-[#f4dfb6] sm:px-6 sm:py-4.5 sm:text-xl"
               placeholder={copy.passwordPlaceholder}
               required
             />
@@ -180,11 +180,11 @@ export function AuthForm({
 
           {!isLogin ? (
             <label className="block">
-              <span className="mb-2.5 block text-lg text-slate-700 sm:text-xl">{copy.confirmPassword}</span>
+              <span className="mb-2.5 block text-lg text-[#654632] sm:text-xl">{copy.confirmPassword}</span>
               <input
                 type="password"
                 name="confirmPassword"
-                className="w-full rounded-[1rem] border border-slate-300 bg-white px-5 py-4 text-lg text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-[#4058ff] focus:ring-4 focus:ring-[#e7ebff] sm:px-6 sm:py-4.5 sm:text-xl"
+                className="w-full rounded-[1rem] border border-[rgba(185,121,63,0.24)] bg-[#fffdf8] px-5 py-4 text-lg text-[#2a1a11] outline-none transition placeholder:text-[#b49a7c] focus:border-[#b9793f] focus:ring-4 focus:ring-[#f4dfb6] sm:px-6 sm:py-4.5 sm:text-xl"
                 placeholder={copy.passwordPlaceholder}
                 required
               />
@@ -192,7 +192,7 @@ export function AuthForm({
           ) : null}
 
           <button
-            className="w-full rounded-[1rem] bg-[#4058ff] px-6 py-4 text-lg font-semibold text-white transition hover:translate-y-[-1px] hover:bg-[#3148e8] disabled:opacity-60 sm:py-4.5 sm:text-xl"
+            className="w-full rounded-[1rem] bg-[#8a5a2e] px-6 py-4 text-lg font-semibold text-[#fff2dd] transition hover:translate-y-[-1px] hover:bg-[#654632] disabled:opacity-60 sm:py-4.5 sm:text-xl"
             disabled={pending}
           >
             {isLogin ? copy.submitLogin : copy.submitRegister}
@@ -200,7 +200,7 @@ export function AuthForm({
 
           {isLogin ? (
             <div className="flex justify-end">
-              <span className="text-base text-[#4058ff] sm:text-lg">{copy.forgotPassword}</span>
+              <span className="text-base text-[#8a5a2e] sm:text-lg">{copy.forgotPassword}</span>
             </div>
           ) : null}
 
@@ -208,16 +208,16 @@ export function AuthForm({
             <p className={`text-base ${state.ok ? "text-emerald-700" : "text-rose-600"}`}>{state.message}</p>
           ) : null}
 
-          <div className="flex items-center gap-4 pt-1 text-base text-slate-500 sm:gap-6 sm:text-lg">
-            <span className="h-px flex-1 bg-slate-200" />
+          <div className="flex items-center gap-4 pt-1 text-base text-[#8a6a4c] sm:gap-6 sm:text-lg">
+            <span className="h-px flex-1 bg-[rgba(185,121,63,0.2)]" />
             <span>{copy.continueWith}</span>
-            <span className="h-px flex-1 bg-slate-200" />
+            <span className="h-px flex-1 bg-[rgba(185,121,63,0.2)]" />
           </div>
 
           <button
             type="button"
             disabled
-            className="mx-auto flex w-full max-w-3xl items-center justify-center gap-4 rounded-[1rem] border border-slate-300 bg-white px-6 py-4 text-lg text-slate-700 opacity-70 sm:text-xl"
+            className="mx-auto flex w-full max-w-3xl items-center justify-center gap-4 rounded-[1rem] border border-[rgba(185,121,63,0.24)] bg-[#fffdf8] px-6 py-4 text-lg text-[#654632] opacity-70 sm:text-xl"
           >
             <span className="text-3xl font-black text-[#4285F4]">G</span>
             <span>Google</span>

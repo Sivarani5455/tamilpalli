@@ -11,15 +11,15 @@ export function LanguageSwitcher({ locale }: { locale: Locale }) {
   const withoutLocale = pathname.replace(new RegExp(`^/${locale}`), "") || "/";
 
   return (
-    <div className="flex items-center gap-1 rounded-full border border-white/35 bg-white/80 p-1.5 shadow-[0_16px_40px_-28px_rgba(17,25,53,0.55)] backdrop-blur">
+    <div className="flex items-center gap-1 rounded-full border border-[rgba(185,121,63,0.22)] bg-[#fff7ea]/85 p-1.5 shadow-[0_16px_40px_-28px_rgba(74,51,36,0.45)] backdrop-blur">
       {locales.map((option) => (
         <Link
           key={option}
           href={`/${option}${withoutLocale === "/" ? "" : withoutLocale}`}
           className={`rounded-full px-3 py-1.5 text-[11px] font-medium tracking-[0.18em] transition ${
             option === locale
-              ? "bg-gradient-to-r from-[#14c8a3] to-[#4f62ff] text-white"
-              : "text-slate-500 hover:text-slate-900"
+              ? "bg-gradient-to-r from-[#b9793f] to-[#d3a238] text-[#fff8ec]"
+              : "text-[#8a6a4c] hover:text-[#2a1a11]"
           }`}
         >
           {localeLabels[option]}
