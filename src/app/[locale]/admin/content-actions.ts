@@ -52,8 +52,6 @@ const dictionarySchema = z.object({
   locale: z.string(),
   slug: z.string().min(2),
   imageUrl: z.string().url().optional().or(z.literal("")),
-  category: z.string().min(1),
-  subcategory: z.string().min(1),
   type: z.string().min(1),
   example: z.string().min(1),
   tamilSynonyms: z.string().optional().default(""),
@@ -61,6 +59,30 @@ const dictionarySchema = z.object({
   wordTa: z.string().min(1),
   descriptionTa: z.string().min(1),
   wordFr: z.string().min(1),
+});
+
+const dictionaryCsvHeaders = [
+  "english_word",
+  "slug",
+  "type",
+  "example",
+  "tamil_main_word",
+  "french_word",
+  "tamil_synonyms",
+  "tamil_description",
+  "image_url",
+] as const;
+
+const dictionaryCsvRowSchema = z.object({
+  english_word: z.string().min(1),
+  slug: z.string().min(2),
+  type: z.string().min(1),
+  example: z.string().min(1),
+  tamil_main_word: z.string().min(1),
+  french_word: z.string().min(1),
+  tamil_synonyms: z.string().optional().default(""),
+  tamil_description: z.string().min(1),
+  image_url: z.string().url().optional().or(z.literal("")),
 });
 
 const splashSlideSchema = z.object({
@@ -87,6 +109,79 @@ function parseDictionarySynonyms(value: string) {
         .filter(Boolean),
     ),
   );
+}
+
+function parseCsvLine(line: string) {
+  const values: string[] = [];
+  let current = "";
+  let inQuotes = false;
+
+  for (let index = 0; index < line.length; index += 1) {
+    const char = line[index];
+    const nextChar = line[index + 1];
+
+    if (char === '"' && inQuotes && nextChar === '"') {
+      current += '"';
+      index += 1;
+      continue;
+    }
+
+    if (char === '"') {
+      inQuotes = !inQuotes;
+      continue;
+    }
+
+    if (char === "," && !inQuotes) {
+      values.push(current.trim());
+      current = "";
+      continue;
+    }
+
+    current += char;
+  }
+
+  if (inQuotes) {
+    throw new Error("CSV invalide: guillemet non ferme.");
+  }
+
+  values.push(current.trim());
+  return values;
+}
+
+function parseDictionaryCsv(text: string) {
+  const normalizedText = text.replace(/^\uFEFF/, "").replace(/\r\n/g, "\n").replace(/\r/g, "\n");
+  const lines = normalizedText
+    .split("\n")
+    .map((line) => line.trim())
+    .filter(Boolean);
+
+  if (lines.length < 2) {
+    throw new Error("Le CSV doit contenir une ligne d'en-tete et au moins un mot.");
+  }
+
+  const headers = parseCsvLine(lines[0]);
+  const expectedHeaders = [...dictionaryCsvHeaders];
+
+  if (headers.length !== expectedHeaders.length || headers.some((header, index) => header !== expectedHeaders[index])) {
+    throw new Error(`Format CSV invalide. En-tete attendu: ${expectedHeaders.join(", ")}`);
+  }
+
+  return lines.slice(1).map((line, lineIndex) => {
+    const values = parseCsvLine(line);
+
+    if (values.length !== expectedHeaders.length) {
+      throw new Error(`Ligne ${lineIndex + 2}: ${expectedHeaders.length} colonnes attendues, ${values.length} recues.`);
+    }
+
+    const rawRow = Object.fromEntries(expectedHeaders.map((header, index) => [header, values[index]]));
+    const parsed = dictionaryCsvRowSchema.safeParse(rawRow);
+
+    if (!parsed.success) {
+      throw new Error(`Ligne ${lineIndex + 2}: ${parsed.error.issues[0]?.message ?? "donnees invalides"}.`);
+    }
+
+    return parsed.data;
+  });
 }
 
 function parseJsonField<T>(value: string, label: string): T {
@@ -466,8 +561,6 @@ export async function upsertDictionaryAction(
     const entryPayload = {
       slug: parsed.data.slug,
       image_url: parsed.data.imageUrl || null,
-      category: parsed.data.category,
-      subcategory: parsed.data.subcategory,
       type: parsed.data.type,
       example: parsed.data.example,
     };
@@ -555,6 +648,168 @@ export async function upsertDictionaryAction(
       throw error;
     }
 
+    return stateError(error);
+  }
+}
+
+export async function importDictionaryCsvAction(
+  _prev: AuthState,
+  formData: FormData,
+): Promise<AuthState> {
+  const locale = String(formData.get("locale") ?? "en");
+  const file = formData.get("csvFile");
+
+  if (!(file instanceof File) || file.size === 0) {
+    return stateError("Ajoutez un fichier CSV a importer.");
+  }
+
+  if (!file.name.toLowerCase().endsWith(".csv")) {
+    return stateError("Le fichier doit etre un CSV.");
+  }
+
+  if (!hasSupabaseEnv()) {
+    return missingSupabaseState("Dictionary CSV import");
+  }
+
+  try {
+    const rows = parseDictionaryCsv(await file.text());
+
+    if (rows.length === 0) {
+      return stateError("Le CSV ne contient aucun mot a importer.");
+    }
+
+    const seenSlugs = new Set<string>();
+    const duplicateSlug = rows.find((row) => {
+      if (seenSlugs.has(row.slug)) {
+        return true;
+      }
+
+      seenSlugs.add(row.slug);
+      return false;
+    })?.slug;
+
+    if (duplicateSlug) {
+      return stateError(`Le slug "${duplicateSlug}" apparait plusieurs fois dans le CSV.`);
+    }
+
+    const supabase = requireAdminClient();
+    let importedCount = 0;
+    let updatedCount = 0;
+    let createdCount = 0;
+
+    for (const row of rows) {
+      const entryPayload = {
+        slug: row.slug,
+        image_url: row.image_url || null,
+        type: row.type,
+        example: row.example,
+      };
+
+      const { data: existingEntry, error: existingEntryError } = await supabase
+        .from("dictionary_entries")
+        .select("id")
+        .eq("slug", row.slug)
+        .maybeSingle<{ id: string }>();
+
+      if (existingEntryError) {
+        throw new Error(existingEntryError.message);
+      }
+
+      let entryId = existingEntry?.id;
+      const isNewEntry = !entryId;
+
+      if (entryId) {
+        const { error: updateError } = await supabase
+          .from("dictionary_entries")
+          .update(entryPayload)
+          .eq("id", entryId);
+
+        if (updateError) {
+          throw new Error(updateError.message);
+        }
+
+        const { error: deleteTranslationsError } = await supabase
+          .from("dictionary_translations")
+          .delete()
+          .eq("entry_id", entryId);
+
+        if (deleteTranslationsError) {
+          throw new Error(deleteTranslationsError.message);
+        }
+      } else {
+        const { data, error } = await supabase
+          .from("dictionary_entries")
+          .insert(entryPayload)
+          .select("id")
+          .single<{ id: string }>();
+
+        if (error) {
+          throw new Error(error.message);
+        }
+
+        entryId = data?.id;
+      }
+
+      if (!entryId) {
+        throw new Error(`Impossible de creer l'entree "${row.slug}".`);
+      }
+
+      const tamilSynonyms = parseDictionarySynonyms(row.tamil_synonyms).filter(
+        (word) => word !== row.tamil_main_word,
+      );
+
+      const { error: translationsError } = await supabase.from("dictionary_translations").insert([
+        {
+          entry_id: entryId,
+          locale: "en",
+          word: row.english_word,
+          description: null,
+          is_primary: true,
+        },
+        {
+          entry_id: entryId,
+          locale: "ta",
+          word: row.tamil_main_word,
+          description: row.tamil_description,
+          is_primary: true,
+        },
+        {
+          entry_id: entryId,
+          locale: "fr",
+          word: row.french_word,
+          description: null,
+          is_primary: true,
+        },
+        ...tamilSynonyms.map((word) => ({
+          entry_id: entryId,
+          locale: "ta" as const,
+          word,
+          description: row.tamil_description,
+          is_primary: false,
+        })),
+      ]);
+
+      if (translationsError) {
+        if (isNewEntry) {
+          await supabase.from("dictionary_entries").delete().eq("id", entryId);
+        }
+
+        throw new Error(`Erreur sur "${row.slug}": ${translationsError.message}`);
+      }
+
+      importedCount += 1;
+      createdCount += isNewEntry ? 1 : 0;
+      updatedCount += isNewEntry ? 0 : 1;
+    }
+
+    revalidatePath(`/${locale}/admin/dictionary`);
+    revalidatePath(`/${locale}/agarathi`);
+
+    return {
+      ok: true,
+      message: `${importedCount} mot${importedCount > 1 ? "s" : ""} importe${importedCount > 1 ? "s" : ""}: ${createdCount} cree${createdCount > 1 ? "s" : ""}, ${updatedCount} mis a jour.`,
+    };
+  } catch (error) {
     return stateError(error);
   }
 }

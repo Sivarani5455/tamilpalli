@@ -43,8 +43,6 @@ export function DictionaryAdminForm({
   const [wordEn, setWordEn] = useState(initial?.translations.en?.word ?? "");
   const [wordTa, setWordTa] = useState(initial?.translations.ta?.word ?? "");
   const [wordFr, setWordFr] = useState(initial?.translations.fr?.word ?? "");
-  const [category, setCategory] = useState(initial?.category ?? "");
-  const [subcategory, setSubcategory] = useState(initial?.subcategory ?? "");
   const [entryType, setEntryType] = useState(initial?.type ?? "");
   const [example, setExample] = useState(initial?.example ?? "");
   const [tamilSynonyms, setTamilSynonyms] = useState(initial?.tamilSynonyms.join("\n") ?? "");
@@ -102,30 +100,6 @@ export function DictionaryAdminForm({
                 }}
                 className="w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-950 shadow-sm outline-none transition focus:border-indigo-400 focus:ring-4 focus:ring-indigo-100"
                 placeholder="chair"
-              />
-            </label>
-          </div>
-
-          <div className="grid gap-4 sm:grid-cols-2">
-            <label className="space-y-1.5">
-              <span className="text-xs font-bold uppercase tracking-[0.22em] text-slate-500">Category</span>
-              <input
-                name="category"
-                value={category}
-                onChange={(event) => setCategory(event.target.value)}
-                className="w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-950 shadow-sm outline-none transition focus:border-indigo-400 focus:ring-4 focus:ring-indigo-100"
-                placeholder="Objects"
-              />
-            </label>
-
-            <label className="space-y-1.5">
-              <span className="text-xs font-bold uppercase tracking-[0.22em] text-slate-500">Subcategory</span>
-              <input
-                name="subcategory"
-                value={subcategory}
-                onChange={(event) => setSubcategory(event.target.value)}
-                className="w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-950 shadow-sm outline-none transition focus:border-indigo-400 focus:ring-4 focus:ring-indigo-100"
-                placeholder="Furniture"
               />
             </label>
           </div>
@@ -232,14 +206,6 @@ export function DictionaryAdminForm({
             <div>
               <div className="text-xs font-bold uppercase tracking-[0.22em] text-slate-500">French</div>
               <div className="mt-2 text-lg font-semibold text-slate-950">{wordFr || "—"}</div>
-            </div>
-            <div>
-              <div className="text-xs font-bold uppercase tracking-[0.22em] text-slate-500">Category</div>
-              <div className="mt-2 text-lg font-semibold text-slate-950">{category || "—"}</div>
-            </div>
-            <div>
-              <div className="text-xs font-bold uppercase tracking-[0.22em] text-slate-500">Subcategory</div>
-              <div className="mt-2 text-lg font-semibold text-slate-950">{subcategory || "—"}</div>
             </div>
             <div>
               <div className="text-xs font-bold uppercase tracking-[0.22em] text-slate-500">Type</div>

@@ -1,5 +1,6 @@
 import Link from "next/link";
 
+import { DictionaryCsvImportForm } from "@/components/admin/dictionary-csv-import-form";
 import { DeleteContentButton } from "@/components/admin/delete-content-button";
 import { requireAdminUser } from "@/lib/auth";
 import { getAdminDictionaryEntries, getAdminDictionaryInsights } from "@/lib/content-admin";
@@ -24,8 +25,7 @@ export default async function AdminDictionaryPage({
         <div>
           <h1 className="font-display text-5xl text-slate-950">Dictionary Admin</h1>
           <p className="mt-3 text-sm text-slate-600">
-            English, Tamil, French, category fields, type, example and image references in one extensible
-            structure.
+            English, Tamil, French, type, example and image references in one extensible structure.
           </p>
         </div>
         <Link
@@ -35,6 +35,8 @@ export default async function AdminDictionaryPage({
           New entry
         </Link>
       </div>
+
+      <DictionaryCsvImportForm locale={locale} />
 
       <div className="mt-8 grid gap-6 xl:grid-cols-2">
         <section className="rounded-[2rem] border border-slate-200 bg-white p-6">
@@ -66,8 +68,6 @@ export default async function AdminDictionaryPage({
                     </span>
                   </div>
                   <div className="mt-3 flex flex-wrap gap-2 text-xs text-slate-500">
-                    <span>{item.category ?? "No category"}</span>
-                    <span>•</span>
                     <span>{item.viewsTotal} views</span>
                     <span>•</span>
                     <span>{item.learnerCount} learners</span>
@@ -107,8 +107,6 @@ export default async function AdminDictionaryPage({
                     </span>
                   </div>
                   <div className="mt-3 flex flex-wrap gap-2 text-xs text-slate-500">
-                    <span>{item.category ?? "No category"}</span>
-                    <span>•</span>
                     <span>{item.learnedTotal} learned</span>
                     <span>•</span>
                     <span>{item.learnerCount} learners</span>
@@ -141,14 +139,6 @@ export default async function AdminDictionaryPage({
                 </div>
 
                 <div className="mt-4 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
-                  <div className="rounded-xl bg-slate-50 px-4 py-3">
-                    <div className="text-xs font-bold uppercase tracking-[0.18em] text-slate-400">Category</div>
-                    <div className="mt-2 text-base font-semibold text-slate-950">{entry.category ?? "—"}</div>
-                  </div>
-                  <div className="rounded-xl bg-slate-50 px-4 py-3">
-                    <div className="text-xs font-bold uppercase tracking-[0.18em] text-slate-400">Subcategory</div>
-                    <div className="mt-2 text-base font-semibold text-slate-950">{entry.subcategory ?? "—"}</div>
-                  </div>
                   <div className="rounded-xl bg-slate-50 px-4 py-3">
                     <div className="text-xs font-bold uppercase tracking-[0.18em] text-slate-400">Type</div>
                     <div className="mt-2 text-base font-semibold text-slate-950">{entry.type ?? "—"}</div>

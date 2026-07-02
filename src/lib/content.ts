@@ -93,8 +93,6 @@ type DictionaryEntryRow = {
   id: string;
   slug: string;
   image_url: string | null;
-  category: string | null;
-  subcategory: string | null;
   type: string | null;
   example: string | null;
   created_at: string;
@@ -287,8 +285,6 @@ function mapDictionaryRows(rows: DictionaryEntryRow[]): DictionaryEntry[] {
     id: row.id,
     slug: row.slug,
     imageUrl: row.image_url,
-    category: row.category,
-    subcategory: row.subcategory,
     type: row.type,
     example: row.example,
     createdAt: row.created_at,
@@ -543,7 +539,7 @@ export async function getDictionaryEntries() {
 
   const { data } = await supabase
     .from("dictionary_entries")
-    .select("id, slug, image_url, category, subcategory, type, example, created_at, updated_at, dictionary_translations(locale, word, description, is_primary)")
+    .select("id, slug, image_url, type, example, created_at, updated_at, dictionary_translations(locale, word, description, is_primary)")
     .eq("is_active", true)
     .order("created_at", { ascending: false });
 
@@ -559,7 +555,7 @@ export async function getDictionaryEntries() {
 
   const { data: adminData } = await adminClient
     .from("dictionary_entries")
-    .select("id, slug, image_url, category, subcategory, type, example, created_at, updated_at, dictionary_translations(locale, word, description, is_primary)")
+    .select("id, slug, image_url, type, example, created_at, updated_at, dictionary_translations(locale, word, description, is_primary)")
     .eq("is_active", true)
     .order("created_at", { ascending: false });
 

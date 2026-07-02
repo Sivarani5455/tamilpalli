@@ -67,8 +67,6 @@ type DictionaryEntryRow = {
   id: string;
   slug: string;
   image_url: string | null;
-  category: string | null;
-  subcategory: string | null;
   type: string | null;
   example: string | null;
   created_at?: string;
@@ -89,7 +87,6 @@ type DictionaryProgressInsightRow = {
   dictionary_entries:
     | {
         slug: string;
-        category: string | null;
         dictionary_translations: Array<{
           locale: Locale;
           word: string;
@@ -98,7 +95,6 @@ type DictionaryProgressInsightRow = {
       }
     | Array<{
         slug: string;
-        category: string | null;
         dictionary_translations: Array<{
           locale: Locale;
           word: string;
@@ -270,7 +266,7 @@ export async function getAdminDictionaryEntries() {
 
   const { data } = await supabase
     .from("dictionary_entries")
-    .select("id, slug, image_url, category, subcategory, type, example, created_at, updated_at, dictionary_translations(locale, word, description, is_primary)")
+    .select("id, slug, image_url, type, example, created_at, updated_at, dictionary_translations(locale, word, description, is_primary)")
     .order("created_at", { ascending: false });
 
   if (!data) {
@@ -301,8 +297,6 @@ export async function getAdminDictionaryEntries() {
       id: row.id,
       slug: row.slug,
       imageUrl: row.image_url,
-      category: row.category,
-      subcategory: row.subcategory,
       type: row.type,
       example: row.example,
       tamilSynonyms,
@@ -331,7 +325,7 @@ export async function getAdminDictionaryInsights() {
 
   const { data } = await supabase
     .from("dictionary_progress")
-    .select("entry_id, user_id, views_count, learned_count, dictionary_entries!inner(slug, category, dictionary_translations(locale, word, is_primary))");
+    .select("entry_id, user_id, views_count, learned_count, dictionary_entries!inner(slug, dictionary_translations(locale, word, is_primary))");
 
   if (!data || data.length === 0) {
     return [] as AdminDictionaryInsight[];
@@ -360,7 +354,6 @@ export async function getAdminDictionaryInsights() {
       slug: relation.slug,
       englishWord,
       tamilWord,
-      category: relation.category,
       viewsTotal: 0,
       learnedTotal: 0,
       learnerCount: 0,

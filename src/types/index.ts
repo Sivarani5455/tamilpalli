@@ -137,8 +137,6 @@ export type DictionaryEntry = {
   id: string;
   slug: string;
   imageUrl: string | null;
-  category: string | null;
-  subcategory: string | null;
   type: string | null;
   example: string | null;
   translations: Partial<Record<Locale, DictionaryTranslation>>;
@@ -159,7 +157,6 @@ export type AdminDictionaryInsight = {
   slug: string;
   englishWord: string;
   tamilWord: string;
-  category: string | null;
   viewsTotal: number;
   learnedTotal: number;
   learnerCount: number;

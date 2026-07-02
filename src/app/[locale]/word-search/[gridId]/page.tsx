@@ -1,7 +1,7 @@
 import { notFound } from "next/navigation";
 
 import { WordSearchGame } from "@/components/word-search/word-search-game";
-import { getWordSearchGrid } from "@/lib/content";
+import { getDictionaryEntries, getWordSearchGrid } from "@/lib/content";
 import { getLocaleOrThrow } from "@/lib/i18n";
 import { requireCategoryAccess } from "@/lib/permissions";
 
@@ -13,7 +13,10 @@ export default async function WordSearchDetailPage({
   const { locale: rawLocale, gridId } = await params;
   const locale = getLocaleOrThrow(rawLocale);
   await requireCategoryAccess(locale, "word-search");
-  const grid = await getWordSearchGrid(gridId);
+  const [grid, dictionaryEntries] = await Promise.all([
+    getWordSearchGrid(gridId),
+    getDictionaryEntries(),
+  ]);
 
   if (!grid) {
     notFound();
@@ -21,7 +24,7 @@ export default async function WordSearchDetailPage({
 
   return (
     <div className="mx-auto w-full max-w-none p-0">
-      <WordSearchGame grid={grid} locale={locale} />
+      <WordSearchGame grid={grid} locale={locale} dictionaryEntries={dictionaryEntries} />
     </div>
   );
 }

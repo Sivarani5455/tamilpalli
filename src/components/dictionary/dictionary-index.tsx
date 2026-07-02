@@ -21,15 +21,11 @@ const copy = {
     title: "Agarathi",
     subtitle: "A colorful Tamil picture dictionary for everyday learning.",
     wordOfDay: "Word of the day",
-    searchPlaceholder: "Search a word, Tamil term or category...",
+    searchPlaceholder: "Search a word or Tamil term...",
     allLetters: "All",
-    allCategories: "All categories",
-    allSubcategories: "All subcategories",
     browseHint: "Tap a card to open the full word page.",
     translation: "Tamil translation",
     description: "Description",
-    category: "Category",
-    subcategory: "Subcategory",
     type: "Type",
     example: "Example",
     synonyms: "Synonyms",
@@ -43,7 +39,6 @@ const copy = {
     open: "Open",
     words: "Words",
     letters: "Letters",
-    groups: "Groups",
     statusNew: "New",
     statusSeen: "Seen",
     statusMastered: "Mastered",
@@ -66,15 +61,11 @@ const copy = {
     title: "Agarathi",
     subtitle: "Un dictionnaire visuel tamoul coloré pour apprendre chaque jour.",
     wordOfDay: "Mot du jour",
-    searchPlaceholder: "Rechercher un mot, un terme tamoul ou une catégorie...",
+    searchPlaceholder: "Rechercher un mot ou un terme tamoul...",
     allLetters: "Tout",
-    allCategories: "Toutes les catégories",
-    allSubcategories: "Toutes les sous-catégories",
     browseHint: "Touchez une carte pour ouvrir la fiche complète.",
     translation: "Traduction tamoule",
     description: "Description",
-    category: "Catégorie",
-    subcategory: "Sous-catégorie",
     type: "Type",
     example: "Exemple",
     synonyms: "Synonymes",
@@ -88,7 +79,6 @@ const copy = {
     open: "Ouvrir",
     words: "Mots",
     letters: "Lettres",
-    groups: "Groupes",
     statusNew: "Nouveau",
     statusSeen: "Déjà vu",
     statusMastered: "Maîtrisé",
@@ -111,15 +101,11 @@ const copy = {
     title: "அகராதி",
     subtitle: "தினசரி கற்றலுக்கான வண்ணமயமான தமிழ் பட அகராதி.",
     wordOfDay: "இன்றைய சொல்",
-    searchPlaceholder: "சொல், தமிழ் பதிவு அல்லது வகையைத் தேடுங்கள்...",
+    searchPlaceholder: "சொல் அல்லது தமிழ் பதிவைத் தேடுங்கள்...",
     allLetters: "அனைத்தும்",
-    allCategories: "அனைத்து வகைகளும்",
-    allSubcategories: "அனைத்து துணை வகைகளும்",
     browseHint: "முழு சொல்லைப் பார்க்க ஒரு அட்டையைத் திறக்கவும்.",
     translation: "தமிழ் சொல்",
     description: "விளக்கம்",
-    category: "வகை",
-    subcategory: "துணை வகை",
     type: "சொல் வகை",
     example: "உதாரணம்",
     synonyms: "இணைச்சொற்கள்",
@@ -133,7 +119,6 @@ const copy = {
     open: "திற",
     words: "சொற்கள்",
     letters: "எழுத்துகள்",
-    groups: "வகைகள்",
     statusNew: "புதியது",
     statusSeen: "பார்த்தது",
     statusMastered: "முழுமையாக கற்றது",
@@ -160,13 +145,9 @@ const copy = {
     wordOfDay: string;
     searchPlaceholder: string;
     allLetters: string;
-    allCategories: string;
-    allSubcategories: string;
     browseHint: string;
     translation: string;
     description: string;
-    category: string;
-    subcategory: string;
     type: string;
     example: string;
     synonyms: string;
@@ -180,7 +161,6 @@ const copy = {
     open: string;
     words: string;
     letters: string;
-    groups: string;
     statusNew: string;
     statusSeen: string;
     statusMastered: string;
@@ -239,7 +219,7 @@ function getLetter(entry: DictionaryEntry, locale: Locale) {
 }
 
 function getAccent(entry: DictionaryEntry) {
-  const seed = `${entry.slug}-${entry.category ?? ""}-${entry.subcategory ?? ""}`;
+  const seed = `${entry.slug}-${entry.type ?? ""}`;
   const score = Array.from(seed).reduce((sum, char) => sum + char.charCodeAt(0), 0);
   return accents[score % accents.length];
 }
@@ -382,14 +362,14 @@ function DailyQuiz({
         const seed = dayNumber + index * 17 + answer.length;
         const prompt =
           locale === "ta"
-            ? getTamilDescription(entry) || entry.subcategory || entry.category || getTamilWord(entry)
+            ? getTamilDescription(entry) || getTamilWord(entry)
             : getPrimaryWord(entry, locale) || getTamilWord(entry);
 
         return {
           slug: entry.slug,
           prompt,
           answer,
-          clue: locale === "ta" ? entry.category || entry.subcategory || "" : getTamilDescription(entry),
+          clue: locale === "ta" ? getExample(entry) : getTamilDescription(entry),
           options: buildSeededOrder([answer, ...buildSeededOrder(distractors, seed).slice(0, 3)], seed + 9),
         };
       }),
@@ -572,8 +552,6 @@ export function DictionaryIndex({
   const supabase = useMemo(() => createSupabaseBrowserClient(), []);
   const labels = copy[locale];
   const [query, setQuery] = useState("");
-  const [selectedCategory, setSelectedCategory] = useState("all");
-  const [selectedSubcategory, setSelectedSubcategory] = useState("all");
   const [selectedLetter, setSelectedLetter] = useState("all");
   const [copied, setCopied] = useState(false);
   const [dailyIndex, setDailyIndex] = useState(0);
@@ -598,26 +576,6 @@ export function DictionaryIndex({
           ? "lg:grid-cols-[minmax(0,1fr)_minmax(22rem,0.9fr)]"
           : "lg:grid-cols-[minmax(0,1.04fr)_minmax(0,0.92fr)_minmax(22rem,0.9fr)]";
 
-  const categories = useMemo(
-    () =>
-      Array.from(
-        new Set(entries.map((entry) => entry.category?.trim()).filter((value): value is string => Boolean(value))),
-      ).sort((a, b) => a.localeCompare(b)),
-    [entries],
-  );
-
-  const subcategories = useMemo(
-    () =>
-      Array.from(
-        new Set(
-          entries
-            .filter((entry) => selectedCategory === "all" || entry.category === selectedCategory)
-            .map((entry) => entry.subcategory?.trim())
-            .filter((value): value is string => Boolean(value)),
-        ),
-      ).sort((a, b) => a.localeCompare(b)),
-    [entries, selectedCategory],
-  );
   const entryIdBySlug = useMemo(
     () => Object.fromEntries(entries.map((entry) => [entry.slug, entry.id])),
     [entries],
@@ -639,18 +597,14 @@ export function DictionaryIndex({
         primary.toLocaleLowerCase().includes(q) ||
         tamil.toLocaleLowerCase().includes(q) ||
         getTamilSynonyms(entry).some((synonym) => synonym.toLocaleLowerCase().includes(q)) ||
-        (entry.category ?? "").toLocaleLowerCase().includes(q) ||
-        (entry.subcategory ?? "").toLocaleLowerCase().includes(q) ||
         (entry.type ?? "").toLocaleLowerCase().includes(q) ||
         (entry.example ?? "").toLocaleLowerCase().includes(q);
 
-      const matchCategory = selectedCategory === "all" || entry.category === selectedCategory;
-      const matchSubcategory = selectedSubcategory === "all" || entry.subcategory === selectedSubcategory;
       const matchLetter = selectedLetter === "all" || getLetter(entry, locale) === selectedLetter;
 
-      return matchQuery && matchCategory && matchSubcategory && matchLetter;
+      return matchQuery && matchLetter;
     });
-  }, [entries, locale, query, selectedCategory, selectedSubcategory, selectedLetter]);
+  }, [entries, locale, query, selectedLetter]);
 
   const currentEntry = useMemo(() => {
     if (initialSelectedSlug) {
@@ -679,8 +633,7 @@ export function DictionaryIndex({
   }, [dayNumber, entries]);
   const normalizedDailyIndex = dailyBatch.length === 0 ? 0 : dailyIndex % dailyBatch.length;
   const activeDailyEntry = dailyBatch[normalizedDailyIndex] ?? dailyBatch[0] ?? null;
-  const isFiltered =
-    query.trim().length > 0 || selectedCategory !== "all" || selectedSubcategory !== "all" || selectedLetter !== "all";
+  const isFiltered = query.trim().length > 0 || selectedLetter !== "all";
   const visibleEntries = filteredEntries.slice(0, visibleEntriesCount);
 
   useEffect(() => {
@@ -1096,7 +1049,7 @@ export function DictionaryIndex({
               <div className="space-y-5 px-5 pb-6 pt-3">
                 <div>
                   <p className="text-[0.72rem] font-medium uppercase tracking-[0.3em]" style={{ color: accent.solid }}>
-                    {currentEntry.category ?? labels.wordOfDay}
+                    {labels.wordOfDay}
                   </p>
                   <h1 className="mt-2 text-[clamp(2.9rem,10vw,4.25rem)] font-semibold leading-[0.92] tracking-[-0.065em] text-slate-900">
                     {primaryWord}
@@ -1139,19 +1092,6 @@ export function DictionaryIndex({
                 </div>
 
                 <div className="flex flex-wrap gap-2">
-                  {currentEntry.category ? (
-                    <span
-                      className="rounded-full border px-4 py-2 text-[0.68rem] font-medium uppercase tracking-[0.18em]"
-                      style={{ borderColor: accent.border, color: accent.solid }}
-                    >
-                      {labels.category}: {currentEntry.category}
-                    </span>
-                  ) : null}
-                  {currentEntry.subcategory ? (
-                    <span className="rounded-full border border-slate-200 px-4 py-2 text-[0.68rem] font-medium uppercase tracking-[0.18em] text-slate-500">
-                      {labels.subcategory}: {currentEntry.subcategory}
-                    </span>
-                  ) : null}
                   {currentEntry.type ? (
                     <span className="rounded-full border border-slate-200 px-4 py-2 text-[0.68rem] font-medium uppercase tracking-[0.18em] text-slate-500">
                       {labels.type}: {currentEntry.type}
@@ -1304,16 +1244,6 @@ export function DictionaryIndex({
                       >
                         {getLearningStatus(activeDailyEntry).label}
                       </span>
-                      {activeDailyEntry.category ? (
-                        <span className="rounded-full bg-[rgba(255,246,236,0.18)] px-3 py-1 text-[0.68rem] font-medium uppercase tracking-[0.16em] text-white">
-                          {activeDailyEntry.category}
-                        </span>
-                      ) : null}
-                      {activeDailyEntry.subcategory ? (
-                        <span className="rounded-full bg-[rgba(255,246,236,0.14)] px-3 py-1 text-[0.68rem] font-medium uppercase tracking-[0.16em] text-white">
-                          {activeDailyEntry.subcategory}
-                        </span>
-                      ) : null}
                       {activeDailyEntry.type ? (
                         <span className="rounded-full bg-[rgba(255,246,236,0.14)] px-3 py-1 text-[0.68rem] font-medium uppercase tracking-[0.16em] text-white">
                           {activeDailyEntry.type}
@@ -1378,10 +1308,9 @@ export function DictionaryIndex({
 
             {showExplorer ? <div className="min-w-[86vw] snap-center lg:min-w-0 lg:h-full">
               <div className="flex h-full flex-col rounded-[1.9rem] border border-slate-100 bg-[#fcfdff] p-4 shadow-[0_20px_48px_-38px_rgba(15,23,42,0.28)] lg:h-full">
-                <div className="grid grid-cols-3 gap-3 lg:grid-cols-1 xl:grid-cols-3 xl:gap-2">
+                <div className="grid grid-cols-2 gap-3 lg:grid-cols-1 xl:grid-cols-2 xl:gap-2">
                   <StatCard label={labels.words} value={entries.length} accent={accents[0]} />
                   <StatCard label={labels.letters} value={letters.length} accent={accents[2]} />
-                  <StatCard label={labels.groups} value={categories.length} accent={accents[3]} />
                 </div>
 
                 <div className="mt-4 flex items-center gap-3 rounded-[1.15rem] border border-slate-200 bg-white px-4 py-3">
@@ -1403,54 +1332,6 @@ export function DictionaryIndex({
                       ×
                     </button>
                   ) : null}
-                </div>
-
-                <div className="mt-3">
-                  <div className="mb-2 flex flex-wrap gap-2">
-                    <span className="rounded-full bg-[#eef2ff] px-3 py-1 text-[0.64rem] font-medium uppercase tracking-[0.18em] text-[#4361ee]">
-                      Category
-                    </span>
-                    <span className="rounded-full bg-[#ecfeff] px-3 py-1 text-[0.64rem] font-medium uppercase tracking-[0.18em] text-[#0f766e]">
-                      Subcategory
-                    </span>
-                    <span className="rounded-full bg-[#fff7ed] px-3 py-1 text-[0.64rem] font-medium uppercase tracking-[0.18em] text-[#ea580c]">
-                      Alphabet
-                    </span>
-                  </div>
-                <div className="grid gap-3">
-                  <select
-                    value={selectedCategory}
-                    onChange={(event) => {
-                      setSelectedCategory(event.target.value);
-                      setSelectedSubcategory("all");
-                      setVisibleEntriesCount(18);
-                    }}
-                    className="rounded-[1.15rem] border border-slate-200 bg-white px-4 py-3 text-sm font-normal text-slate-800 outline-none"
-                  >
-                    <option value="all">{labels.allCategories}</option>
-                    {categories.map((category) => (
-                      <option key={category} value={category}>
-                        {category}
-                      </option>
-                    ))}
-                  </select>
-
-                  <select
-                    value={selectedSubcategory}
-                    onChange={(event) => {
-                      setSelectedSubcategory(event.target.value);
-                      setVisibleEntriesCount(18);
-                    }}
-                    className="rounded-[1.15rem] border border-slate-200 bg-white px-4 py-3 text-sm font-normal text-slate-800 outline-none"
-                  >
-                    <option value="all">{labels.allSubcategories}</option>
-                    {subcategories.map((subcategory) => (
-                      <option key={subcategory} value={subcategory}>
-                        {subcategory}
-                      </option>
-                    ))}
-                  </select>
-                </div>
                 </div>
 
                 <div className="mt-3 flex gap-2 overflow-x-auto pb-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
@@ -1525,9 +1406,8 @@ export function DictionaryIndex({
                         const primaryWord = getPrimaryWord(entry, locale) || getTamilWord(entry);
                         const tamilWord = getTamilWord(entry);
                         const learningStatus = getLearningStatus(entry);
-                        const meta = [entry.category, entry.subcategory, entry.type].filter(Boolean).join(" / ");
                         const secondaryLine =
-                          locale !== "ta" && tamilWord ? tamilWord : meta || getTamilDescription(entry);
+                          locale !== "ta" && tamilWord ? tamilWord : entry.type || getTamilDescription(entry);
 
                         return (
                           <button
@@ -1552,11 +1432,6 @@ export function DictionaryIndex({
                               {secondaryLine ? (
                                 <p className="mt-0.5 truncate font-tamil text-[0.84rem] font-normal text-slate-500">
                                   {secondaryLine}
-                                </p>
-                              ) : null}
-                              {meta ? (
-                                <p className="mt-1 truncate text-[0.62rem] font-medium uppercase tracking-[0.14em] text-slate-400">
-                                  {meta}
                                 </p>
                               ) : null}
                             </div>
@@ -1632,7 +1507,7 @@ export function DictionaryIndex({
                             <div className="flex items-start justify-between gap-3">
                               <div className="min-w-0">
                                 <p className="text-[0.68rem] font-medium uppercase tracking-[0.26em]" style={{ color: accent.solid }}>
-                                  {entry.category ?? labels.title}
+                                  {entry.type ?? labels.title}
                                 </p>
                                 <p className="mt-1 truncate text-[1.75rem] font-semibold leading-none tracking-[-0.05em] text-slate-900">
                                   {primaryWord}
@@ -1661,19 +1536,6 @@ export function DictionaryIndex({
                         <span className={`rounded-full px-3 py-1 text-[0.68rem] font-medium uppercase tracking-[0.18em] ${learningStatus.accent}`}>
                           {learningStatus.label}
                         </span>
-                        {entry.category ? (
-                          <span
-                            className="rounded-full px-3 py-1 text-[0.68rem] font-medium uppercase tracking-[0.18em]"
-                            style={{ backgroundColor: accent.soft, color: accent.solid }}
-                          >
-                            {entry.category}
-                          </span>
-                        ) : null}
-                        {entry.subcategory ? (
-                          <span className="rounded-full bg-slate-100 px-3 py-1 text-[0.68rem] font-medium uppercase tracking-[0.18em] text-slate-500">
-                            {entry.subcategory}
-                          </span>
-                        ) : null}
                         {entry.type ? (
                           <span className="rounded-full bg-slate-100 px-3 py-1 text-[0.68rem] font-medium uppercase tracking-[0.18em] text-slate-500">
                             {entry.type}

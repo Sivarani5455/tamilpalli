@@ -1,11 +1,11 @@
 "use client";
 
 import Link from "next/link";
-import { useActionState, useEffect, useRef, useState } from "react";
+import { useActionState, useEffect, useMemo, useRef, useState } from "react";
 
 import { saveWordSearchScoreAction } from "@/app/[locale]/game-actions";
 import { initialGameState } from "@/lib/action-states";
-import type { Locale, WordSearchGrid } from "@/types";
+import type { DictionaryEntry, Locale, WordSearchGrid } from "@/types";
 
 function iconProps(className?: string) {
   return {
@@ -92,6 +92,16 @@ function CheckIcon({ className }: { className?: string }) {
   );
 }
 
+function InfoIcon({ className }: { className?: string }) {
+  return (
+    <svg {...iconProps(className)}>
+      <circle cx="12" cy="12" r="9" />
+      <path d="M12 11v5" />
+      <path d="M12 8h.01" />
+    </svg>
+  );
+}
+
 const PILL_COLORS = [
   "#cc9a3c",
   "#c1442e",
@@ -147,12 +157,18 @@ function formatClock(time: number) {
   return `${String(Math.floor(time / 60)).padStart(2, "0")}:${String(time % 60).padStart(2, "0")}`;
 }
 
+function normalizeDictionaryKey(value: string) {
+  return value.trim().toLocaleLowerCase();
+}
+
 export function WordSearchGame({
   grid,
   locale,
+  dictionaryEntries = [],
 }: {
   grid: WordSearchGrid;
   locale: Locale;
+  dictionaryEntries?: DictionaryEntry[];
 }) {
   const isTamil = locale === "ta";
   const rowCount = grid.gridData.length;
@@ -198,6 +214,32 @@ export function WordSearchGame({
   const score = foundWords.length * 100;
   const foundCount = foundWords.length;
   const isLowTime = timeLeft <= 30 && gameState === "playing";
+  const dictionaryEntryByWord = useMemo(() => {
+    const entriesByWord = new Map<string, DictionaryEntry>();
+
+    dictionaryEntries.forEach((dictionaryEntry) => {
+      const candidates = [
+        dictionaryEntry.translations.ta?.word,
+        dictionaryEntry.translations.en?.word,
+        dictionaryEntry.translations.fr?.word,
+        ...dictionaryEntry.tamilSynonyms,
+      ];
+
+      candidates.forEach((candidate) => {
+        if (!candidate) {
+          return;
+        }
+
+        const key = normalizeDictionaryKey(candidate);
+
+        if (key && !entriesByWord.has(key)) {
+          entriesByWord.set(key, dictionaryEntry);
+        }
+      });
+    });
+
+    return entriesByWord;
+  }, [dictionaryEntries]);
   const copy =
     locale === "ta"
       ? {
@@ -225,6 +267,11 @@ export function WordSearchGame({
           replay: "மீண்டும் விளையாடு",
           backToList: "திரும்பு",
           points: "புள்ளிகள்",
+          dictionaryInfo: "அகராதி",
+          type: "வகை",
+          example: "உதாரணம்",
+          description: "விளக்கம்",
+          synonyms: "இணைச்சொற்கள்",
         }
       : locale === "fr"
         ? {
@@ -252,6 +299,11 @@ export function WordSearchGame({
             replay: "Rejouer",
             backToList: "Retour",
             points: "pts",
+            dictionaryInfo: "Agarathi",
+            type: "Type",
+            example: "Exemple",
+            description: "Description",
+            synonyms: "Synonymes",
           }
         : {
             category: "Word Search",
@@ -278,6 +330,11 @@ export function WordSearchGame({
             replay: "Play again",
             backToList: "Back",
             points: "pts",
+            dictionaryInfo: "Agarathi",
+            type: "Type",
+            example: "Example",
+            description: "Description",
+            synonyms: "Synonyms",
           };
   const selectedCells =
     dragging && anchor && hoverCell ? getLine(anchor, hoverCell, rowCount, columnCount) : [];
@@ -408,11 +465,19 @@ export function WordSearchGame({
     const found = foundWords.includes(entry.word);
     const color = PILL_COLORS[index % PILL_COLORS.length];
     const activePulse = pulseWord === entry.word;
+    const dictionaryEntry = dictionaryEntryByWord.get(normalizeDictionaryKey(entry.word));
+    const dictionaryPrimaryWord =
+      dictionaryEntry?.translations[locale]?.word ??
+      dictionaryEntry?.translations.ta?.word ??
+      dictionaryEntry?.translations.en?.word ??
+      entry.word;
+    const dictionaryTamilWord = dictionaryEntry?.translations.ta?.word;
+    const dictionaryDescription = dictionaryEntry?.translations.ta?.description;
 
     return (
       <li
         key={entry.word}
-        className={`flex min-w-0 items-center gap-3 rounded-[14px] border px-3 py-3 transition-all duration-300 ${
+        className={`relative flex min-w-0 items-center gap-3 overflow-visible rounded-[14px] border px-3 py-3 transition-all duration-300 ${
           activePulse ? "scale-[1.02] shadow-[0_0_26px_rgba(204,154,60,0.18)]" : ""
         }`}
         style={{
@@ -441,6 +506,86 @@ export function WordSearchGame({
         >
           {entry.word}
         </span>
+        {dictionaryEntry ? (
+          <span className="group/info relative shrink-0">
+            <button
+              type="button"
+              className="flex h-7 w-7 items-center justify-center rounded-full border border-[rgba(240,206,134,0.38)] bg-[rgba(244,236,220,0.08)] text-[#f0ce86] transition hover:border-[#f0ce86] hover:bg-[rgba(240,206,134,0.16)] focus:outline-none focus:ring-2 focus:ring-[#f0ce86]/45"
+              aria-label={`${copy.dictionaryInfo}: ${entry.word}`}
+            >
+              <InfoIcon className="h-4 w-4" />
+            </button>
+
+            <span className="pointer-events-none absolute bottom-[calc(100%+0.75rem)] right-0 z-30 hidden w-[min(18rem,78vw)] rounded-[18px] border border-[rgba(212,164,55,0.28)] bg-[#3a271b]/98 p-4 text-left text-[#f4ecdc] shadow-[0_24px_60px_-28px_rgba(0,0,0,0.78)] backdrop-blur group-hover/info:block group-focus-within/info:block">
+              <span className="mb-3 flex items-start gap-3">
+                {dictionaryEntry.imageUrl ? (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img
+                    src={dictionaryEntry.imageUrl}
+                    alt={dictionaryPrimaryWord}
+                    className="h-14 w-14 shrink-0 rounded-[14px] border border-[rgba(212,164,55,0.22)] object-cover"
+                  />
+                ) : (
+                  <span className="flex h-14 w-14 shrink-0 items-center justify-center rounded-[14px] border border-[rgba(212,164,55,0.22)] bg-[rgba(244,236,220,0.06)] font-tamil text-2xl text-[#f0ce86]">
+                    {dictionaryTamilWord?.charAt(0) ?? dictionaryPrimaryWord.charAt(0)}
+                  </span>
+                )}
+
+                <span className="min-w-0">
+                  <span className="block text-[0.64rem] font-bold uppercase tracking-[0.18em] text-[#f0ce86]">
+                    {copy.dictionaryInfo}
+                  </span>
+                  <span className="mt-1 block truncate font-tamil text-xl font-semibold leading-tight text-[#f4ecdc]">
+                    {dictionaryPrimaryWord}
+                  </span>
+                  {locale !== "ta" && dictionaryTamilWord ? (
+                    <span className="mt-1 block truncate font-tamil text-sm text-[#8fbab6]">
+                      {dictionaryTamilWord}
+                    </span>
+                  ) : null}
+                </span>
+              </span>
+
+              {dictionaryEntry.type ? (
+                <span className="mb-2 inline-flex rounded-full bg-[rgba(240,206,134,0.12)] px-2.5 py-1 text-[0.62rem] font-bold uppercase tracking-[0.14em] text-[#f0ce86]">
+                  {copy.type}: {dictionaryEntry.type}
+                </span>
+              ) : null}
+
+              {dictionaryDescription ? (
+                <span className="block font-tamil text-sm leading-6 text-[#ead2ae]">
+                  <span className="font-semibold text-[#f4ecdc]">{copy.description}: </span>
+                  {dictionaryDescription}
+                </span>
+              ) : null}
+
+              {dictionaryEntry.example ? (
+                <span className="mt-2 block text-sm leading-6 text-[#d9c3a3]">
+                  <span className="font-semibold text-[#f4ecdc]">{copy.example}: </span>
+                  {dictionaryEntry.example}
+                </span>
+              ) : null}
+
+              {dictionaryEntry.tamilSynonyms.length > 0 ? (
+                <span className="mt-3 block">
+                  <span className="mb-1 block text-[0.62rem] font-bold uppercase tracking-[0.14em] text-[#f0ce86]">
+                    {copy.synonyms}
+                  </span>
+                  <span className="flex flex-wrap gap-1.5">
+                    {dictionaryEntry.tamilSynonyms.slice(0, 5).map((synonym) => (
+                      <span
+                        key={synonym}
+                        className="rounded-full border border-[rgba(212,164,55,0.24)] bg-[rgba(244,236,220,0.06)] px-2 py-1 font-tamil text-xs text-[#ead2ae]"
+                      >
+                        {synonym}
+                      </span>
+                    ))}
+                  </span>
+                </span>
+              ) : null}
+            </span>
+          </span>
+        ) : null}
         {found ? <CheckIcon className="h-4 w-4 shrink-0 text-[#3f9a78]" /> : null}
       </li>
     );
@@ -448,13 +593,14 @@ export function WordSearchGame({
 
   return (
     <div
-      className="relative min-h-[100dvh] overflow-hidden bg-[#062022] px-[18px] py-[18px] text-[#f4ecdc]"
+      className="relative min-h-[100dvh] overflow-hidden bg-[#4a3324] px-[18px] py-[18px] text-[#f4ecdc]"
       style={{
         userSelect: "none",
         WebkitUserSelect: "none",
       }}
     >
-      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_12%_-10%,rgba(204,154,60,0.10),transparent_45%),radial-gradient(circle_at_100%_0%,rgba(79,166,160,0.12),transparent_40%),linear-gradient(160deg,#0A2B2D_0%,#062022_100%)]" />
+      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_900px_500px_at_50%_-10%,rgba(255,222,145,0.24),transparent_64%),radial-gradient(ellipse_700px_600px_at_100%_100%,rgba(211,146,82,0.22),transparent_64%),linear-gradient(180deg,#5a3d2a_0%,#493122_52%,#3a271b_100%)]" />
+      <div className="pointer-events-none absolute inset-0 opacity-[0.025] mix-blend-overlay [background-image:repeating-linear-gradient(90deg,rgba(255,242,221,0.45)_0px,transparent_1px,transparent_3px),repeating-linear-gradient(0deg,rgba(255,242,221,0.45)_0px,transparent_1px,transparent_3px)] [background-size:3px_3px]" />
 
       <div className="relative mx-auto flex min-h-[calc(100dvh-36px)] max-w-[60rem] flex-col">
         <header className="mb-5 flex flex-wrap items-center justify-between gap-3">
@@ -558,7 +704,7 @@ export function WordSearchGame({
 
         <main className="flex flex-1 flex-col items-center justify-center gap-[18px]">
               {isPaused ? (
-            <section className="w-full max-w-[32.5rem] rounded-[24px] border border-[rgba(212,164,55,0.16)] bg-[#0E3A3C] p-8 text-center shadow-[0_30px_60px_-20px_rgba(0,0,0,0.7)]">
+            <section className="w-full max-w-[32.5rem] rounded-[24px] border border-[rgba(212,164,55,0.16)] bg-[#654632] p-8 text-center shadow-[0_30px_60px_-20px_rgba(0,0,0,0.7)]">
               <p className="font-display text-xs font-semibold uppercase tracking-[0.14em] text-[#f0ce86]">
                   {copy.pause}
                 </p>
@@ -580,7 +726,7 @@ export function WordSearchGame({
               ) : (
             <>
                     <div
-                className="relative w-full max-w-[32.5rem] rounded-[22px] border border-[rgba(212,164,55,0.16)] bg-[linear-gradient(165deg,rgba(244,236,220,0.045),rgba(244,236,220,0.01)),#0E3A3C] p-5 shadow-[0_20px_50px_-25px_rgba(0,0,0,0.6)]"
+                className="relative w-full max-w-[32.5rem] rounded-[22px] border border-[rgba(212,164,55,0.16)] bg-[linear-gradient(165deg,rgba(244,236,220,0.045),rgba(244,236,220,0.01)),#654632] p-5 shadow-[0_20px_50px_-25px_rgba(0,0,0,0.6)]"
                 style={{ maxWidth: boardWidth }}
                     >
                     <div
@@ -692,7 +838,7 @@ export function WordSearchGame({
                     </div>
                       </div>
 
-              <section className="w-full max-w-[32.5rem] rounded-[22px] border border-[rgba(212,164,55,0.16)] bg-[linear-gradient(165deg,rgba(244,236,220,0.045),rgba(244,236,220,0.01)),#0E3A3C] p-5 shadow-[0_20px_50px_-25px_rgba(0,0,0,0.6)]">
+              <section className="w-full max-w-[32.5rem] rounded-[22px] border border-[rgba(212,164,55,0.16)] bg-[linear-gradient(165deg,rgba(244,236,220,0.045),rgba(244,236,220,0.01)),#654632] p-5 shadow-[0_20px_50px_-25px_rgba(0,0,0,0.6)]">
                 <div className="mb-4 flex items-baseline justify-between gap-3">
                   <h2 className="font-display text-xs font-semibold uppercase tracking-[0.14em] text-[#f0ce86]">
                     {copy.wordsToFind}
@@ -710,8 +856,8 @@ export function WordSearchGame({
           </main>
 
         {gameState !== "playing" && !isPaused ? (
-          <div className="fixed inset-0 z-40 flex items-center justify-center bg-[rgba(6,32,34,0.78)] p-5 backdrop-blur-[6px]">
-            <div className="w-full max-w-[20rem] rounded-[24px] border border-[rgba(212,164,55,0.16)] bg-[#0E3A3C] px-7 py-8 text-center shadow-[0_30px_60px_-20px_rgba(0,0,0,0.7)]">
+          <div className="fixed inset-0 z-40 flex items-center justify-center bg-[rgba(74,51,36,0.78)] p-5 backdrop-blur-[6px]">
+            <div className="w-full max-w-[20rem] rounded-[24px] border border-[rgba(212,164,55,0.16)] bg-[#654632] px-7 py-8 text-center shadow-[0_30px_60px_-20px_rgba(0,0,0,0.7)]">
               <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-[linear-gradient(160deg,#f0ce86,#cc9a3c)] text-[#1c1300]">
                 {gameState === "won" ? <TrophyIcon className="h-8 w-8" /> : <ClockIcon className="h-8 w-8" />}
               </div>
