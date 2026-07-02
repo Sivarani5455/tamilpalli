@@ -1045,7 +1045,7 @@ export function DictionaryIndex({
     const tamilDescription = getTamilDescription(currentEntry);
 
     return (
-      <div className="relative min-h-screen overflow-hidden bg-[#fffaf0] pb-16">
+      <div className="agarathi-theme relative min-h-screen overflow-hidden pb-16">
         <Shapes />
         <div className="relative z-10 mx-auto max-w-[31rem] px-4 pt-6">
           <div className="rounded-[2.25rem] border border-white/70 bg-white/90 p-3 shadow-[0_28px_70px_-38px_rgba(15,23,42,0.28)] backdrop-blur">
@@ -1196,7 +1196,7 @@ export function DictionaryIndex({
   }
 
   return (
-    <div className="relative min-h-screen overflow-hidden bg-[#fffaf0] pb-20">
+    <div className="agarathi-theme relative min-h-screen overflow-hidden pb-20">
       <Shapes />
       <div className="relative z-10 mx-auto max-w-[96rem] px-4 pt-6 lg:px-6">
         <div className="rounded-[2.3rem] border border-white/70 bg-white/90 p-4 shadow-[0_30px_80px_-42px_rgba(15,23,42,0.26)] backdrop-blur lg:p-5">

@@ -1,7 +1,7 @@
 @import "tailwindcss";
 
 :root {
-  --background: #f7ead6;
+  --background: #fbf1e2;
   --foreground: #24170f;
   --surface: rgba(255, 247, 234, 0.9);
   --surface-strong: #fff8ec;
@@ -43,9 +43,9 @@ body {
   min-height: 100vh;
   overflow-x: clip;
   background:
-    radial-gradient(ellipse 900px 520px at 50% -8%, rgba(211, 162, 56, 0.24), transparent 62%),
-    radial-gradient(ellipse 720px 520px at 100% 8%, rgba(185, 121, 63, 0.13), transparent 58%),
-    linear-gradient(180deg, #fff7ea 0%, #f7ead6 42%, #ead7bd 100%);
+    radial-gradient(ellipse 900px 520px at 50% -8%, rgba(211, 162, 56, 0.16), transparent 64%),
+    radial-gradient(ellipse 720px 520px at 100% 8%, rgba(185, 121, 63, 0.08), transparent 60%),
+    linear-gradient(180deg, #fffaf2 0%, #fbf1e2 46%, #f1dfc6 100%);
   color: var(--foreground);
   font-family: var(--font-sans-modern), "Inter", "Segoe UI", sans-serif;
   font-weight: 430;
@@ -158,4 +158,63 @@ body {
 ::selection {
   background: rgba(211, 162, 56, 0.28);
   color: var(--brand-ink);
+}
+
+.agarathi-theme {
+  background:
+    radial-gradient(ellipse 820px 460px at 8% 0%, rgba(211, 162, 56, 0.14), transparent 62%),
+    linear-gradient(180deg, #fffaf2 0%, #fbf1e2 100%) !important;
+}
+
+.agarathi-theme [class*="bg-white"],
+.agarathi-theme [class*="bg-[#fcfdff]"],
+.agarathi-theme [class*="bg-[#fffaf0]"] {
+  background-color: rgba(255, 248, 236, 0.92) !important;
+}
+
+.agarathi-theme [class*="bg-slate-50"],
+.agarathi-theme [class*="bg-slate-100"] {
+  background-color: rgba(244, 223, 182, 0.55) !important;
+}
+
+.agarathi-theme [class*="bg-[#eef2ff]"],
+.agarathi-theme [class*="bg-[#ecfeff]"],
+.agarathi-theme [class*="bg-[#fff7ed]"] {
+  background-color: rgba(244, 223, 182, 0.72) !important;
+}
+
+.agarathi-theme [class*="bg-[#4361ee]"] {
+  background-color: #8a5a2e !important;
+}
+
+.agarathi-theme [class*="border-slate"],
+.agarathi-theme [class*="border-white"] {
+  border-color: rgba(185, 121, 63, 0.2) !important;
+}
+
+.agarathi-theme [class*="text-slate-900"],
+.agarathi-theme [class*="text-slate-950"],
+.agarathi-theme [class*="text-slate-800"] {
+  color: var(--brand-ink) !important;
+}
+
+.agarathi-theme [class*="text-slate-700"],
+.agarathi-theme [class*="text-slate-600"] {
+  color: #654632 !important;
+}
+
+.agarathi-theme [class*="text-slate-500"],
+.agarathi-theme [class*="text-slate-400"] {
+  color: #8a6a4c !important;
+}
+
+.agarathi-theme [class*="text-[#4361ee]"],
+.agarathi-theme [class*="text-[#0f766e]"],
+.agarathi-theme [class*="text-[#ea580c]"] {
+  color: #8a5a2e !important;
+}
+
+.agarathi-theme [class*="hover:bg-[#dfe7ff]"]:hover,
+.agarathi-theme [class*="hover:bg-[#3651df]"]:hover {
+  background-color: #7b4d25 !important;
 }
