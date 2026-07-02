@@ -1,10 +1,8 @@
 import Link from "next/link";
 
-import { DictionaryIndex } from "@/components/dictionary/dictionary-index";
 import { HomeSplashScreen } from "@/components/layout/home-splash-screen";
-import { getDictionaryEntries, getHomeSplashSlides } from "@/lib/content";
+import { getHomeSplashSlides } from "@/lib/content";
 import { getMessages, getLocaleOrThrow, t } from "@/lib/i18n";
-import { getOptionalCategoryAccess } from "@/lib/permissions";
 
 export default async function HomePage({
   params,
@@ -14,12 +12,7 @@ export default async function HomePage({
   const { locale: rawLocale } = await params;
   const locale = getLocaleOrThrow(rawLocale);
   const messages = await getMessages(locale);
-  const [dictionaryEntries, splashSlides, wordOfDayAccess, dailyQuizAccess] = await Promise.all([
-    getDictionaryEntries(),
-    getHomeSplashSlides(),
-    getOptionalCategoryAccess("home-word-of-the-day"),
-    getOptionalCategoryAccess("home-daily-quiz"),
-  ]);
+  const splashSlides = await getHomeSplashSlides();
   return (
     <div className="mx-auto max-w-[120rem] px-4 py-8 sm:px-6 sm:py-10 xl:px-8">
       <HomeSplashScreen slides={splashSlides} />
@@ -40,19 +33,6 @@ export default async function HomePage({
           </Link>
         </div>
       </section>
-
-      {wordOfDayAccess.accessible || dailyQuizAccess.accessible ? (
-        <section className="mt-8">
-          <DictionaryIndex
-            entries={dictionaryEntries}
-            locale={locale}
-            initialSelectedSlug={null}
-            mode="home-panels"
-            showWordOfDayPanel={wordOfDayAccess.accessible}
-            showQuizPanel={dailyQuizAccess.accessible}
-          />
-        </section>
-      ) : null}
     </div>
   );
 }

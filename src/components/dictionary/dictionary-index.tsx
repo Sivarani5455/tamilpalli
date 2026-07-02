@@ -16,6 +16,8 @@ type ProgressSnapshot = Record<
   }
 >;
 
+type LearningStatusKind = "new" | "seen" | "mastered";
+
 const copy = {
   en: {
     title: "Agarathi",
@@ -34,11 +36,8 @@ const copy = {
     back: "Back",
     previous: "Previous",
     next: "Next",
-    copyLink: "Copy link",
-    copied: "Copied",
     open: "Open",
     words: "Words",
-    letters: "Letters",
     statusNew: "New",
     statusSeen: "Seen",
     statusMastered: "Mastered",
@@ -74,11 +73,8 @@ const copy = {
     back: "Retour",
     previous: "Précédent",
     next: "Suivant",
-    copyLink: "Copier le lien",
-    copied: "Copié",
     open: "Ouvrir",
     words: "Mots",
-    letters: "Lettres",
     statusNew: "Nouveau",
     statusSeen: "Déjà vu",
     statusMastered: "Maîtrisé",
@@ -114,11 +110,8 @@ const copy = {
     back: "திரும்பு",
     previous: "முந்தையது",
     next: "அடுத்தது",
-    copyLink: "இணைப்பை நகலெடு",
-    copied: "நகலெடுக்கப்பட்டது",
     open: "திற",
     words: "சொற்கள்",
-    letters: "எழுத்துகள்",
     statusNew: "புதியது",
     statusSeen: "பார்த்தது",
     statusMastered: "முழுமையாக கற்றது",
@@ -156,11 +149,8 @@ const copy = {
     back: string;
     previous: string;
     next: string;
-    copyLink: string;
-    copied: string;
     open: string;
     words: string;
-    letters: string;
     statusNew: string;
     statusSeen: string;
     statusMastered: string;
@@ -222,6 +212,72 @@ function getAccent(entry: DictionaryEntry) {
   const seed = `${entry.slug}-${entry.type ?? ""}`;
   const score = Array.from(seed).reduce((sum, char) => sum + char.charCodeAt(0), 0);
   return accents[score % accents.length];
+}
+
+function StatusIcon({ kind }: { kind: LearningStatusKind }) {
+  if (kind === "mastered") {
+    return (
+      <svg className="h-3.5 w-3.5" fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.2" viewBox="0 0 24 24" aria-hidden="true">
+        <path d="m12 3 2.7 5.5 6.1.9-4.4 4.3 1 6.1L12 17l-5.4 2.8 1-6.1-4.4-4.3 6.1-.9L12 3Z" />
+      </svg>
+    );
+  }
+
+  if (kind === "seen") {
+    return (
+      <svg className="h-3.5 w-3.5" fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.2" viewBox="0 0 24 24" aria-hidden="true">
+        <path d="M20 6 9 17l-5-5" />
+      </svg>
+    );
+  }
+
+  return (
+    <svg className="h-3.5 w-3.5" fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.2" viewBox="0 0 24 24" aria-hidden="true">
+      <path d="M12 3v18" />
+      <path d="M3 12h18" />
+    </svg>
+  );
+}
+
+function LearningStatusIcon({ status }: { status: { label: string; accent: string; kind: LearningStatusKind } }) {
+  return (
+    <span
+      className={`inline-flex h-6 w-6 shrink-0 items-center justify-center rounded-full ${status.accent}`}
+      title={status.label}
+      aria-label={status.label}
+    >
+      <StatusIcon kind={status.kind} />
+    </span>
+  );
+}
+
+function DirectionIcon({ direction }: { direction: "previous" | "next" }) {
+  return (
+    <svg className="h-5 w-5" fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.4" viewBox="0 0 24 24" aria-hidden="true">
+      {direction === "previous" ? (
+        <>
+          <path d="M15 18 9 12l6-6" />
+          <path d="M20 12H9" />
+        </>
+      ) : (
+        <>
+          <path d="M4 12h11" />
+          <path d="m9 6 6 6-6 6" />
+        </>
+      )}
+    </svg>
+  );
+}
+
+function DetailIcon({ className = "h-4 w-4" }: { className?: string }) {
+  return (
+    <svg className={className} fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.2" viewBox="0 0 24 24" aria-hidden="true">
+      <path d="M7 3h7l5 5v13H7a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2Z" />
+      <path d="M14 3v5h5" />
+      <path d="M9 13h6" />
+      <path d="M9 17h4" />
+    </svg>
+  );
 }
 
 function buildDictionaryHref(locale: Locale, slug: string) {
@@ -306,28 +362,6 @@ function WordThumbnail({
           {getLetter(entry, locale)}
         </span>
       )}
-    </div>
-  );
-}
-
-function StatCard({
-  label,
-  value,
-  accent,
-}: {
-  label: string;
-  value: string | number;
-  accent: (typeof accents)[number];
-}) {
-  return (
-    <div
-      className="rounded-[1.35rem] border p-3 shadow-[0_20px_42px_-34px_rgba(15,23,42,0.28)]"
-      style={{ borderColor: accent.border, backgroundColor: "#fff" }}
-    >
-      <p className="text-[0.7rem] font-medium uppercase tracking-[0.24em]" style={{ color: accent.solid }}>
-        {label}
-      </p>
-      <p className="mt-2 text-[2.1rem] font-semibold leading-none tracking-[-0.04em] text-slate-900">{value}</p>
     </div>
   );
 }
@@ -553,28 +587,22 @@ export function DictionaryIndex({
   const labels = copy[locale];
   const [query, setQuery] = useState("");
   const [selectedLetter, setSelectedLetter] = useState("all");
-  const [copied, setCopied] = useState(false);
   const [dailyIndex, setDailyIndex] = useState(0);
   const [visibleEntriesCount, setVisibleEntriesCount] = useState(18);
   const [dayNumber] = useState(() => Math.floor(Date.now() / 86_400_000));
   const [progress, setProgress] = useState<ProgressSnapshot>({});
   const [userId, setUserId] = useState<string | null>(null);
   const [learnedToday, setLearnedToday] = useState<string[]>([]);
+  const [seenDailySlugs, setSeenDailySlugs] = useState<string[]>([]);
   const [didLoadLocalState, setDidLoadLocalState] = useState(false);
   const mobilePanelsRef = useRef<HTMLDivElement | null>(null);
   const [mobilePanelIndex, setMobilePanelIndex] = useState(0);
   const showWordOfDay = showWordOfDayPanel ?? mode !== "explorer-only";
   const showQuiz = showQuizPanel ?? mode !== "explorer-only";
   const showExplorer = showExplorerPanel ?? mode !== "home-panels";
-  const panelCount = [showWordOfDay, showQuiz, showExplorer].filter(Boolean).length;
-  const desktopGridClass =
-    panelCount <= 1
-      ? "lg:grid-cols-1"
-      : !showExplorer
-        ? "lg:grid-cols-[minmax(0,1.06fr)_minmax(0,0.94fr)]"
-        : !showWordOfDay || !showQuiz
-          ? "lg:grid-cols-[minmax(0,1fr)_minmax(22rem,0.9fr)]"
-          : "lg:grid-cols-[minmax(0,1.04fr)_minmax(0,0.92fr)_minmax(22rem,0.9fr)]";
+  const showStudyPanel = showWordOfDay || showQuiz;
+  const panelCount = [showStudyPanel, showExplorer].filter(Boolean).length;
+  const desktopGridClass = panelCount <= 1 ? "lg:grid-cols-1" : "lg:grid-cols-[minmax(0,1fr)_minmax(22rem,0.9fr)]";
 
   const entryIdBySlug = useMemo(
     () => Object.fromEntries(entries.map((entry) => [entry.slug, entry.id])),
@@ -633,6 +661,10 @@ export function DictionaryIndex({
   }, [dayNumber, entries]);
   const normalizedDailyIndex = dailyBatch.length === 0 ? 0 : dailyIndex % dailyBatch.length;
   const activeDailyEntry = dailyBatch[normalizedDailyIndex] ?? dailyBatch[0] ?? null;
+  const dailySeenCount = dailyBatch.filter((entry) => seenDailySlugs.includes(entry.slug)).length;
+  const dailyDeckSeen = dailyBatch.length > 0 && dailySeenCount >= dailyBatch.length;
+  const showStudyQuiz = showQuiz && (!showWordOfDay || dailyDeckSeen);
+  const showStudyWord = showWordOfDay && !showStudyQuiz;
   const isFiltered = query.trim().length > 0 || selectedLetter !== "all";
   const visibleEntries = filteredEntries.slice(0, visibleEntriesCount);
 
@@ -668,13 +700,22 @@ export function DictionaryIndex({
   }, [dayNumber]);
 
   useEffect(() => {
-    if (!copied) {
+    if (!activeDailyEntry || !showWordOfDay || showStudyQuiz) {
       return;
     }
 
-    const timeout = window.setTimeout(() => setCopied(false), 1400);
-    return () => window.clearTimeout(timeout);
-  }, [copied]);
+    const frameId = window.requestAnimationFrame(() => {
+      setSeenDailySlugs((current) => {
+        if (current.includes(activeDailyEntry.slug)) {
+          return current;
+        }
+
+        return [...current, activeDailyEntry.slug];
+      });
+    });
+
+    return () => window.cancelAnimationFrame(frameId);
+  }, [activeDailyEntry, showStudyQuiz, showWordOfDay]);
 
   useEffect(() => {
     if (!didLoadLocalState) {
@@ -849,15 +890,6 @@ export function DictionaryIndex({
     router.push(`/${locale}/agarathi`);
   }
 
-  async function handleCopyLink() {
-    if (!currentEntry || typeof window === "undefined") {
-      return;
-    }
-
-    await navigator.clipboard.writeText(`${window.location.origin}${buildDictionaryHref(locale, currentEntry.slug)}`);
-    setCopied(true);
-  }
-
   function goPrev() {
     if (currentIndex > 0) {
       openEntry(entries[currentIndex - 1].slug);
@@ -876,7 +908,8 @@ export function DictionaryIndex({
         return 0;
       }
 
-      return current === 0 ? dailyBatch.length - 1 : current - 1;
+      const currentIndex = ((current % dailyBatch.length) + dailyBatch.length) % dailyBatch.length;
+      return currentIndex === 0 ? 0 : currentIndex - 1;
     });
   }
 
@@ -886,7 +919,8 @@ export function DictionaryIndex({
         return 0;
       }
 
-      return current === dailyBatch.length - 1 ? 0 : current + 1;
+      const currentIndex = ((current % dailyBatch.length) + dailyBatch.length) % dailyBatch.length;
+      return currentIndex >= dailyBatch.length - 1 ? currentIndex : currentIndex + 1;
     });
   }
 
@@ -964,7 +998,7 @@ export function DictionaryIndex({
     }
 
     const panelWidth = container.clientWidth * 0.86 + 16;
-    const nextIndex = Math.max(0, Math.min(2, Math.round(container.scrollLeft / Math.max(panelWidth, 1))));
+    const nextIndex = Math.max(0, Math.min(panelCount - 1, Math.round(container.scrollLeft / Math.max(panelWidth, 1))));
     setMobilePanelIndex(nextIndex);
   }
 
@@ -975,6 +1009,7 @@ export function DictionaryIndex({
       return {
         label: labels.statusNew,
         accent: "bg-slate-100 text-slate-500",
+        kind: "new" as const,
       };
     }
 
@@ -982,12 +1017,14 @@ export function DictionaryIndex({
       return {
         label: labels.statusMastered,
         accent: "bg-emerald-100 text-emerald-700",
+        kind: "mastered" as const,
       };
     }
 
     return {
       label: labels.statusSeen,
       accent: "bg-sky-100 text-sky-700",
+      kind: "seen" as const,
     };
   }
 
@@ -1002,7 +1039,7 @@ export function DictionaryIndex({
         <Shapes />
         <div className="relative z-10 mx-auto max-w-[31rem] px-4 pt-6">
           <div className="rounded-[2.25rem] border border-white/70 bg-white/90 p-3 shadow-[0_28px_70px_-38px_rgba(15,23,42,0.28)] backdrop-blur">
-            <div className="mb-3 flex items-center justify-between gap-3 rounded-[1.5rem] px-1">
+            <div className="mb-3 flex items-center rounded-[1.5rem] px-1">
               <button
                 type="button"
                 onClick={goBack}
@@ -1011,70 +1048,40 @@ export function DictionaryIndex({
               >
                 ←
               </button>
-              <div className="min-w-0 flex-1 px-2">
-                <p className="text-[0.74rem] font-medium uppercase tracking-[0.32em] text-slate-400">{labels.title}</p>
-                <p className="truncate text-2xl font-semibold tracking-[-0.04em] text-slate-900">{primaryWord}</p>
-              </div>
-              <button
-                type="button"
-                onClick={handleCopyLink}
-                className="rounded-[1rem] px-3 py-2 text-[0.72rem] font-medium uppercase tracking-[0.18em] transition"
-                style={{ backgroundColor: accent.soft, color: accent.solid }}
-              >
-                {copied ? labels.copied : labels.copyLink}
-              </button>
             </div>
 
             <div className="overflow-hidden rounded-[2rem] border bg-white" style={{ borderColor: accent.border, boxShadow: `0 34px 64px -42px ${accent.glow}` }}>
-              <div className="relative" style={{ backgroundColor: accent.soft }}>
-                {currentEntry.imageUrl ? (
-                  // eslint-disable-next-line @next/next/no-img-element
+              {currentEntry.imageUrl ? (
+                <div className="relative" style={{ backgroundColor: accent.soft }}>
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
                   <img src={currentEntry.imageUrl} alt={primaryWord} className="h-[17rem] w-full object-cover" />
-                ) : (
-                  <div className="flex h-[17rem] items-center justify-center text-8xl font-medium" style={{ color: accent.solid }}>
-                    {getLetter(currentEntry, locale)}
-                  </div>
-                )}
-
-                <div className="absolute inset-x-0 bottom-0 h-24 bg-gradient-to-t from-white via-white/65 to-transparent" />
-
-                <div
-                  className="absolute bottom-4 right-4 flex h-16 w-16 items-center justify-center rounded-[1.35rem] border-4 border-white text-2xl font-semibold text-white"
-                  style={{ backgroundColor: accent.solid }}
-                >
-                  {getLetter(currentEntry, locale)}
+                  <div className="absolute inset-x-0 bottom-0 h-20 bg-gradient-to-t from-white via-white/60 to-transparent" />
                 </div>
-              </div>
+              ) : null}
 
-              <div className="space-y-5 px-5 pb-6 pt-3">
+              <div className="space-y-5 px-5 pb-6 pt-5">
                 <div>
-                  <p className="text-[0.72rem] font-medium uppercase tracking-[0.3em]" style={{ color: accent.solid }}>
-                    {labels.wordOfDay}
-                  </p>
-                  <h1 className="mt-2 text-[clamp(2.9rem,10vw,4.25rem)] font-semibold leading-[0.92] tracking-[-0.065em] text-slate-900">
+                  <h1
+                    className={
+                      locale === "ta"
+                        ? "break-words font-tamil text-[clamp(2.15rem,7vw,3rem)] font-semibold leading-[1.18] text-slate-900"
+                        : "text-[clamp(2.9rem,10vw,4.25rem)] font-semibold leading-[0.92] tracking-[-0.065em] text-slate-900"
+                    }
+                  >
                     {primaryWord}
                   </h1>
                   {locale !== "ta" && tamilWord ? (
-                    <div className="mt-4 flex flex-wrap items-center gap-3">
+                    <div className="mt-4">
                       <span className="font-tamil text-[1.9rem] font-normal leading-none text-slate-800">{tamilWord}</span>
-                      <span
-                        className="rounded-full px-3 py-1 text-[0.68rem] font-medium uppercase tracking-[0.2em]"
-                        style={{ backgroundColor: accent.soft, color: accent.solid }}
-                      >
-                        {labels.translation}
-                      </span>
                     </div>
                   ) : null}
                   {getTamilSynonyms(currentEntry).length > 0 ? (
-                    <div className="mt-3">
-                      <p className="text-[0.68rem] font-medium uppercase tracking-[0.22em]" style={{ color: accent.solid }}>
-                        {labels.synonyms}
-                      </p>
-                      <div className="mt-2 flex flex-wrap gap-2">
+                    <div className="mt-4">
+                      <div className="flex flex-wrap gap-2">
                         {getTamilSynonyms(currentEntry).map((synonym) => (
                           <span
                             key={synonym}
-                            className="rounded-full border border-slate-200 bg-slate-50 px-3 py-1.5 font-tamil text-[0.95rem] font-normal text-slate-700"
+                            className="rounded-full border border-[#b97832]/20 bg-[#b97832]/[0.13] px-4 py-2 font-tamil text-[0.98rem] font-semibold text-[#75481f]"
                           >
                             {synonym}
                           </span>
@@ -1085,16 +1092,13 @@ export function DictionaryIndex({
                 </div>
 
                 <div className="rounded-[1.7rem] p-5" style={{ backgroundColor: accent.soft }}>
-                  <p className="text-[0.68rem] font-medium uppercase tracking-[0.28em]" style={{ color: accent.solid }}>
-                    {labels.description}
-                  </p>
-                  <p className="mt-3 font-tamil text-[1.08rem] font-normal leading-8 text-slate-700">{tamilDescription || "—"}</p>
+                  <p className="font-tamil text-[1.08rem] font-normal leading-8 text-slate-700">{tamilDescription || "—"}</p>
                 </div>
 
                 <div className="flex flex-wrap gap-2">
                   {currentEntry.type ? (
-                    <span className="rounded-full border border-slate-200 px-4 py-2 text-[0.68rem] font-medium uppercase tracking-[0.18em] text-slate-500">
-                      {labels.type}: {currentEntry.type}
+                    <span className="rounded-full border border-[#1f6f64]/20 bg-[#1f6f64]/[0.12] px-4 py-2 font-tamil text-[0.98rem] font-semibold text-[#154b44]">
+                      {currentEntry.type}
                     </span>
                   ) : null}
                 </div>
@@ -1113,18 +1117,22 @@ export function DictionaryIndex({
                     type="button"
                     onClick={goPrev}
                     disabled={currentIndex <= 0}
-                    className="rounded-[1.35rem] border border-slate-200 px-4 py-4 text-sm font-medium text-slate-500 transition disabled:opacity-40"
+                    className="flex h-14 items-center justify-center rounded-[1.35rem] border border-slate-200 text-slate-500 transition hover:bg-slate-50 disabled:opacity-40"
+                    aria-label={labels.previous}
                   >
-                    ← {labels.previous}
+                    <DirectionIcon direction="previous" />
+                    <span className="sr-only">{labels.previous}</span>
                   </button>
                   <button
                     type="button"
                     onClick={goNext}
                     disabled={currentIndex >= entries.length - 1}
-                    className="rounded-[1.35rem] px-4 py-4 text-sm font-medium text-white transition disabled:opacity-40"
+                    className="flex h-14 items-center justify-center rounded-[1.35rem] text-white transition hover:brightness-105 disabled:opacity-40"
                     style={{ backgroundColor: accent.solid }}
+                    aria-label={labels.next}
                   >
-                    {labels.next} →
+                    <DirectionIcon direction="next" />
+                    <span className="sr-only">{labels.next}</span>
                   </button>
                 </div>
               </div>
@@ -1142,8 +1150,7 @@ export function DictionaryIndex({
         <div className="rounded-[2.3rem] border border-white/70 bg-white/90 p-4 shadow-[0_30px_80px_-42px_rgba(15,23,42,0.26)] backdrop-blur lg:p-5">
           {panelCount > 1 ? (
             <div className="mb-3 flex items-center justify-between px-1 text-[0.68rem] uppercase tracking-[0.22em] text-slate-400 lg:hidden">
-              {showWordOfDay ? <span>◉ {labels.wordOfDay}</span> : null}
-              {showQuiz ? <span>✦ {labels.quizTitle}</span> : null}
+              {showStudyPanel ? <span>{showStudyQuiz ? `✦ ${labels.quizTitle}` : `◉ ${labels.wordOfDay}`}</span> : null}
               {showExplorer ? <span>⌕ {labels.words}</span> : null}
             </div>
           ) : null}
@@ -1152,15 +1159,26 @@ export function DictionaryIndex({
             onScroll={handleMobilePanelsScroll}
             className={`-mx-1 flex snap-x snap-mandatory gap-4 overflow-x-auto px-1 pb-2 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden lg:mx-0 lg:min-h-[52rem] lg:grid lg:items-stretch lg:overflow-visible lg:px-0 lg:pb-0 ${desktopGridClass}`}
           >
-            {showWordOfDay ? <div className="min-w-[86vw] snap-center lg:min-w-0 lg:h-full">
-              <div className="overflow-hidden rounded-[2rem] bg-[linear-gradient(145deg,#ff8f6c_0%,#ffb661_58%,#ffc977_100%)] p-5 text-white shadow-[0_28px_55px_-32px_rgba(255,165,92,0.34)] lg:h-full">
+            {showStudyPanel ? <div className="min-w-[86vw] snap-center lg:min-w-0 lg:h-full">
+              {showStudyQuiz ? (
+                <DailyQuiz
+                  key={`${dayNumber}-${dailyBatch.map((entry) => entry.slug).join("-")}`}
+                  dailyBatch={dailyBatch}
+                  locale={locale}
+                  dayNumber={dayNumber}
+                  labels={labels}
+                  onLearn={markWordAsLearned}
+                />
+              ) : null}
+
+              {showStudyWord ? <div className="overflow-hidden rounded-[2rem] bg-[linear-gradient(145deg,#ff8f6c_0%,#ffb661_58%,#ffc977_100%)] p-5 text-white shadow-[0_28px_55px_-32px_rgba(255,165,92,0.34)] lg:h-full">
             <div className="relative flex items-start justify-between gap-4">
               <div className="relative z-10">
                 <p className="text-[0.74rem] font-medium uppercase tracking-[0.3em] text-white/78">
                   {labels.wordOfDay}
                 </p>
               </div>
-              <div className="absolute -right-7 -top-7 h-28 w-28 rounded-full bg-white/18 blur-2xl" />
+              <div className="pointer-events-none absolute -right-7 -top-7 h-28 w-28 rounded-full bg-white/18 blur-2xl" />
             </div>
 
             {activeDailyEntry ? (
@@ -1169,18 +1187,22 @@ export function DictionaryIndex({
                   <div className="text-[0.68rem] font-medium uppercase tracking-[0.28em] text-white/76">
                     {locale === "ta" ? "தொகுப்பு" : locale === "fr" ? "Sélection" : "Deck"} {normalizedDailyIndex + 1}/{dailyBatch.length}
                   </div>
-                  <div className="flex items-center gap-2">
+                  <div className="relative z-10 flex items-center gap-2">
                     <button
                       type="button"
                       onClick={goPrevDaily}
-                      className="flex h-10 w-10 items-center justify-center rounded-[0.95rem] bg-[rgba(255,244,232,0.22)] text-lg text-white transition hover:bg-[rgba(255,244,232,0.3)]"
+                      disabled={normalizedDailyIndex === 0}
+                      className="flex h-10 w-10 items-center justify-center rounded-[0.95rem] bg-[rgba(255,244,232,0.22)] text-lg text-white transition hover:bg-[rgba(255,244,232,0.3)] disabled:cursor-not-allowed disabled:opacity-45"
+                      aria-label={labels.previous}
                     >
                       ←
                     </button>
                     <button
                       type="button"
                       onClick={goNextDaily}
-                      className="flex h-10 w-10 items-center justify-center rounded-[0.95rem] bg-[rgba(255,244,232,0.22)] text-lg text-white transition hover:bg-[rgba(255,244,232,0.3)]"
+                      disabled={normalizedDailyIndex >= dailyBatch.length - 1}
+                      className="flex h-10 w-10 items-center justify-center rounded-[0.95rem] bg-[rgba(255,244,232,0.22)] text-lg text-white transition hover:bg-[rgba(255,244,232,0.3)] disabled:cursor-not-allowed disabled:opacity-45"
+                      aria-label={labels.next}
                     >
                       →
                     </button>
@@ -1191,32 +1213,28 @@ export function DictionaryIndex({
                   <div className="mb-2 flex items-center justify-between text-[0.72rem] font-medium uppercase tracking-[0.18em] text-white/80">
                     <span>
                       {locale === "ta"
-                        ? `இன்று கற்றவை ${learnedToday.length}/${dailyBatch.length}`
+                        ? `பார்த்தவை ${dailySeenCount}/${dailyBatch.length}`
                         : locale === "fr"
-                          ? `Appris aujourd'hui ${learnedToday.length}/${dailyBatch.length}`
-                          : `Learned today ${learnedToday.length}/${dailyBatch.length}`}
+                          ? `Vus ${dailySeenCount}/${dailyBatch.length}`
+                          : `Seen ${dailySeenCount}/${dailyBatch.length}`}
                     </span>
                     <span>
                       {locale === "ta"
-                        ? `${Math.round((learnedToday.length / Math.max(dailyBatch.length, 1)) * 100)}% முடிந்தது`
+                        ? `${Math.round((dailySeenCount / Math.max(dailyBatch.length, 1)) * 100)}% முடிந்தது`
                         : locale === "fr"
-                          ? `${Math.round((learnedToday.length / Math.max(dailyBatch.length, 1)) * 100)}% complété`
-                          : `${Math.round((learnedToday.length / Math.max(dailyBatch.length, 1)) * 100)}% complete`}
+                          ? `${Math.round((dailySeenCount / Math.max(dailyBatch.length, 1)) * 100)}% complété`
+                          : `${Math.round((dailySeenCount / Math.max(dailyBatch.length, 1)) * 100)}% complete`}
                     </span>
                   </div>
                   <div className="h-2.5 overflow-hidden rounded-full bg-[rgba(255,244,232,0.24)]">
                     <div
                       className="h-full rounded-full bg-white transition-[width]"
-                      style={{ width: `${(learnedToday.length / Math.max(dailyBatch.length, 1)) * 100}%` }}
+                      style={{ width: `${(dailySeenCount / Math.max(dailyBatch.length, 1)) * 100}%` }}
                     />
                   </div>
                 </div>
 
-                <button
-                  type="button"
-                  onClick={() => openEntry(activeDailyEntry.slug)}
-                  className="flex w-full items-center gap-3 rounded-[1.6rem] border border-white/14 bg-[linear-gradient(145deg,rgba(255,246,236,0.18)_0%,rgba(255,239,220,0.1)_100%)] p-3 text-left shadow-[0_14px_26px_-20px_rgba(124,45,18,0.3)] transition hover:bg-[linear-gradient(145deg,rgba(255,246,236,0.24)_0%,rgba(255,239,220,0.14)_100%)]"
-                >
+                <div className="flex w-full items-center gap-3 rounded-[1.6rem] border border-white/14 bg-[linear-gradient(145deg,rgba(255,246,236,0.18)_0%,rgba(255,239,220,0.1)_100%)] p-3 text-left shadow-[0_14px_26px_-20px_rgba(124,45,18,0.3)]">
                   <WordThumbnail
                     entry={activeDailyEntry}
                     locale={locale}
@@ -1259,8 +1277,15 @@ export function DictionaryIndex({
                       ))}
                     </div>
                   </div>
-                  <div className="flex h-11 w-11 items-center justify-center rounded-[1rem] bg-white/18 text-xl text-white">→</div>
-                </button>
+                  <button
+                    type="button"
+                    onClick={goNextDaily}
+                    className="flex h-11 w-11 shrink-0 items-center justify-center rounded-[1rem] bg-white/18 text-xl text-white transition hover:bg-white/26"
+                    aria-label={labels.next}
+                  >
+                    →
+                  </button>
+                </div>
 
                 <div className="mt-3 flex gap-3">
                   <button
@@ -1292,28 +1317,12 @@ export function DictionaryIndex({
                 </div>
               </div>
             ) : null}
-              </div>
-            </div> : null}
-
-            {showQuiz ? <div className="min-w-[86vw] snap-center lg:min-w-0 lg:h-full">
-              <DailyQuiz
-                key={`${dayNumber}-${dailyBatch.map((entry) => entry.slug).join("-")}`}
-                dailyBatch={dailyBatch}
-                locale={locale}
-                dayNumber={dayNumber}
-                labels={labels}
-                onLearn={markWordAsLearned}
-              />
+              </div> : null}
             </div> : null}
 
             {showExplorer ? <div className="min-w-[86vw] snap-center lg:min-w-0 lg:h-full">
               <div className="flex h-full flex-col rounded-[1.9rem] border border-slate-100 bg-[#fcfdff] p-4 shadow-[0_20px_48px_-38px_rgba(15,23,42,0.28)] lg:h-full">
-                <div className="grid grid-cols-2 gap-3 lg:grid-cols-1 xl:grid-cols-2 xl:gap-2">
-                  <StatCard label={labels.words} value={entries.length} accent={accents[0]} />
-                  <StatCard label={labels.letters} value={letters.length} accent={accents[2]} />
-                </div>
-
-                <div className="mt-4 flex items-center gap-3 rounded-[1.15rem] border border-slate-200 bg-white px-4 py-3">
+                <div className="flex items-center gap-3 rounded-[1.15rem] border border-slate-200 bg-white px-4 py-3">
                   <span className="text-lg text-slate-400">⌕</span>
                   <input
                     value={query}
@@ -1425,9 +1434,7 @@ export function DictionaryIndex({
                             <div className="min-w-0 flex-1">
                               <div className="flex items-center gap-2">
                                 <p className="truncate text-[0.98rem] font-medium text-slate-900">{primaryWord}</p>
-                                <span className={`shrink-0 rounded-full px-2 py-0.5 text-[0.58rem] font-medium uppercase tracking-[0.14em] ${learningStatus.accent}`}>
-                                  {learningStatus.label}
-                                </span>
+                                <LearningStatusIcon status={learningStatus} />
                               </div>
                               {secondaryLine ? (
                                 <p className="mt-0.5 truncate font-tamil text-[0.84rem] font-normal text-slate-500">
@@ -1436,10 +1443,10 @@ export function DictionaryIndex({
                               ) : null}
                             </div>
                             <div
-                              className="flex h-9 w-9 shrink-0 items-center justify-center rounded-[0.9rem] text-base font-medium transition group-hover:translate-x-0.5"
+                              className="flex h-9 w-9 shrink-0 items-center justify-center rounded-[0.9rem] transition group-hover:scale-105"
                               style={{ backgroundColor: accent.soft, color: accent.solid }}
                             >
-                              -&gt;
+                              <DetailIcon />
                             </div>
                           </button>
                         );
@@ -1522,10 +1529,10 @@ export function DictionaryIndex({
                                 ) : null}
                               </div>
                               <div
-                                className="flex h-11 w-11 shrink-0 items-center justify-center rounded-[1rem] text-xl font-medium transition group-hover:translate-x-0.5"
+                                className="flex h-11 w-11 shrink-0 items-center justify-center rounded-[1rem] transition group-hover:scale-105"
                                 style={{ backgroundColor: "#fff", color: accent.solid }}
                               >
-                                →
+                                <DetailIcon className="h-5 w-5" />
                               </div>
                             </div>
                           </div>
@@ -1533,9 +1540,7 @@ export function DictionaryIndex({
                       </div>
 
                       <div className="flex flex-wrap items-center gap-2 px-4 py-4">
-                        <span className={`rounded-full px-3 py-1 text-[0.68rem] font-medium uppercase tracking-[0.18em] ${learningStatus.accent}`}>
-                          {learningStatus.label}
-                        </span>
+                        <LearningStatusIcon status={learningStatus} />
                         {entry.type ? (
                           <span className="rounded-full bg-slate-100 px-3 py-1 text-[0.68rem] font-medium uppercase tracking-[0.18em] text-slate-500">
                             {entry.type}

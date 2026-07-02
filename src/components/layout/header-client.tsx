@@ -1,13 +1,15 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 
+import { isAgarathiDailyQuizComplete } from "@/lib/agarathi-daily";
 import { cn } from "@/lib/utils";
-import type { Locale } from "@/types";
+import type { DictionaryEntry, Locale } from "@/types";
 
 import { LogoutButton } from "../auth/logout-button";
+import { AgarathiGateModal } from "../dictionary/agarathi-gate-modal";
 import { LanguageSwitcher } from "../navigation/language-switcher";
 import { BrandMark } from "./brand-mark";
 
@@ -156,16 +158,29 @@ function navTextClass(isTamil: boolean) {
 export function HeaderClient({
   locale,
   isLoggedIn,
+  dictionaryEntries,
 }: {
   locale: Locale;
   isLoggedIn: boolean;
+  dictionaryEntries: DictionaryEntry[];
 }) {
   const pathname = usePathname();
+  const router = useRouter();
   const rootRef = useRef<HTMLDivElement | null>(null);
   const [open, setOpen] = useState(false);
+  const [agarathiModalOpen, setAgarathiModalOpen] = useState(false);
   const [desktopDropdown, setDesktopDropdown] = useState<DesktopDropdown>(null);
   const copy = headerCopy[locale];
   const isTamil = locale === "ta";
+
+  function openAgarathiGate() {
+    if (dictionaryEntries.length === 0 || isAgarathiDailyQuizComplete()) {
+      router.push(`/${locale}/agarathi`);
+      return;
+    }
+
+    setAgarathiModalOpen(true);
+  }
 
   useEffect(() => {
     const handlePointerDown = (event: MouseEvent) => {
@@ -323,8 +338,12 @@ export function HeaderClient({
             ) : null}
           </div>
 
-          <Link
-            href={`/${locale}/agarathi`}
+          <button
+            type="button"
+            onClick={() => {
+              setDesktopDropdown(null);
+              openAgarathiGate();
+            }}
             className={cn(
               "rounded-xl px-4 py-2 text-[0.98rem] text-[#654632] transition hover:bg-[#f4dfb6] hover:text-[#2a1a11]",
               pathname === `/${locale}/agarathi` && "bg-[#f4dfb6] text-[#2a1a11]",
@@ -332,7 +351,7 @@ export function HeaderClient({
             )}
           >
             {copy.agarathi}
-          </Link>
+          </button>
 
           {navItems.slice(1).map((item) => (
             <Link
@@ -420,16 +439,19 @@ export function HeaderClient({
             </div>
           </div>
 
-          <Link
-            href={`/${locale}/agarathi`}
+          <button
+            type="button"
             className={cn(
-              "mt-2 rounded-xl px-4 py-3 text-[#654632] transition hover:bg-[#f4dfb6] hover:text-[#2a1a11]",
+              "mt-2 rounded-xl px-4 py-3 text-left text-[#654632] transition hover:bg-[#f4dfb6] hover:text-[#2a1a11]",
               isTamil ? "text-[1rem] font-medium tracking-[0.01em]" : "text-sm font-medium",
             )}
-            onClick={() => setOpen(false)}
+            onClick={() => {
+              setOpen(false);
+              openAgarathiGate();
+            }}
           >
             {copy.agarathi}
-          </Link>
+          </button>
 
           {navItems.slice(1).map((item) => (
             <Link
@@ -465,6 +487,12 @@ export function HeaderClient({
           </div>
         </div>
       </div>
+      <AgarathiGateModal
+        entries={dictionaryEntries}
+        locale={locale}
+        open={agarathiModalOpen}
+        onClose={() => setAgarathiModalOpen(false)}
+      />
     </header>
   );
 }
