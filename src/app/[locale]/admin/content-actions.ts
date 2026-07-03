@@ -25,24 +25,49 @@ const fillBlankSchema = z.object({
   locale: z.string(),
   title: z.string().min(2),
   slug: z.string().min(2),
-  description: z.string().min(2),
   difficulty: z.enum(["beginner", "intermediate", "advanced"]),
   timeLimitSeconds: z.coerce.number().int().positive(),
-  sentenceTemplate: z.string().min(2),
-  translationEn: z.string().min(1),
-  explanationEn: z.string().min(1),
-  options: z.string().min(2),
-  correctAnswer: z.string().min(1),
+  questions: z.string().min(2),
 });
+
+const fillBlankQuestionSchema = z
+  .object({
+    sentenceTemplate: z.string().min(2),
+    translationEn: z.string().min(1),
+    translationFr: z.string().min(1),
+    explanationEn: z.string().min(1),
+    explanationFr: z.string().min(1),
+    explanationTa: z.string().min(1),
+    blanks: z
+      .array(
+        z.object({
+          key: z.string().min(1),
+          options: z.array(z.string().min(1)).min(2),
+          correctAnswer: z.string().min(1),
+        }),
+      )
+      .min(1),
+  })
+  .superRefine((question, context) => {
+    question.blanks.forEach((blank, index) => {
+      if (!blank.options.includes(blank.correctAnswer)) {
+        context.addIssue({
+          code: "custom",
+          message: "Each correct answer must be one of its blank options.",
+          path: ["blanks", index, "correctAnswer"],
+        });
+      }
+    });
+  });
 
 const imageHuntSchema = z.object({
   id: z.string().optional(),
   locale: z.string(),
   title: z.string().min(2),
   slug: z.string().min(2),
-  description: z.string().min(2),
   difficulty: z.enum(["beginner", "intermediate", "advanced"]),
   timeLimitSeconds: z.coerce.number().int().positive(),
+  imageUrl: z.string().optional().default(""),
   instructionEn: z.string().min(2),
   targets: z.string().min(2),
 });
@@ -311,6 +336,21 @@ export async function upsertFillBlankAction(
     return stateError(parsed.error.issues[0]?.message);
   }
 
+  let parsedQuestions: Array<z.infer<typeof fillBlankQuestionSchema>>;
+
+  try {
+    const rawQuestions = JSON.parse(parsed.data.questions) as unknown;
+    const questionList = z.array(fillBlankQuestionSchema).min(1).safeParse(rawQuestions);
+
+    if (!questionList.success) {
+      return stateError(questionList.error.issues[0]?.message ?? "Invalid questions.");
+    }
+
+    parsedQuestions = questionList.data;
+  } catch {
+    return stateError("Invalid questions.");
+  }
+
   if (!hasSupabaseEnv()) {
     return missingSupabaseState("Fill in the Blanks exercise");
   }
@@ -321,7 +361,7 @@ export async function upsertFillBlankAction(
     const exercisePayload = {
       title: parsed.data.title,
       slug: parsed.data.slug,
-      description: parsed.data.description,
+      description: parsed.data.title,
       difficulty: parsed.data.difficulty,
       time_limit_seconds: parsed.data.timeLimitSeconds,
     };
@@ -360,41 +400,45 @@ export async function upsertFillBlankAction(
       throw new Error("Exercise id was not created.");
     }
 
-    const { data: question, error: questionError } = await supabase
-      .from("fill_blank_questions")
-      .insert({
-        exercise_id: exerciseId,
-        sentence_template: parsed.data.sentenceTemplate,
-        sentence_translation: {
-          en: parsed.data.translationEn,
-        },
-        explanation: {
-          en: parsed.data.explanationEn,
-        },
-      })
-      .select("id")
-      .single<{ id: string }>();
+    for (const [questionIndex, questionInput] of parsedQuestions.entries()) {
+      const { data: question, error: questionError } = await supabase
+        .from("fill_blank_questions")
+        .insert({
+          exercise_id: exerciseId,
+          sentence_template: questionInput.sentenceTemplate,
+          sentence_translation: {
+            en: questionInput.translationEn,
+            fr: questionInput.translationFr,
+          },
+          explanation: {
+            en: questionInput.explanationEn,
+            fr: questionInput.explanationFr,
+            ta: questionInput.explanationTa,
+          },
+          order_index: questionIndex,
+        })
+        .select("id")
+        .single<{ id: string }>();
 
-    if (questionError) {
-      throw new Error(questionError.message);
-    }
+      if (questionError) {
+        throw new Error(questionError.message);
+      }
 
-    const options = parsed.data.options
-      .split("\n")
-      .map((option) => option.trim())
-      .filter(Boolean);
+      const { error: optionsError } = await supabase.from("fill_blank_options").insert(
+        questionInput.blanks.flatMap((blank) =>
+          blank.options.map((option, index) => ({
+            question_id: question?.id,
+            blank_key: blank.key,
+            option_text: option,
+            is_correct: option === blank.correctAnswer,
+            order_index: index,
+          })),
+        ),
+      );
 
-    const { error: optionsError } = await supabase.from("fill_blank_options").insert(
-      options.map((option, index) => ({
-        question_id: question?.id,
-        option_text: option,
-        is_correct: option === parsed.data.correctAnswer,
-        order_index: index,
-      })),
-    );
-
-    if (optionsError) {
-      throw new Error(optionsError.message);
+      if (optionsError) {
+        throw new Error(optionsError.message);
+      }
     }
 
     revalidatePath(`/${parsed.data.locale}/admin/fill-in-the-blanks`);
@@ -440,7 +484,8 @@ export async function upsertImageHuntAction(
     const exercisePayload = {
       title: parsed.data.title,
       slug: parsed.data.slug,
-      description: parsed.data.description,
+      description: parsed.data.title,
+      image_url: parsed.data.imageUrl || null,
       difficulty: parsed.data.difficulty,
       time_limit_seconds: parsed.data.timeLimitSeconds,
     };
@@ -499,15 +544,21 @@ export async function upsertImageHuntAction(
     }
 
     const targets = parseJsonField<
-      Array<{ labelTa: string; en: string; x: number; y: number }>
+      Array<{ labelTa: string; en: string; fr?: string; x: number; y: number; radius?: number; width?: number; height?: number }>
     >(parsed.data.targets, "Targets");
 
     const { error: targetsError } = await supabase.from("image_hunt_targets").insert(
       targets.map((target) => ({
         exercise_id: exerciseId,
         label_ta: target.labelTa,
-        label_translation: { en: target.en },
-        coordinates: { x: target.x, y: target.y },
+        label_translation: { en: target.en, fr: target.fr || target.en, ta: target.labelTa },
+        coordinates: {
+          x: target.x,
+          y: target.y,
+          radius: target.radius ?? Math.max(target.width ?? 20, target.height ?? 20) / 2,
+          width: target.width ?? (target.radius ?? 10) * 2,
+          height: target.height ?? (target.radius ?? 10) * 2,
+        },
       })),
     );
 
@@ -516,6 +567,8 @@ export async function upsertImageHuntAction(
     }
 
     revalidatePath(`/${parsed.data.locale}/admin/image-hunt`);
+    revalidatePath(`/${parsed.data.locale}/image-hunt`);
+    revalidatePath(`/${parsed.data.locale}/image-hunt/${exerciseId}`);
     redirect(`/${parsed.data.locale}/admin/image-hunt`);
   } catch (error) {
     if (isRedirectLikeError(error)) {

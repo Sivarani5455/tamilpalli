@@ -160,6 +160,37 @@ body {
   color: var(--brand-ink);
 }
 
+@keyframes image-hunt-mobile-progress-enter {
+  0% {
+    opacity: 0;
+    transform: translateY(-18px) scale(0.96) rotate(-1.2deg);
+    filter: blur(3px);
+  }
+
+  62% {
+    opacity: 1;
+    transform: translateY(4px) scale(1.015) rotate(0.4deg);
+    filter: blur(0);
+  }
+
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1) rotate(0);
+    filter: blur(0);
+  }
+}
+
+.image-hunt-mobile-progress-enter {
+  animation: image-hunt-mobile-progress-enter 520ms cubic-bezier(0.2, 0.9, 0.2, 1) both;
+  transform-origin: top center;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .image-hunt-mobile-progress-enter {
+    animation: none;
+  }
+}
+
 .agarathi-theme {
   background:
     radial-gradient(ellipse 820px 460px at 8% 0%, rgba(211, 162, 56, 0.14), transparent 62%),

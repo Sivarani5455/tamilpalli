@@ -197,6 +197,7 @@ export const imageHuntExercises: ImageHuntExercise[] = [
     slug: "jungle-animals",
     title: "Jungle Animals",
     difficulty: "beginner",
+    imageUrl: null,
     instruction: {
       en: "Tap every bird in the illustration.",
       fr: "Touchez chaque oiseau dans l'illustration.",
@@ -214,6 +215,9 @@ export const imageHuntExercises: ImageHuntExercise[] = [
         },
         x: 22,
         y: 30,
+        radius: 10,
+        width: 20,
+        height: 20,
       },
       {
         id: "bird-2",
@@ -225,6 +229,9 @@ export const imageHuntExercises: ImageHuntExercise[] = [
         },
         x: 70,
         y: 58,
+        radius: 10,
+        width: 20,
+        height: 20,
       },
     ],
   },

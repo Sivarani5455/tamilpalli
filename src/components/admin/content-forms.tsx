@@ -1,6 +1,6 @@
 "use client";
 
-import { useActionState, useState } from "react";
+import { type ChangeEvent, type MouseEvent, type PointerEvent, useActionState, useRef, useState } from "react";
 
 import {
   upsertFillBlankAction,
@@ -63,6 +63,169 @@ const DIRECTION_GROUP_OPTIONS = [
 
 type DirectionGroupKey = (typeof DIRECTION_GROUP_OPTIONS)[number]["key"];
 type DirectionSelection = Record<DirectionGroupKey, boolean>;
+
+type FillBlankQuestionDraft = {
+  sentenceTemplate: string;
+  translationEn: string;
+  translationFr: string;
+  explanationEn: string;
+  explanationFr: string;
+  explanationTa: string;
+  blanks: Array<{
+    key: string;
+    options: string;
+    correctAnswer: string;
+  }>;
+};
+
+function createEmptyFillBlankQuestion(): FillBlankQuestionDraft {
+  return {
+    sentenceTemplate: "",
+    translationEn: "",
+    translationFr: "",
+    explanationEn: "",
+    explanationFr: "",
+    explanationTa: "",
+    blanks: [{ key: "blank_1", options: "", correctAnswer: "" }],
+  };
+}
+
+const FILL_BLANK_CSV_HEADERS = [
+  "sentence_template",
+  "english_translation",
+  "french_translation",
+  "english_explanation",
+  "french_explanation",
+  "tamil_explanation",
+  "blanks",
+] as const;
+
+const FILL_BLANK_CSV_HEADER_TEXT = FILL_BLANK_CSV_HEADERS.join(", ");
+const FILL_BLANK_CSV_BLANKS_EXAMPLE = "blank_1=சாப்பிடுகிறேன்|சாப்பிடுகிறேன்;குடிக்கிறேன் || blank_2=காலை|காலை;மாலை";
+
+function parseCsvLine(line: string) {
+  const values: string[] = [];
+  let current = "";
+  let quoted = false;
+
+  for (let index = 0; index < line.length; index += 1) {
+    const char = line[index];
+    const nextChar = line[index + 1];
+
+    if (char === "\"" && quoted && nextChar === "\"") {
+      current += "\"";
+      index += 1;
+      continue;
+    }
+
+    if (char === "\"") {
+      quoted = !quoted;
+      continue;
+    }
+
+    if (char === "," && !quoted) {
+      values.push(current.trim());
+      current = "";
+      continue;
+    }
+
+    current += char;
+  }
+
+  if (quoted) {
+    throw new Error("CSV invalide: guillemet non ferme.");
+  }
+
+  values.push(current.trim());
+  return values;
+}
+
+function parseFillBlankCsvBlanks(rawValue: string, lineNumber: number) {
+  return rawValue
+    .split("||")
+    .map((entry, entryIndex) => {
+      const trimmedEntry = entry.trim();
+      const [rawKey, rawAnswerAndOptions] = trimmedEntry.split("=");
+      const [rawCorrectAnswer, rawOptions] = (rawAnswerAndOptions ?? "").split("|");
+      const key = rawKey?.trim() ?? "";
+      const correctAnswer = rawCorrectAnswer?.trim() ?? "";
+      const options = (rawOptions ?? "")
+        .split(";")
+        .map((option) => option.trim())
+        .filter(Boolean);
+
+      if (!key || !/^[A-Za-z0-9_]+$/.test(key)) {
+        throw new Error(`Ligne ${lineNumber}: le trou ${entryIndex + 1} doit avoir une cle comme blank_1.`);
+      }
+
+      if (!correctAnswer || options.length < 2) {
+        throw new Error(`Ligne ${lineNumber}: ${key} doit respecter le format cle=reponse|option1;option2.`);
+      }
+
+      if (!options.includes(correctAnswer)) {
+        throw new Error(`Ligne ${lineNumber}: la reponse correcte de ${key} doit etre dans ses options.`);
+      }
+
+      return {
+        key,
+        options: options.join("\n"),
+        correctAnswer,
+      };
+    })
+    .filter((blank) => blank.key.length > 0);
+}
+
+function parseFillBlankQuestionsCsv(csvText: string): FillBlankQuestionDraft[] {
+  const lines = csvText
+    .split(/\r?\n/)
+    .map((line) => line.trim())
+    .filter(Boolean);
+
+  if (lines.length < 2) {
+    throw new Error("Le CSV doit contenir une ligne d'en-tete et au moins une question.");
+  }
+
+  const headers = parseCsvLine(lines[0]);
+
+  if (
+    headers.length !== FILL_BLANK_CSV_HEADERS.length ||
+    headers.some((header, index) => header !== FILL_BLANK_CSV_HEADERS[index])
+  ) {
+    throw new Error(`Format CSV invalide. En-tete attendu: ${FILL_BLANK_CSV_HEADER_TEXT}`);
+  }
+
+  return lines.slice(1).map((line, index) => {
+    const lineNumber = index + 2;
+    const values = parseCsvLine(line);
+
+    if (values.length !== FILL_BLANK_CSV_HEADERS.length) {
+      throw new Error(`Ligne ${lineNumber}: ${FILL_BLANK_CSV_HEADERS.length} colonnes attendues.`);
+    }
+
+    const row = Object.fromEntries(FILL_BLANK_CSV_HEADERS.map((header, headerIndex) => [header, values[headerIndex]]));
+    const blanks = parseFillBlankCsvBlanks(row.blanks, lineNumber);
+
+    if (blanks.length === 0) {
+      throw new Error(`Ligne ${lineNumber}: ajoutez au moins un trou dans la colonne blanks.`);
+    }
+
+    for (const blank of blanks) {
+      if (!row.sentence_template.includes(`[${blank.key}]`) && !(blank.key === "blank_1" && row.sentence_template.includes("__"))) {
+        throw new Error(`Ligne ${lineNumber}: la phrase doit contenir [${blank.key}].`);
+      }
+    }
+
+    return {
+      sentenceTemplate: row.sentence_template,
+      translationEn: row.english_translation,
+      translationFr: row.french_translation,
+      explanationEn: row.english_explanation,
+      explanationFr: row.french_explanation,
+      explanationTa: row.tamil_explanation,
+      blanks,
+    };
+  });
+}
 
 const DIRECTION_LABELS: Record<string, string> = {
   "0,1": "horizontal droite",
@@ -735,30 +898,484 @@ export function FillBlankAdminForm({
   initial?: FillBlankExercise | null;
 }) {
   const [state, action, pending] = useActionState(upsertFillBlankAction, initialCrudState);
-  const question = initial?.questions[0];
+  const [title, setTitle] = useState(initial?.title ?? "");
+  const [slug, setSlug] = useState(initial?.slug ?? "");
+  const [difficulty, setDifficulty] = useState(initial?.difficulty ?? "beginner");
+  const [timeLimitSeconds, setTimeLimitSeconds] = useState(initial?.timeLimitSeconds ?? 180);
+  const [activeQuestionIndex, setActiveQuestionIndex] = useState(0);
+  const [csvImportMessage, setCsvImportMessage] = useState<{ ok: boolean; message: string } | null>(null);
+  const [questions, setQuestions] = useState<FillBlankQuestionDraft[]>(() =>
+    initial?.questions.length
+        ? initial.questions.map((question) => ({
+          sentenceTemplate: question.sentenceTemplate,
+          translationEn: question.translation.en ?? "",
+          translationFr: question.translation.fr ?? "",
+          explanationEn: question.explanation.en ?? "",
+          explanationFr: question.explanation.fr ?? "",
+          explanationTa: question.explanation.ta ?? "",
+          blanks: question.blanks?.length
+            ? question.blanks.map((blank) => ({
+                key: blank.key,
+                options: blank.options.join("\n"),
+                correctAnswer: blank.correctAnswer,
+              }))
+            : [{ key: "blank_1", options: question.options.join("\n"), correctAnswer: question.correctAnswer }],
+        }))
+      : [createEmptyFillBlankQuestion()],
+  );
+  const activeQuestion = questions[activeQuestionIndex] ?? questions[0] ?? createEmptyFillBlankQuestion();
+  const serializedQuestions = JSON.stringify(
+    questions.map((question) => ({
+      sentenceTemplate: question.sentenceTemplate,
+      translationEn: question.translationEn,
+      translationFr: question.translationFr,
+      explanationEn: question.explanationEn,
+      explanationFr: question.explanationFr,
+      explanationTa: question.explanationTa,
+      blanks: question.blanks.map((blank) => ({
+        key: blank.key,
+        options: blank.options
+          .split(/\r?\n/)
+          .map((option) => option.trim())
+          .filter(Boolean),
+        correctAnswer: blank.correctAnswer,
+      })),
+    })),
+  );
+  const questionCompleteCount = questions.filter(
+    (question) =>
+      question.sentenceTemplate.trim() &&
+      question.translationEn.trim() &&
+      question.translationFr.trim() &&
+      question.explanationEn.trim() &&
+      question.explanationFr.trim() &&
+      question.explanationTa.trim() &&
+      question.blanks.length > 0 &&
+      question.blanks.every((blank) => blank.key.trim() && blank.options.trim() && blank.correctAnswer.trim()),
+  ).length;
+  const progressFields = [title, slug, questionCompleteCount === questions.length && questions.length > 0 ? "questions-complete" : ""];
+  const completedFields = progressFields.filter((value) => value.trim().length > 0).length;
+  const previewMarkup = activeQuestion.sentenceTemplate.trim()
+    ? activeQuestion.blanks.reduce(
+        (sentence, blank) => sentence.replace(new RegExp(`\\[${blank.key}\\]|_{2,}`), blank.correctAnswer.trim() || "?"),
+        activeQuestion.sentenceTemplate,
+      )
+    : "";
+  const formTitle = initial ? "Edit Fill in the Blanks Exercise" : "Create Fill in the Blanks Exercise";
+
+  function updateQuestion(index: number, patch: Partial<FillBlankQuestionDraft>) {
+    setQuestions((current) =>
+      current.map((question, questionIndex) => (questionIndex === index ? { ...question, ...patch } : question)),
+    );
+  }
+
+  function updateBlank(questionIndex: number, blankIndex: number, patch: Partial<FillBlankQuestionDraft["blanks"][number]>) {
+    setQuestions((current) =>
+      current.map((question, currentQuestionIndex) =>
+        currentQuestionIndex === questionIndex
+          ? {
+              ...question,
+              blanks: question.blanks.map((blank, currentBlankIndex) =>
+                currentBlankIndex === blankIndex ? { ...blank, ...patch } : blank,
+              ),
+            }
+          : question,
+      ),
+    );
+  }
+
+  function addBlank(questionIndex: number) {
+    setQuestions((current) =>
+      current.map((question, currentQuestionIndex) =>
+        currentQuestionIndex === questionIndex
+          ? {
+              ...question,
+              blanks: [...question.blanks, { key: `blank_${question.blanks.length + 1}`, options: "", correctAnswer: "" }],
+            }
+          : question,
+      ),
+    );
+  }
+
+  function removeBlank(questionIndex: number, blankIndex: number) {
+    setQuestions((current) =>
+      current.map((question, currentQuestionIndex) =>
+        currentQuestionIndex === questionIndex && question.blanks.length > 1
+          ? {
+              ...question,
+              blanks: question.blanks.filter((_, currentBlankIndex) => currentBlankIndex !== blankIndex),
+            }
+          : question,
+      ),
+    );
+  }
+
+  function addQuestion() {
+    setQuestions([...questions, createEmptyFillBlankQuestion()]);
+    setActiveQuestionIndex(questions.length);
+  }
+
+  function removeQuestion(index: number) {
+    if (questions.length <= 1) {
+      return;
+    }
+
+    const next = questions.filter((_, questionIndex) => questionIndex !== index);
+    setQuestions(next);
+    setActiveQuestionIndex(Math.min(activeQuestionIndex, next.length - 1));
+  }
+
+  async function importQuestionsCsv(event: ChangeEvent<HTMLInputElement>) {
+    const file = event.target.files?.[0];
+
+    if (!file) {
+      return;
+    }
+
+    if (!file.name.toLowerCase().endsWith(".csv")) {
+      setCsvImportMessage({ ok: false, message: "Le fichier doit etre un CSV." });
+      event.target.value = "";
+      return;
+    }
+
+    try {
+      const importedQuestions = parseFillBlankQuestionsCsv(await file.text());
+      setQuestions(importedQuestions);
+      setActiveQuestionIndex(0);
+      setCsvImportMessage({
+        ok: true,
+        message: `${importedQuestions.length} question${importedQuestions.length > 1 ? "s" : ""} importee${importedQuestions.length > 1 ? "s" : ""} dans le formulaire.`,
+      });
+    } catch (error) {
+      setCsvImportMessage({ ok: false, message: error instanceof Error ? error.message : "Import CSV impossible." });
+    } finally {
+      event.target.value = "";
+    }
+  }
 
   return (
-    <form action={action} className="mt-8 space-y-4 rounded-[2rem] border border-slate-200 bg-white p-6">
+    <form action={action} className="mx-auto mt-8 max-w-[48rem] pb-10">
       <input type="hidden" name="locale" value={locale} />
       <input type="hidden" name="id" defaultValue={initial?.id} />
-      <input name="title" placeholder="Title" defaultValue={initial?.title} className="w-full rounded-2xl border border-slate-200 px-4 py-3" />
-      <input name="slug" placeholder="slug" defaultValue={initial?.slug} className="w-full rounded-2xl border border-slate-200 px-4 py-3" />
-      <textarea name="description" placeholder="Description" defaultValue={initial?.title ?? ""} className="min-h-28 w-full rounded-2xl border border-slate-200 px-4 py-3" />
-      <select name="difficulty" defaultValue={initial?.difficulty ?? "beginner"} className="w-full rounded-2xl border border-slate-200 px-4 py-3">
-        <option value="beginner">beginner</option>
-        <option value="intermediate">intermediate</option>
-        <option value="advanced">advanced</option>
-      </select>
-      <input name="timeLimitSeconds" type="number" defaultValue={initial?.timeLimitSeconds ?? 180} className="w-full rounded-2xl border border-slate-200 px-4 py-3" />
-      <textarea name="sentenceTemplate" defaultValue={question?.sentenceTemplate} className="min-h-24 w-full rounded-2xl border border-slate-200 px-4 py-3" />
-      <input name="translationEn" defaultValue={question?.translation.en} placeholder="English translation" className="w-full rounded-2xl border border-slate-200 px-4 py-3" />
-      <textarea name="explanationEn" defaultValue={question?.explanation.en} placeholder="English explanation" className="min-h-24 w-full rounded-2xl border border-slate-200 px-4 py-3" />
-      <textarea name="options" defaultValue={question?.options.join("\n")} placeholder="One option per line" className="min-h-28 w-full rounded-2xl border border-slate-200 px-4 py-3" />
-      <input name="correctAnswer" defaultValue={question?.correctAnswer} placeholder="Correct answer" className="w-full rounded-2xl border border-slate-200 px-4 py-3" />
-      <button disabled={pending} className="rounded-full bg-slate-950 px-5 py-3 text-sm font-semibold text-white disabled:opacity-60">
-        Save exercise
-      </button>
-      <StatusMessage message={state.message} ok={state.ok} />
+      <input type="hidden" name="questions" value={serializedQuestions} readOnly />
+      <h1 className="font-display text-[clamp(2.25rem,5vw,3rem)] leading-tight text-slate-950">{formTitle}</h1>
+
+      <div className="mt-6 flex items-center gap-3">
+        <div className="h-1 flex-1 overflow-hidden rounded-full bg-slate-200">
+          <div className="h-full rounded-full bg-slate-950 transition-all" style={{ width: `${(completedFields / progressFields.length) * 100}%` }} />
+        </div>
+        <span className="font-mono text-xs text-slate-500">
+          {completedFields}/{progressFields.length}
+        </span>
+      </div>
+
+      <div className="mt-5 rounded-[1.25rem] bg-slate-950 p-5 text-white shadow-[0_22px_55px_-38px_rgba(15,23,42,0.7)]">
+        <p className="flex items-center gap-2 font-mono text-[0.68rem] uppercase tracking-[0.14em] text-slate-300">
+          <span className="h-1.5 w-1.5 rounded-full bg-[#ffd54a]" />
+          Sentence preview
+        </p>
+        <p className="mt-3 min-h-8 font-display text-xl leading-8">
+          {previewMarkup || <span className="font-sans text-sm italic text-slate-500">Preview appears when you write the sentence...</span>}
+        </p>
+        <div className="mt-4 flex flex-wrap gap-2">
+          <span className="rounded-full border border-[#ffd54a]/30 bg-[#ffd54a]/15 px-3 py-1 font-mono text-xs text-[#ffd54a]">{difficulty}</span>
+          <span className="rounded-full border border-white/10 bg-white/[0.08] px-3 py-1 font-mono text-xs text-slate-200">{timeLimitSeconds} s</span>
+        </div>
+      </div>
+
+      <section className="mt-6">
+        <p className="mb-2 ml-1 text-xs font-semibold uppercase tracking-[0.14em] text-slate-500">General</p>
+        <div className="overflow-hidden rounded-[1.15rem] border border-slate-200 bg-white">
+          <label className="block border-b border-slate-100 px-4 py-3">
+            <span className="block text-xs font-medium text-slate-500">Title</span>
+            <input
+              name="title"
+              value={title}
+              onChange={(event) => {
+                const nextTitle = event.target.value;
+                setTitle(nextTitle);
+                if (!initial && slug.trim().length === 0) {
+                  setSlug(slugify(nextTitle));
+                }
+              }}
+              placeholder="Tamil basics: daily actions"
+              className="mt-1 w-full bg-transparent text-[0.98rem] text-slate-950 outline-none placeholder:text-slate-400"
+            />
+          </label>
+          <label className="block border-b border-slate-100 px-4 py-3">
+            <span className="block text-xs font-medium text-slate-500">Slug</span>
+            <input
+              name="slug"
+              value={slug}
+              onChange={(event) => setSlug(slugify(event.target.value))}
+              placeholder="tamil-basics-daily-actions"
+              className="mt-1 w-full bg-transparent font-mono text-[0.92rem] text-slate-950 outline-none placeholder:text-slate-400"
+            />
+          </label>
+          <div className="grid sm:grid-cols-2">
+            <label className="block border-b border-slate-100 px-4 py-3 sm:border-b-0 sm:border-r">
+              <span className="block text-xs font-medium text-slate-500">Difficulty</span>
+              <select
+                name="difficulty"
+                value={difficulty}
+                onChange={(event) => setDifficulty(event.target.value as FillBlankExercise["difficulty"])}
+                className="mt-1 w-full bg-transparent text-[0.98rem] text-slate-950 outline-none"
+              >
+                <option value="beginner">beginner</option>
+                <option value="intermediate">intermediate</option>
+                <option value="advanced">advanced</option>
+              </select>
+            </label>
+            <label className="block px-4 py-3">
+              <span className="block text-xs font-medium text-slate-500">Time limit</span>
+              <input
+                name="timeLimitSeconds"
+                type="number"
+                value={timeLimitSeconds}
+                onChange={(event) => setTimeLimitSeconds(Number(event.target.value))}
+                className="mt-1 w-full bg-transparent font-mono text-[0.98rem] text-slate-950 outline-none"
+              />
+            </label>
+          </div>
+        </div>
+      </section>
+
+      <section className="mt-6 rounded-[1.25rem] border border-dashed border-slate-300 bg-white p-5">
+        <div className="flex flex-col gap-5 lg:flex-row lg:items-start lg:justify-between">
+          <div className="max-w-2xl">
+            <p className="text-xs font-bold uppercase tracking-[0.18em] text-slate-500">Import CSV</p>
+            <h2 className="mt-2 font-display text-2xl text-slate-950">Importer les questions</h2>
+            <p className="mt-2 text-sm leading-6 text-slate-600">
+              Le CSV remplace les questions affichees dans le formulaire. Verifie ensuite le resultat, puis sauvegarde
+              l&apos;exercice.
+            </p>
+            <code className="mt-4 block overflow-x-auto rounded-2xl bg-slate-950 px-4 py-3 text-xs leading-6 text-slate-100">
+              {FILL_BLANK_CSV_HEADER_TEXT}
+            </code>
+            <p className="mt-3 text-xs leading-5 text-slate-500">
+              Colonne blanks: <span className="font-mono text-slate-700">{FILL_BLANK_CSV_BLANKS_EXAMPLE}</span>
+            </p>
+          </div>
+
+          <div className="w-full shrink-0 space-y-3 lg:w-[18rem]">
+            <label className="block rounded-2xl border border-slate-200 bg-slate-50 px-4 py-5 text-center text-sm text-slate-600">
+              <span className="font-semibold text-slate-950">Choisir un CSV</span>
+              <input type="file" accept=".csv,text/csv" onChange={importQuestionsCsv} className="mt-3 w-full text-sm" />
+            </label>
+            {csvImportMessage ? (
+              <p className={`text-sm leading-6 ${csvImportMessage.ok ? "text-emerald-700" : "text-rose-600"}`}>
+                {csvImportMessage.message}
+              </p>
+            ) : null}
+          </div>
+        </div>
+      </section>
+
+      <section className="mt-6">
+        <div className="mb-2 flex items-center justify-between gap-3">
+          <p className="ml-1 text-xs font-semibold uppercase tracking-[0.14em] text-slate-500">Questions</p>
+          <button
+            type="button"
+            onClick={addQuestion}
+            className="rounded-full bg-slate-950 px-3 py-1.5 text-xs font-semibold text-white transition hover:bg-slate-800"
+          >
+            + Add question
+          </button>
+        </div>
+        <div className="mb-3 flex gap-2 overflow-x-auto pb-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+          {questions.map((question, index) => {
+            const isComplete =
+              question.sentenceTemplate.trim() &&
+              question.translationEn.trim() &&
+              question.translationFr.trim() &&
+              question.explanationEn.trim() &&
+              question.explanationFr.trim() &&
+              question.explanationTa.trim() &&
+              question.blanks.every((blank) => blank.key.trim() && blank.options.trim() && blank.correctAnswer.trim());
+            return (
+              <button
+                key={index}
+                type="button"
+                onClick={() => setActiveQuestionIndex(index)}
+                className={`shrink-0 rounded-full border px-3 py-2 text-xs font-semibold transition ${
+                  activeQuestionIndex === index
+                    ? "border-slate-950 bg-slate-950 text-white"
+                    : isComplete
+                      ? "border-emerald-200 bg-emerald-50 text-emerald-700"
+                      : "border-slate-200 bg-white text-slate-500"
+                }`}
+              >
+                Question {index + 1}
+              </button>
+            );
+          })}
+        </div>
+        <div className="overflow-hidden rounded-[1.15rem] border border-slate-200 bg-white">
+          <div className="flex items-center justify-between border-b border-slate-100 px-4 py-3">
+            <p className="text-sm font-semibold text-slate-900">Question {activeQuestionIndex + 1}</p>
+            <button
+              type="button"
+              onClick={() => removeQuestion(activeQuestionIndex)}
+              disabled={questions.length <= 1}
+              className="rounded-full bg-rose-50 px-3 py-1.5 text-xs font-semibold text-rose-600 transition hover:bg-rose-100 disabled:cursor-not-allowed disabled:opacity-40"
+            >
+              Remove
+            </button>
+          </div>
+          <label className="block border-b border-slate-100 px-4 py-3">
+            <span className="block text-xs font-medium text-slate-500">Sentence with blank</span>
+            <textarea
+              value={activeQuestion.sentenceTemplate}
+              onChange={(event) => updateQuestion(activeQuestionIndex, { sentenceTemplate: event.target.value })}
+              placeholder="நான் காலை உணவு ____."
+              className="mt-1 min-h-20 w-full resize-none bg-transparent text-[0.98rem] leading-7 text-slate-950 outline-none placeholder:text-slate-400"
+            />
+            <span className="mt-1 block text-xs text-slate-400">
+              Use [blank_1], [blank_2] for multiple blanks. Legacy ___ also works for the first blank.
+            </span>
+          </label>
+          <label className="block border-b border-slate-100 px-4 py-3">
+            <span className="block text-xs font-medium text-slate-500">English translation</span>
+            <input
+              value={activeQuestion.translationEn}
+              onChange={(event) => updateQuestion(activeQuestionIndex, { translationEn: event.target.value })}
+              placeholder="I eat breakfast."
+              className="mt-1 w-full bg-transparent text-[0.98rem] text-slate-950 outline-none placeholder:text-slate-400"
+            />
+          </label>
+          <label className="block border-b border-slate-100 px-4 py-3">
+            <span className="block text-xs font-medium text-slate-500">French translation</span>
+            <input
+              value={activeQuestion.translationFr}
+              onChange={(event) => updateQuestion(activeQuestionIndex, { translationFr: event.target.value })}
+              placeholder="Je mange le petit-déjeuner."
+              className="mt-1 w-full bg-transparent text-[0.98rem] text-slate-950 outline-none placeholder:text-slate-400"
+            />
+          </label>
+          <label className="block border-b border-slate-100 px-4 py-3">
+            <span className="block text-xs font-medium text-slate-500">English explanation</span>
+            <textarea
+              value={activeQuestion.explanationEn}
+              onChange={(event) => updateQuestion(activeQuestionIndex, { explanationEn: event.target.value })}
+              placeholder="Explain the grammar point in English."
+              className="mt-1 min-h-20 w-full resize-none bg-transparent text-[0.98rem] leading-7 text-slate-950 outline-none placeholder:text-slate-400"
+            />
+          </label>
+          <label className="block border-b border-slate-100 px-4 py-3">
+            <span className="block text-xs font-medium text-slate-500">French explanation</span>
+            <textarea
+              value={activeQuestion.explanationFr}
+              onChange={(event) => updateQuestion(activeQuestionIndex, { explanationFr: event.target.value })}
+              placeholder="Expliquez le point de grammaire en français."
+              className="mt-1 min-h-20 w-full resize-none bg-transparent text-[0.98rem] leading-7 text-slate-950 outline-none placeholder:text-slate-400"
+            />
+          </label>
+          <label className="block px-4 py-3">
+            <span className="block text-xs font-medium text-slate-500">Tamil explanation</span>
+            <textarea
+              value={activeQuestion.explanationTa}
+              onChange={(event) => updateQuestion(activeQuestionIndex, { explanationTa: event.target.value })}
+              placeholder="தமிழில் இலக்கண விளக்கத்தை எழுதுங்கள்."
+              className="mt-1 min-h-20 w-full resize-none bg-transparent text-[0.98rem] leading-7 text-slate-950 outline-none placeholder:text-slate-400"
+            />
+          </label>
+        </div>
+      </section>
+
+      <section className="mt-6">
+        <div className="mb-2 flex items-center justify-between gap-3">
+          <p className="ml-1 text-xs font-semibold uppercase tracking-[0.14em] text-slate-500">Blanks and answers</p>
+          <button
+            type="button"
+            onClick={() => addBlank(activeQuestionIndex)}
+            className="rounded-full bg-white px-3 py-1.5 text-xs font-semibold text-slate-700 ring-1 ring-slate-200 transition hover:bg-slate-50"
+          >
+            + Add blank
+          </button>
+        </div>
+        <div className="space-y-3">
+          {activeQuestion.blanks.map((blank, blankIndex) => {
+            const blankOptions = blank.options
+              .split(/\r?\n/)
+              .map((option) => option.trim())
+              .filter(Boolean);
+
+            return (
+              <div key={`${blank.key}-${blankIndex}`} className="overflow-hidden rounded-[1.15rem] border border-slate-200 bg-white">
+                <div className="flex items-center justify-between border-b border-slate-100 px-4 py-3">
+                  <label className="flex-1">
+                    <span className="block text-xs font-medium text-slate-500">Blank key</span>
+                    <input
+                      value={blank.key}
+                      onChange={(event) => updateBlank(activeQuestionIndex, blankIndex, { key: slugify(event.target.value).replace(/-/g, "_") || `blank_${blankIndex + 1}` })}
+                      placeholder={`blank_${blankIndex + 1}`}
+                      className="mt-1 w-full bg-transparent font-mono text-sm text-slate-950 outline-none"
+                    />
+                  </label>
+                  <button
+                    type="button"
+                    onClick={() => removeBlank(activeQuestionIndex, blankIndex)}
+                    disabled={activeQuestion.blanks.length <= 1}
+                    className="rounded-full bg-rose-50 px-3 py-1.5 text-xs font-semibold text-rose-600 transition hover:bg-rose-100 disabled:cursor-not-allowed disabled:opacity-40"
+                  >
+                    Remove
+                  </button>
+                </div>
+                <label className="block border-b border-slate-100 px-4 py-3">
+                  <span className="block text-xs font-medium text-slate-500">Options for [{blank.key || `blank_${blankIndex + 1}`}]</span>
+                  <textarea
+                    value={blank.options}
+                    onChange={(event) => updateBlank(activeQuestionIndex, blankIndex, { options: event.target.value })}
+                    placeholder={"One option per line\nகாலை\nமாலை\nஇரவு"}
+                    className="mt-1 min-h-24 w-full resize-none bg-transparent text-[0.98rem] leading-7 text-slate-950 outline-none placeholder:text-slate-400"
+                  />
+                </label>
+                {blankOptions.length > 0 ? (
+                  <div className="border-b border-slate-100 px-4 py-3">
+                    <p className="text-xs font-medium text-slate-500">Choose correct answer</p>
+                    <div className="mt-2 flex flex-wrap gap-2">
+                      {blankOptions.map((option) => (
+                        <button
+                          key={option}
+                          type="button"
+                          onClick={() => updateBlank(activeQuestionIndex, blankIndex, { correctAnswer: option })}
+                          className={`rounded-lg border px-3 py-1.5 text-sm transition ${
+                            blank.correctAnswer === option
+                              ? "border-[#ffd54a] bg-[#ffd54a]/30 font-semibold text-[#5c4600]"
+                              : "border-slate-200 bg-slate-50 text-slate-600 hover:bg-slate-100"
+                          }`}
+                        >
+                          {option}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                ) : null}
+                <label className="block px-4 py-3">
+                  <span className="block text-xs font-medium text-slate-500">Correct answer</span>
+                  <input
+                    value={blank.correctAnswer}
+                    onChange={(event) => updateBlank(activeQuestionIndex, blankIndex, { correctAnswer: event.target.value })}
+                    placeholder="காலை"
+                    className="mt-1 w-full bg-transparent text-[0.98rem] text-slate-950 outline-none placeholder:text-slate-400"
+                  />
+                </label>
+              </div>
+            );
+          })}
+        </div>
+      </section>
+
+      <div className="sticky bottom-0 mt-7 bg-[linear-gradient(to_top,#eff2f6_68%,transparent)] pt-4">
+        <button
+          disabled={pending}
+          className="flex w-full items-center justify-center gap-2 rounded-xl bg-slate-950 px-5 py-4 text-sm font-semibold text-white transition hover:bg-slate-800 disabled:opacity-60"
+        >
+          <span className="text-[#ffd54a]">✓</span>
+          {initial ? "Save exercise" : "Create exercise"}
+        </button>
+        <StatusMessage message={state.message} ok={state.ok} />
+      </div>
     </form>
   );
 }
@@ -771,39 +1388,399 @@ export function ImageHuntAdminForm({
   initial?: ImageHuntExercise | null;
 }) {
   const [state, action, pending] = useActionState(upsertImageHuntAction, initialCrudState);
+  const [imageUrl, setImageUrl] = useState(initial?.imageUrl ?? "");
+  const [targetLabelTa, setTargetLabelTa] = useState("");
+  const [targetLabelEn, setTargetLabelEn] = useState("");
+  const [targetLabelFr, setTargetLabelFr] = useState("");
+  const [activeTargetIndex, setActiveTargetIndex] = useState<number | null>(null);
+  const [placementMessage, setPlacementMessage] = useState("");
+  const previewRef = useRef<HTMLDivElement | null>(null);
+  const [targets, setTargets] = useState(() =>
+    initial?.targets.map((target) => ({
+      labelTa: target.labelTa,
+      en: target.translation.en ?? "",
+      fr: target.translation.fr ?? target.translation.en ?? "",
+      x: target.x,
+      y: target.y,
+      radius: target.radius ?? 10,
+      width: target.width ?? (target.radius ?? 10) * 2,
+      height: target.height ?? (target.radius ?? 10) * 2,
+    })) ?? [],
+  );
+  const serializedTargets = JSON.stringify(targets);
+
+  function addTargetFromImage(event: MouseEvent<HTMLDivElement>) {
+    if (!imageUrl.trim()) {
+      return;
+    }
+
+    if (!targetLabelTa.trim() || !targetLabelEn.trim() || !targetLabelFr.trim()) {
+      setPlacementMessage("Ajoute les labels tamoul, anglais et francais avant de cliquer sur l'image.");
+      return;
+    }
+
+    const rect = event.currentTarget.getBoundingClientRect();
+    const x = Number((((event.clientX - rect.left) / rect.width) * 100).toFixed(2));
+    const y = Number((((event.clientY - rect.top) / rect.height) * 100).toFixed(2));
+
+    setTargets((current) => [
+      ...current,
+      {
+        labelTa: targetLabelTa.trim(),
+        en: targetLabelEn.trim(),
+        fr: targetLabelFr.trim(),
+        x,
+        y,
+        radius: 9,
+        width: 18,
+        height: 14,
+      },
+    ]);
+    setActiveTargetIndex(targets.length);
+    setTargetLabelTa("");
+    setTargetLabelEn("");
+    setTargetLabelFr("");
+    setPlacementMessage(`Zone ajoutee a ${x}%, ${y}%. Deplace-la ou etire-la directement sur l'image.`);
+  }
+
+  function removeTarget(index: number) {
+    setTargets((current) => current.filter((_, targetIndex) => targetIndex !== index));
+    setActiveTargetIndex(null);
+  }
+
+  function updateTarget(index: number, patch: Partial<(typeof targets)[number]>) {
+    setTargets((current) =>
+      current.map((target, targetIndex) => (targetIndex === index ? { ...target, ...patch } : target)),
+    );
+  }
+
+  function clampPercent(value: number, min = 0, max = 100) {
+    return Math.min(max, Math.max(min, value));
+  }
+
+  function startTargetDrag(event: PointerEvent<HTMLButtonElement>, index: number) {
+    event.preventDefault();
+    event.stopPropagation();
+    setActiveTargetIndex(index);
+
+    const preview = previewRef.current;
+    const target = targets[index];
+
+    if (!preview || !target) {
+      return;
+    }
+
+    const rect = preview.getBoundingClientRect();
+    const startX = event.clientX;
+    const startY = event.clientY;
+    const startTargetX = target.x;
+    const startTargetY = target.y;
+
+    function moveTarget(moveEvent: globalThis.PointerEvent) {
+      const dx = ((moveEvent.clientX - startX) / rect.width) * 100;
+      const dy = ((moveEvent.clientY - startY) / rect.height) * 100;
+      updateTarget(index, {
+        x: Number(clampPercent(startTargetX + dx, 0, 100).toFixed(2)),
+        y: Number(clampPercent(startTargetY + dy, 0, 100).toFixed(2)),
+      });
+    }
+
+    window.addEventListener("pointermove", moveTarget);
+    window.addEventListener("pointerup", () => window.removeEventListener("pointermove", moveTarget), { once: true });
+  }
+
+  function startTargetResize(event: PointerEvent<HTMLSpanElement>, index: number) {
+    event.preventDefault();
+    event.stopPropagation();
+    setActiveTargetIndex(index);
+
+    const preview = previewRef.current;
+    const target = targets[index];
+
+    if (!preview || !target) {
+      return;
+    }
+
+    const rect = preview.getBoundingClientRect();
+    const startX = event.clientX;
+    const startY = event.clientY;
+    const startWidth = target.width;
+    const startHeight = target.height;
+
+    function resizeTarget(moveEvent: globalThis.PointerEvent) {
+      const dx = ((moveEvent.clientX - startX) / rect.width) * 100;
+      const dy = ((moveEvent.clientY - startY) / rect.height) * 100;
+      const width = clampPercent(startWidth + dx * 2, 5, 70);
+      const height = clampPercent(startHeight + dy * 2, 5, 70);
+
+      updateTarget(index, {
+        width: Number(width.toFixed(2)),
+        height: Number(height.toFixed(2)),
+        radius: Number((Math.max(width, height) / 2).toFixed(2)),
+      });
+    }
+
+    window.addEventListener("pointermove", resizeTarget);
+    window.addEventListener("pointerup", () => window.removeEventListener("pointermove", resizeTarget), { once: true });
+  }
 
   return (
-    <form action={action} className="mt-8 space-y-4 rounded-[2rem] border border-slate-200 bg-white p-6">
+    <form action={action} className="mx-auto mt-8 max-w-7xl space-y-5 pb-24 sm:px-4 lg:pb-10">
       <input type="hidden" name="locale" value={locale} />
       <input type="hidden" name="id" defaultValue={initial?.id} />
-      <input name="title" placeholder="Title" defaultValue={initial?.title} className="w-full rounded-2xl border border-slate-200 px-4 py-3" />
-      <input name="slug" placeholder="slug" defaultValue={initial?.slug} className="w-full rounded-2xl border border-slate-200 px-4 py-3" />
-      <textarea name="description" placeholder="Description" defaultValue={initial?.title ?? ""} className="min-h-28 w-full rounded-2xl border border-slate-200 px-4 py-3" />
-      <select name="difficulty" defaultValue={initial?.difficulty ?? "beginner"} className="w-full rounded-2xl border border-slate-200 px-4 py-3">
-        <option value="beginner">beginner</option>
-        <option value="intermediate">intermediate</option>
-        <option value="advanced">advanced</option>
-      </select>
-      <input name="timeLimitSeconds" type="number" defaultValue={initial?.timeLimitSeconds ?? 240} className="w-full rounded-2xl border border-slate-200 px-4 py-3" />
-      <textarea name="instructionEn" defaultValue={initial?.instruction.en} placeholder="English instruction" className="min-h-24 w-full rounded-2xl border border-slate-200 px-4 py-3" />
-      <textarea
-        name="targets"
-        defaultValue={JSON.stringify(
-          initial?.targets.map((target) => ({
-            labelTa: target.labelTa,
-            en: target.translation.en,
-            x: target.x,
-            y: target.y,
-          })) ?? [],
-          null,
-          2,
-        )}
-        className="min-h-40 w-full rounded-2xl border border-slate-200 px-4 py-3 font-mono text-sm"
-      />
-      <button disabled={pending} className="rounded-full bg-slate-950 px-5 py-3 text-sm font-semibold text-white disabled:opacity-60">
-        Save exercise
-      </button>
-      <StatusMessage message={state.message} ok={state.ok} />
+      <input type="hidden" name="targets" value={serializedTargets} readOnly />
+
+      <div className="overflow-hidden rounded-[1.75rem] border border-[#ead5b8] bg-[#fff8ec] shadow-[0_24px_70px_-50px_rgba(74,51,36,0.45)]">
+        <div className="border-b border-[#ead5b8] px-5 py-4 sm:px-6">
+          <div className="grid grid-cols-3 overflow-hidden rounded-2xl border border-[#ead5b8] bg-white/70 text-center shadow-sm">
+            <div className="px-4 py-3">
+              <p className="text-[0.65rem] font-bold uppercase tracking-[0.18em] text-[#9a6a2f]">Zones</p>
+              <p className="mt-1 text-2xl font-semibold text-[var(--brand-ink)]">{targets.length}</p>
+            </div>
+            <div className="border-x border-[#ead5b8] px-4 py-3">
+              <p className="text-[0.65rem] font-bold uppercase tracking-[0.18em] text-[#9a6a2f]">Image</p>
+              <p className="mt-1 text-2xl font-semibold text-[var(--brand-ink)]">{imageUrl.trim() ? "OK" : "--"}</p>
+            </div>
+            <div className="px-4 py-3">
+              <p className="text-[0.65rem] font-bold uppercase tracking-[0.18em] text-[#9a6a2f]">Mode</p>
+              <p className="mt-1 text-2xl font-semibold text-[var(--brand-ink)]">Tap</p>
+            </div>
+          </div>
+        </div>
+
+        <section className="grid gap-3 p-5 sm:p-6 md:grid-cols-2 xl:grid-cols-4">
+          <label className="block rounded-2xl border border-[#ead5b8] bg-white/80 px-4 py-3">
+            <span className="block text-xs font-semibold uppercase tracking-[0.16em] text-[#9a6a2f]">Title</span>
+            <input
+              name="title"
+              placeholder="Animals in the garden"
+              defaultValue={initial?.title}
+              className="mt-2 w-full bg-transparent text-base font-semibold text-[var(--brand-ink)] outline-none placeholder:text-[#9d8974]"
+            />
+          </label>
+          <label className="block rounded-2xl border border-[#ead5b8] bg-white/80 px-4 py-3">
+            <span className="block text-xs font-semibold uppercase tracking-[0.16em] text-[#9a6a2f]">Slug</span>
+            <input
+              name="slug"
+              placeholder="animals-garden"
+              defaultValue={initial?.slug}
+              className="mt-2 w-full bg-transparent font-mono text-sm text-[var(--brand-ink)] outline-none placeholder:text-[#9d8974]"
+            />
+          </label>
+          <label className="block rounded-2xl border border-[#ead5b8] bg-white/80 px-4 py-3">
+            <span className="block text-xs font-semibold uppercase tracking-[0.16em] text-[#9a6a2f]">Difficulty</span>
+            <select
+              name="difficulty"
+              defaultValue={initial?.difficulty ?? "beginner"}
+              className="mt-2 w-full bg-transparent text-base font-semibold text-[var(--brand-ink)] outline-none"
+            >
+              <option value="beginner">beginner</option>
+              <option value="intermediate">intermediate</option>
+              <option value="advanced">advanced</option>
+            </select>
+          </label>
+          <label className="block rounded-2xl border border-[#ead5b8] bg-white/80 px-4 py-3">
+            <span className="block text-xs font-semibold uppercase tracking-[0.16em] text-[#9a6a2f]">Time limit</span>
+            <input
+              name="timeLimitSeconds"
+              type="number"
+              defaultValue={initial?.timeLimitSeconds ?? 240}
+              className="mt-2 w-full bg-transparent font-mono text-base font-semibold text-[var(--brand-ink)] outline-none"
+            />
+          </label>
+          <label className="block rounded-2xl border border-[#ead5b8] bg-white/80 px-4 py-3 md:col-span-2 xl:col-span-4">
+            <span className="block text-xs font-semibold uppercase tracking-[0.16em] text-[#9a6a2f]">Image URL</span>
+            <input
+              name="imageUrl"
+              value={imageUrl}
+              onChange={(event) => setImageUrl(event.target.value)}
+              placeholder="/image-hunt/animaux.jpg or https://..."
+              className="mt-2 w-full bg-transparent text-sm text-[var(--brand-ink)] outline-none placeholder:text-[#9d8974]"
+            />
+          </label>
+          <label className="block rounded-2xl border border-[#ead5b8] bg-white/80 px-4 py-3 md:col-span-2">
+            <span className="block text-xs font-semibold uppercase tracking-[0.16em] text-[#9a6a2f]">Instruction</span>
+            <textarea
+              name="instructionEn"
+              defaultValue={initial?.instruction.en}
+              placeholder="Find the requested object in the image."
+              className="mt-2 min-h-20 w-full resize-none bg-transparent text-sm leading-6 text-[var(--brand-ink)] outline-none placeholder:text-[#9d8974]"
+            />
+          </label>
+        </section>
+      </div>
+
+      <section className="grid gap-5 xl:grid-cols-[minmax(0,1.45fr)_minmax(20rem,0.75fr)]">
+        <div className="rounded-[1.75rem] border border-[#ead5b8] bg-[#fff8ec] p-3 shadow-[0_24px_70px_-55px_rgba(74,51,36,0.45)] sm:p-4">
+          <div className="mb-3 flex flex-col gap-2 px-1 sm:flex-row sm:items-center sm:justify-between">
+            <div>
+              <p className="text-xs font-bold uppercase tracking-[0.22em] text-[#9a6a2f]">Image preview</p>
+              <p className="mt-1 text-sm text-[#755b43]">Tap to add a zone, drag to move, pull the black handle to resize.</p>
+            </div>
+            <span className="w-fit rounded-full border border-[#ead5b8] bg-white/80 px-3 py-1.5 text-xs font-semibold text-[#7d5a38]">
+              {activeTargetIndex === null ? "No zone selected" : `Zone ${activeTargetIndex + 1} selected`}
+            </span>
+          </div>
+          <div
+            ref={previewRef}
+            onClick={addTargetFromImage}
+            className={`relative aspect-[4/3] w-full overflow-hidden rounded-[1.4rem] border border-[#ead5b8] bg-[#f7ead7] text-left shadow-inner sm:aspect-[16/10] ${
+              imageUrl.trim() ? "cursor-crosshair" : "cursor-not-allowed"
+            }`}
+          >
+            {imageUrl.trim() ? (
+              <img src={imageUrl} alt="" className="h-full w-full object-cover" />
+            ) : (
+              <span className="flex h-full items-center justify-center px-6 text-center text-sm text-[#80664c]">
+                Ajoute une URL ou un chemin d&apos;image pour commencer le placement.
+              </span>
+            )}
+            {targets.map((target, index) => (
+              <button
+                key={`${target.labelTa}-${index}`}
+                type="button"
+                onClick={(event) => {
+                  event.stopPropagation();
+                  setActiveTargetIndex(index);
+                }}
+                onPointerDown={(event) => startTargetDrag(event, index)}
+                className={`absolute flex min-h-8 min-w-8 -translate-x-1/2 -translate-y-1/2 touch-none items-center justify-center rounded-full border-2 text-xs font-bold text-white shadow-lg ${
+                  activeTargetIndex === index
+                    ? "border-white bg-[#1f7a67]/50 ring-4 ring-[#9be3d4]/80"
+                    : "border-white bg-[#1f7a67]/28 ring-2 ring-[#1f7a67]/45"
+                }`}
+                style={{
+                  left: `${target.x}%`,
+                  top: `${target.y}%`,
+                  width: `${target.width}%`,
+                  height: `${target.height}%`,
+                }}
+              >
+                {index + 1}
+                <span
+                  onPointerDown={(event) => startTargetResize(event, index)}
+                  className="absolute -bottom-3 -right-3 h-7 w-7 rounded-full border-2 border-white bg-[#2d2017] shadow-md sm:h-6 sm:w-6"
+                  aria-hidden="true"
+                />
+              </button>
+            ))}
+          </div>
+          {placementMessage ? (
+            <p className="mt-3 rounded-2xl border border-[#ead5b8] bg-white/75 px-4 py-3 text-sm leading-6 text-[#684f38]">
+              {placementMessage}
+            </p>
+          ) : null}
+        </div>
+
+        <div className="space-y-5 xl:sticky xl:top-6 xl:self-start">
+          <div className="rounded-[1.75rem] border border-[#ead5b8] bg-[#fff8ec] p-4 shadow-[0_18px_55px_-45px_rgba(74,51,36,0.45)] sm:p-5">
+            <div className="flex items-center justify-between gap-3">
+              <div>
+                <p className="text-xs font-bold uppercase tracking-[0.2em] text-[#9a6a2f]">New zone</p>
+                <h2 className="mt-1 text-xl font-semibold text-[var(--brand-ink)]">Target labels</h2>
+              </div>
+              <span className="rounded-full bg-[#1f7a67] px-3 py-1 text-xs font-bold text-white">Step 1</span>
+            </div>
+            <div className="mt-4 space-y-3">
+              <label className="block rounded-2xl border border-[#ead5b8] bg-white/80 px-4 py-3">
+                <span className="block text-xs font-semibold uppercase tracking-[0.14em] text-[#9a6a2f]">Tamil</span>
+                <input
+                  value={targetLabelTa}
+                  onChange={(event) => setTargetLabelTa(event.target.value)}
+                  placeholder="நாய்"
+                  className="mt-1 w-full bg-transparent text-base font-semibold text-[var(--brand-ink)] outline-none placeholder:text-[#a28b72]"
+                />
+              </label>
+              <label className="block rounded-2xl border border-[#ead5b8] bg-white/80 px-4 py-3">
+                <span className="block text-xs font-semibold uppercase tracking-[0.14em] text-[#9a6a2f]">English</span>
+                <input
+                  value={targetLabelEn}
+                  onChange={(event) => setTargetLabelEn(event.target.value)}
+                  placeholder="dog"
+                  className="mt-1 w-full bg-transparent text-base font-semibold text-[var(--brand-ink)] outline-none placeholder:text-[#a28b72]"
+                />
+              </label>
+              <label className="block rounded-2xl border border-[#ead5b8] bg-white/80 px-4 py-3">
+                <span className="block text-xs font-semibold uppercase tracking-[0.14em] text-[#9a6a2f]">French</span>
+                <input
+                  value={targetLabelFr}
+                  onChange={(event) => setTargetLabelFr(event.target.value)}
+                  placeholder="chien"
+                  className="mt-1 w-full bg-transparent text-base font-semibold text-[var(--brand-ink)] outline-none placeholder:text-[#a28b72]"
+                />
+              </label>
+              <p className="rounded-2xl bg-[#f4e4cc] px-4 py-3 text-xs leading-5 text-[#72563d]">
+                Remplis ces champs, clique dans l&apos;image, puis deplace la zone ou etire-la avec la poignee noire.
+              </p>
+            </div>
+          </div>
+
+          <div className="rounded-[1.75rem] border border-[#ead5b8] bg-white/90 p-4 shadow-[0_18px_55px_-45px_rgba(74,51,36,0.45)] sm:p-5">
+            <div className="flex items-center justify-between gap-3">
+              <div>
+                <p className="text-xs font-bold uppercase tracking-[0.2em] text-[#9a6a2f]">Zones</p>
+                <h2 className="mt-1 text-xl font-semibold text-[var(--brand-ink)]">Saved targets</h2>
+              </div>
+              <span className="rounded-full border border-[#ead5b8] bg-[#fff8ec] px-3 py-1 text-xs font-semibold text-[#7d5a38]">
+                {targets.length}
+              </span>
+            </div>
+            <div className="mt-4 max-h-[22rem] space-y-2 overflow-y-auto pr-1">
+              {targets.length === 0 ? (
+                <p className="rounded-2xl border border-dashed border-[#d9b98f] bg-[#fff8ec] px-4 py-5 text-sm leading-6 text-[#72563d]">
+                  Aucune zone ajoutee.
+                </p>
+              ) : (
+                targets.map((target, index) => (
+                  <div
+                    key={`${target.labelTa}-${target.x}-${target.y}`}
+                    className={`flex items-center justify-between gap-3 rounded-2xl border px-3 py-3 transition ${
+                      activeTargetIndex === index
+                        ? "border-[#1f7a67] bg-[#e7f6f1]"
+                        : "border-[#ead5b8] bg-[#fff8ec]"
+                    }`}
+                  >
+                    <button
+                      type="button"
+                      onClick={() => setActiveTargetIndex(index)}
+                      className="min-w-0 flex-1 text-left"
+                    >
+                      <p className="truncate font-semibold text-[var(--brand-ink)]">
+                        {index + 1}. {target.labelTa}
+                      </p>
+                      <p className="mt-1 truncate text-xs text-[#72563d]">
+                        {target.en} / {target.fr}
+                      </p>
+                      <p className="mt-1 font-mono text-[0.65rem] text-[#9a6a2f]">
+                        {target.x}%, {target.y}% · {target.width}% x {target.height}%
+                      </p>
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => removeTarget(index)}
+                      className="shrink-0 rounded-full bg-[#fee2e2] px-3 py-2 text-xs font-bold text-[#b42318] transition hover:bg-[#fecaca]"
+                    >
+                      Remove
+                    </button>
+                  </div>
+                ))
+              )}
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <div className="fixed inset-x-0 bottom-0 z-20 border-t border-[#ead5b8] bg-[#fff8ec]/95 px-4 py-3 shadow-[0_-18px_45px_-35px_rgba(74,51,36,0.55)] backdrop-blur sm:static sm:border-0 sm:bg-transparent sm:px-0 sm:py-0 sm:shadow-none sm:backdrop-blur-0">
+        <div className="mx-auto flex max-w-7xl flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+          <StatusMessage message={state.message} ok={state.ok} />
+          <button
+            disabled={pending || targets.length === 0}
+            className="min-h-12 rounded-2xl bg-[#1f7a67] px-6 py-3 text-sm font-bold text-white shadow-[0_16px_35px_-22px_rgba(31,122,103,0.8)] transition hover:bg-[#176454] disabled:cursor-not-allowed disabled:opacity-50 sm:min-w-[12rem]"
+          >
+            {pending ? "Saving..." : "Save exercise"}
+          </button>
+        </div>
+      </div>
     </form>
   );
 }

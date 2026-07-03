@@ -97,6 +97,11 @@ export type FillBlankQuestion = {
   translation: Record<Locale, string>;
   options: string[];
   correctAnswer: string;
+  blanks?: Array<{
+    key: string;
+    options: string[];
+    correctAnswer: string;
+  }>;
   explanation: Record<Locale, string>;
 };
 
@@ -115,6 +120,9 @@ export type ImageHuntTarget = {
   translation: Record<Locale, string>;
   x: number;
   y: number;
+  radius: number;
+  width: number;
+  height: number;
 };
 
 export type ImageHuntExercise = {
@@ -122,6 +130,7 @@ export type ImageHuntExercise = {
   slug: string;
   title: string;
   difficulty: Difficulty;
+  imageUrl: string | null;
   instruction: Record<Locale, string>;
   timeLimitSeconds: number;
   targets: ImageHuntTarget[];

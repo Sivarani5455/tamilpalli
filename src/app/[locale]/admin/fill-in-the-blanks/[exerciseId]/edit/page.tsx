@@ -19,8 +19,7 @@ export default async function AdminFillBlanksEditPage({
   }
 
   return (
-    <div className="mx-auto max-w-4xl px-4 py-10 sm:px-6">
-      <h1 className="font-display text-5xl text-slate-950">Edit Fill in the Blanks Exercise</h1>
+    <div className="min-h-screen bg-[#eff2f6] px-4 py-10 sm:px-6">
       <FillBlankAdminForm locale={locale} initial={exercise} />
     </div>
   );

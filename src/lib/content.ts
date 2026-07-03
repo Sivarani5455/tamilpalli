@@ -61,6 +61,7 @@ type FillBlankExerciseRow = {
     sentence_translation: Record<string, string>;
     explanation: Record<string, string>;
     fill_blank_options: Array<{
+      blank_key: string;
       option_text: string;
       is_correct: boolean;
     }>;
@@ -72,6 +73,7 @@ type ImageHuntExerciseRow = {
   slug: string;
   title: string;
   description: string;
+  image_url: string | null;
   difficulty: ImageHuntExercise["difficulty"];
   time_limit_seconds: number;
   allowed_plans?: Array<"discovery" | "standard" | "elite">;
@@ -85,6 +87,9 @@ type ImageHuntExerciseRow = {
     coordinates: {
       x: number;
       y: number;
+      radius?: number;
+      width?: number;
+      height?: number;
     };
   }>;
 };
@@ -216,11 +221,22 @@ function mapFillBlankRows(rows: FillBlankExerciseRow[]) {
         sentenceTemplate: question.sentence_template,
         translation: question.sentence_translation as FillBlankExercise["questions"][number]["translation"],
         explanation: question.explanation as FillBlankExercise["questions"][number]["explanation"],
-        options: question.fill_blank_options.map((option) => option.option_text),
+        options: question.fill_blank_options.filter((option) => option.blank_key === "blank_1").map((option) => option.option_text),
         correctAnswer:
-          question.fill_blank_options.find((option) => option.is_correct)?.option_text ??
+          question.fill_blank_options.find((option) => option.blank_key === "blank_1" && option.is_correct)?.option_text ??
           question.fill_blank_options[0]?.option_text ??
           "",
+        blanks: Object.entries(
+          question.fill_blank_options.reduce<Record<string, typeof question.fill_blank_options>>((groups, option) => {
+            const key = option.blank_key || "blank_1";
+            groups[key] = [...(groups[key] ?? []), option];
+            return groups;
+          }, {}),
+        ).map(([key, options]) => ({
+          key,
+          options: options.map((option) => option.option_text),
+          correctAnswer: options.find((option) => option.is_correct)?.option_text ?? options[0]?.option_text ?? "",
+        })),
       })) ?? [],
   }));
 }
@@ -231,6 +247,7 @@ function mapImageHuntRows(rows: ImageHuntExerciseRow[]) {
     slug: row.slug,
     title: row.title,
     difficulty: row.difficulty,
+    imageUrl: row.image_url,
     timeLimitSeconds: row.time_limit_seconds,
     instruction:
       (row.image_hunt_prompts[0]?.instruction_translation as ImageHuntExercise["instruction"]) ?? {
@@ -249,6 +266,9 @@ function mapImageHuntRows(rows: ImageHuntExerciseRow[]) {
         translation: target.label_translation as ImageHuntExercise["targets"][number]["translation"],
         x: Number(target.coordinates?.x ?? 50),
         y: Number(target.coordinates?.y ?? 50),
+        radius: Number(target.coordinates?.radius ?? 10),
+        width: Number(target.coordinates?.width ?? Number(target.coordinates?.radius ?? 10) * 2),
+        height: Number(target.coordinates?.height ?? Number(target.coordinates?.radius ?? 10) * 2),
       })) ?? [],
   }));
 }
@@ -442,12 +462,12 @@ export async function getFillBlankExercises() {
   const { data } = await supabase
     .from("fill_blank_exercises")
     .select(
-      "id, slug, title, description, difficulty, time_limit_seconds, allowed_plans, fill_blank_questions(id, sentence_template, sentence_translation, explanation, fill_blank_options(option_text, is_correct))",
+      "id, slug, title, description, difficulty, time_limit_seconds, allowed_plans, fill_blank_questions(id, sentence_template, sentence_translation, explanation, fill_blank_options(blank_key, option_text, is_correct))",
     )
     .eq("is_active", true)
     .order("created_at", { ascending: false });
 
-  if (data) {
+  if (data && data.length > 0) {
     return mapFillBlankRows(data as FillBlankExerciseRow[]);
   }
 
@@ -460,7 +480,7 @@ export async function getFillBlankExercises() {
   const { data: adminData } = await adminClient
     .from("fill_blank_exercises")
     .select(
-      "id, slug, title, description, difficulty, time_limit_seconds, allowed_plans, fill_blank_questions(id, sentence_template, sentence_translation, explanation, fill_blank_options(option_text, is_correct))",
+      "id, slug, title, description, difficulty, time_limit_seconds, allowed_plans, fill_blank_questions(id, sentence_template, sentence_translation, explanation, fill_blank_options(blank_key, option_text, is_correct))",
     )
     .eq("is_active", true)
     .order("created_at", { ascending: false });
@@ -491,12 +511,12 @@ export async function getImageHuntExercises() {
   const { data } = await supabase
     .from("image_hunt_exercises")
     .select(
-      "id, slug, title, description, difficulty, time_limit_seconds, allowed_plans, image_hunt_prompts(instruction_translation), image_hunt_targets(id, label_ta, label_translation, coordinates)",
+      "id, slug, title, description, image_url, difficulty, time_limit_seconds, allowed_plans, image_hunt_prompts(instruction_translation), image_hunt_targets(id, label_ta, label_translation, coordinates)",
     )
     .eq("is_active", true)
     .order("created_at", { ascending: false });
 
-  if (data) {
+  if (data && data.length > 0) {
     return mapImageHuntRows(data as ImageHuntExerciseRow[]);
   }
 
@@ -509,7 +529,7 @@ export async function getImageHuntExercises() {
   const { data: adminData } = await adminClient
     .from("image_hunt_exercises")
     .select(
-      "id, slug, title, description, difficulty, time_limit_seconds, allowed_plans, image_hunt_prompts(instruction_translation), image_hunt_targets(id, label_ta, label_translation, coordinates)",
+      "id, slug, title, description, image_url, difficulty, time_limit_seconds, allowed_plans, image_hunt_prompts(instruction_translation), image_hunt_targets(id, label_ta, label_translation, coordinates)",
     )
     .eq("is_active", true)
     .order("created_at", { ascending: false });
