@@ -184,8 +184,8 @@ export function WordSearchGame({
     boardSpan > 0 ? boardSpan * boardPreferredCell + (boardSpan - 1) * boardGap + 44 : 0;
   const boardWidth =
     boardSpan > 0
-      ? `clamp(${Math.max(boardMinWidth, 320)}px, 64vmin, ${Math.max(boardMaxWidth, 540)}px)`
-      : "min(72vmin, 640px)";
+      ? `clamp(${Math.max(boardMinWidth, 320)}px, 76vmin, ${Math.max(boardMaxWidth, 680)}px)`
+      : "min(76vmin, 680px)";
   const boardFontSize =
     columnCount >= 16 ? "clamp(0.58rem, 1.05vmin, 0.95rem)" :
     columnCount >= 13 ? "clamp(0.68rem, 1.25vmin, 1rem)" :
@@ -477,7 +477,7 @@ export function WordSearchGame({
     return (
       <li
         key={entry.word}
-        className={`relative flex min-w-0 items-center gap-2 overflow-visible rounded-[0.85rem] border-[3px] border-[#180d2b] px-3 py-2 transition-all duration-300 ${
+        className={`relative flex min-w-0 items-center gap-2 overflow-visible rounded-[0.85rem] border-[3px] border-[#180d2b] px-3 py-2 transition-all duration-300 lg:w-max lg:min-w-[9.5rem] ${
           activePulse ? "scale-[1.02] shadow-[4px_5px_0_#180d2b]" : ""
         }`}
         style={{
@@ -493,7 +493,7 @@ export function WordSearchGame({
           }}
         />
         <span
-          className={`font-tamil min-w-0 flex-1 truncate font-semibold leading-tight ${
+          className={`font-tamil min-w-0 flex-1 truncate font-semibold leading-tight lg:min-w-max lg:overflow-visible lg:whitespace-nowrap lg:text-clip ${
             isTamil ? "text-[1.18rem]" : "text-[1.08rem]"
           }`}
           style={{
@@ -602,7 +602,7 @@ export function WordSearchGame({
       <div className="pointer-events-none absolute right-20 top-4 h-3 w-3 rounded-full bg-[#7c3aed]" />
 
       <div className="relative mx-auto flex min-h-[calc(100dvh-32px)] max-w-[48rem] flex-col">
-        <header className="mb-6 flex flex-wrap items-start justify-between gap-3 sm:items-center">
+        <header className="mb-4 flex flex-wrap items-start justify-between gap-3 sm:items-center lg:mb-3">
           <div className="flex min-w-0 items-center gap-3">
               <Link
                 href={`/${locale}/word-search`}
@@ -613,31 +613,24 @@ export function WordSearchGame({
               </Link>
 
               <div className="min-w-0">
-              <p className={`inline-flex rounded-full border-[3px] border-[#180d2b] bg-[#efe6ff] px-3 py-1 font-display text-[#7c3aed] shadow-[3px_4px_0_#180d2b] ${isTamil ? "text-[0.78rem] font-black tracking-[0.04em]" : "text-[0.68rem] font-black uppercase tracking-[0.14em]"}`}>
-                  {copy.category}
-                </p>
-              <h1 className={`mt-2 font-tamil truncate text-[#180d2b] ${isTamil ? "text-[1.55rem] font-black" : "text-[1.45rem] font-black"}`}>
+              <h1 className={`font-tamil truncate text-[#180d2b] ${isTamil ? "text-[1.55rem] font-black" : "text-[1.45rem] font-black"}`}>
                   {grid.title}
                 </h1>
               </div>
             </div>
 
           <div className="flex w-full flex-wrap items-stretch gap-2 sm:w-auto sm:justify-end">
-              {toastWord ? (
-                <div
-                className="hidden rounded-[0.9rem] border-[3px] border-[#180d2b] px-4 py-2 text-sm font-black text-white shadow-[4px_5px_0_#180d2b] sm:flex sm:items-center"
-                  style={{ backgroundColor: toastWord.color }}
-                >
-                  +{toastWord.points} {copy.points}
-                </div>
-              ) : null}
-
-            <div className="flex min-w-[70px] flex-1 flex-col gap-1 rounded-[0.85rem] border-[3px] border-[#180d2b] bg-white px-3 py-2 shadow-[3px_4px_0_#180d2b] sm:flex-none">
-              <span className="font-display text-[0.58rem] font-black uppercase tracking-[0.13em] text-[#7c3aed]">
+            <div
+              className={`flex min-w-[70px] flex-1 flex-col gap-1 rounded-[0.85rem] border-[3px] border-[#180d2b] px-3 py-2 shadow-[3px_4px_0_#180d2b] transition-all duration-300 sm:flex-none ${
+                toastWord ? "scale-[1.04] text-white" : "bg-white"
+              }`}
+              style={toastWord ? { backgroundColor: toastWord.color } : undefined}
+            >
+              <span className={`font-display text-[0.58rem] font-black uppercase tracking-[0.13em] ${toastWord ? "text-white" : "text-[#7c3aed]"}`}>
                   {copy.score}
               </span>
-              <span className="text-lg font-black tabular-nums text-[#180d2b]">
-                  {score}
+              <span className={`text-lg font-black tabular-nums ${toastWord ? "text-white" : "text-[#180d2b]"}`}>
+                  {toastWord ? `+${toastWord.points} ${copy.points}` : score}
               </span>
               </div>
 
@@ -701,7 +694,7 @@ export function WordSearchGame({
             </div>
         </header>
 
-        <main className="flex flex-1 flex-col items-center justify-center gap-4">
+        <main className="flex flex-1 flex-col items-center justify-center gap-4 lg:flex-none lg:justify-start">
               {isPaused ? (
             <section className="w-full max-w-[32.5rem] rounded-[1.4rem] border-[3px] border-[#180d2b] bg-white p-8 text-center shadow-[8px_9px_0_#180d2b]">
               <p className="font-display text-xs font-black uppercase tracking-[0.14em] text-[#7c3aed]">
@@ -836,7 +829,7 @@ export function WordSearchGame({
                     </div>
                       </div>
 
-              <section className="w-full max-w-[32.5rem] rounded-[1.25rem] border-[3px] border-[#180d2b] bg-white p-4 shadow-[7px_8px_0_#180d2b] sm:p-5">
+              <section className="w-full max-w-[32.5rem] rounded-[1.25rem] border-[3px] border-[#180d2b] bg-white p-4 shadow-[7px_8px_0_#180d2b] sm:p-5 lg:w-max lg:max-w-[calc(100vw-2rem)]">
                 <div className="mb-3 flex items-baseline justify-between gap-3">
                   <h2 className="font-display text-xs font-black uppercase tracking-[0.14em] text-[#9a83b3]">
                     {copy.wordsToFind}
@@ -845,7 +838,7 @@ export function WordSearchGame({
                     {foundCount}/{grid.words.length} {copy.found}
                   </span>
                 </div>
-                <ul className="grid list-none grid-cols-1 gap-2.5 p-0 sm:grid-cols-2">
+                <ul className="grid list-none grid-cols-1 gap-2.5 p-0 sm:grid-cols-2 lg:grid-flow-col lg:grid-cols-none lg:grid-rows-2 lg:auto-cols-max lg:overflow-x-auto lg:pb-2 [scrollbar-width:thin]">
                           {grid.words.map((entry, index) => renderWordCard(entry, index))}
                 </ul>
               </section>

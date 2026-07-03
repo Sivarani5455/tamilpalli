@@ -274,6 +274,17 @@ export async function upsertWordSearchAction(
 
   try {
     const supabase = requireAdminClient();
+    const words = parseJsonField<unknown[]>(parsed.data.words, "Words");
+
+    if (!Array.isArray(words)) {
+      throw new Error("Words must be a JSON array.");
+    }
+
+    if (words.length % 2 !== 0) {
+      throw new Error(
+        `Word Search grids must use an even number of Tamil source words. Current total: ${words.length}.`,
+      );
+    }
 
     const payload = {
       title: parsed.data.title,
@@ -282,7 +293,7 @@ export async function upsertWordSearchAction(
       difficulty: parsed.data.difficulty,
       time_limit_seconds: parsed.data.timeLimitSeconds,
       grid_data: parseJsonField<string[][]>(parsed.data.gridData, "Grid data"),
-      words: parseJsonField(parsed.data.words, "Words"),
+      words,
       is_active: true,
     };
 

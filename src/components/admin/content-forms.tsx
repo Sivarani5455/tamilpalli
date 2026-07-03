@@ -547,6 +547,8 @@ export function WordSearchAdminForm({
       ? `${initial.words.length} mot${initial.words.length > 1 ? "s" : ""} prets dans une grille ${initial.gridData.length}x${initial.gridData[0]?.length ?? initial.gridData.length}.`
       : "Choisissez d'abord une taille de grille pour lancer la generation.",
   );
+  const detectedTamilWordCount = parseTamilWords(rawTamilWords).length;
+  const hasOddTamilWordCount = detectedTamilWordCount > 0 && detectedTamilWordCount % 2 !== 0;
 
   const syncGeneratedContent = (
     nextRawTamilWords: string,
@@ -572,6 +574,19 @@ export function WordSearchAdminForm({
       setPlacementPreview([]);
       setGenerationError("");
       setGenerationSummary("");
+      return;
+    }
+
+    if (words.length % 2 !== 0) {
+      setGridDataJson("");
+      setWordsJson("");
+      setPlacementPreview([]);
+      setGenerationError(
+        `Le nombre total de mots tamouls source doit etre pair. Actuellement: ${words.length}. Ajoutez ou retirez un mot.`,
+      );
+      setGenerationSummary(
+        `${words.length} mots detectes. Utilisez un total pair, par exemple ${words.length - 1} ou ${words.length + 1}.`,
+      );
       return;
     }
 
@@ -799,10 +814,19 @@ export function WordSearchAdminForm({
                 </label>
                 <p className="mt-1 text-xs text-slate-500">Un mot par ligne, ou separes par virgules / point-virgules.</p>
               </div>
-              <div className="rounded-full bg-indigo-50 px-3 py-1 text-xs font-medium text-indigo-700">
-                {parseTamilWords(rawTamilWords).length} mots detectes
+              <div
+                className={`rounded-full px-3 py-1 text-xs font-medium ${
+                  hasOddTamilWordCount ? "bg-rose-50 text-rose-700" : "bg-indigo-50 text-indigo-700"
+                }`}
+              >
+                {detectedTamilWordCount} mots detectes
               </div>
             </div>
+            {hasOddTamilWordCount ? (
+              <p className="rounded-xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm font-medium text-rose-700">
+                Le nombre de mots doit etre pair pour un affichage en deux lignes. Ajoutez ou retirez un mot.
+              </p>
+            ) : null}
 
             <textarea
               value={rawTamilWords}
@@ -877,7 +901,7 @@ export function WordSearchAdminForm({
 
           <div className="pt-1">
             <button
-              disabled={pending}
+              disabled={pending || hasOddTamilWordCount}
               className="rounded-xl bg-indigo-600 px-6 py-3 text-sm font-semibold text-white shadow-md shadow-indigo-200 transition hover:bg-indigo-700 disabled:opacity-60"
             >
               Save grid
