@@ -2,6 +2,27 @@ import { requireAdminUser } from "@/lib/auth";
 import { FillBlankAdminForm } from "@/components/admin/content-forms";
 import { getLocaleOrThrow } from "@/lib/i18n";
 
+function LinesBadge() {
+  return (
+    <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full border-[3px] border-[#180d2b] bg-[#4f86ff] text-white shadow-[3px_4px_0_#180d2b]">
+      <svg
+        aria-hidden="true"
+        viewBox="0 0 24 24"
+        className="h-5 w-5"
+        fill="none"
+        stroke="currentColor"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        strokeWidth="2.4"
+      >
+        <path d="M5 7h14" />
+        <path d="M5 12h8" />
+        <path d="M5 17h14" />
+      </svg>
+    </span>
+  );
+}
+
 export default async function AdminFillBlanksNewPage({
   params,
 }: {
@@ -12,7 +33,16 @@ export default async function AdminFillBlanksNewPage({
   await requireAdminUser(locale);
 
   return (
-    <div className="min-h-screen bg-[#eff2f6] px-4 py-10 sm:px-6">
+    <div className="mx-auto max-w-6xl px-2 py-6 sm:px-4">
+      <div className="flex min-w-0 items-center gap-4">
+        <LinesBadge />
+        <div className="min-w-0">
+          <p className="text-xs font-black uppercase tracking-[0.22em] text-[#7c3aed]">Admin</p>
+          <h1 className="mt-1 font-display text-[clamp(1.9rem,4vw,2.6rem)] font-black leading-tight text-[#180d2b]">
+            Create Fill in the Blanks
+          </h1>
+        </div>
+      </div>
       <FillBlankAdminForm locale={locale} />
     </div>
   );

@@ -5,6 +5,7 @@ import { type ChangeEvent, type MouseEvent, type PointerEvent, useActionState, u
 import {
   upsertFillBlankAction,
   upsertImageHuntAction,
+  upsertNimishamAction,
   upsertWordSearchAction,
 } from "@/app/[locale]/admin/content-actions";
 import { initialCrudState } from "@/lib/action-states";
@@ -12,6 +13,8 @@ import type {
   FillBlankExercise,
   ImageHuntExercise,
   Locale,
+  NimishamExercise,
+  NimishamWord,
   WordSearchGrid,
   WordSearchWord,
 } from "@/types";
@@ -21,7 +24,17 @@ function StatusMessage({ message, ok }: { message: string; ok: boolean }) {
     return null;
   }
 
-  return <p className={`text-sm ${ok ? "text-emerald-700" : "text-rose-600"}`}>{message}</p>;
+  return (
+    <p
+      className={`rounded-[1rem] border-[2px] px-4 py-3 text-sm font-black ${
+        ok
+          ? "border-[#14b86a] bg-[#dcfce7] text-[#047857]"
+          : "border-[#ff3b6f] bg-[#ffe4ee] text-[#be123c]"
+      }`}
+    >
+      {message}
+    </p>
+  );
 }
 
 function slugify(value: string) {
@@ -549,6 +562,11 @@ export function WordSearchAdminForm({
   );
   const detectedTamilWordCount = parseTamilWords(rawTamilWords).length;
   const hasOddTamilWordCount = detectedTamilWordCount > 0 && detectedTamilWordCount % 2 !== 0;
+  const fieldLabelClass = "text-xs font-black uppercase tracking-[0.22em] text-[#8a6a9c]";
+  const inputClass =
+    "w-full rounded-[1rem] border-[2px] border-[#180d2b] bg-white px-4 py-3 text-sm font-semibold text-[#180d2b] shadow-[3px_4px_0_#180d2b] outline-none transition focus:-translate-y-0.5 focus:bg-[#fff7ed]";
+  const codeTextareaClass =
+    "min-h-72 w-full resize-none rounded-[1rem] border-[2px] border-[#180d2b] bg-[#1b0d2f] px-4 py-4 font-mono text-sm font-semibold text-white shadow-[3px_4px_0_#180d2b] outline-none transition focus:-translate-y-0.5";
 
   const syncGeneratedContent = (
     nextRawTamilWords: string,
@@ -613,29 +631,31 @@ export function WordSearchAdminForm({
   return (
     <form
       action={action}
-      className="mt-6 w-full overflow-hidden rounded-[1.75rem] border border-slate-200 bg-white shadow-[0_24px_80px_rgba(15,23,42,0.08)]"
+      className="mt-6 w-full overflow-hidden rounded-[1.5rem] border-[3px] border-[#180d2b] bg-white shadow-[7px_8px_0_#180d2b]"
     >
       <input type="hidden" name="locale" value={locale} />
       <input type="hidden" name="id" defaultValue={initial?.id} />
 
-      <section className="min-w-0 px-4 py-8 sm:px-8 sm:py-10">
-        <div className="mx-auto max-w-5xl space-y-7">
+      <section className="min-w-0 px-4 py-6 sm:px-6 sm:py-7">
+        <div className="mx-auto max-w-5xl space-y-6">
           <div className="space-y-4">
-            <h2 className="text-xs font-bold uppercase tracking-[0.24em] text-slate-500">Generation</h2>
-            <div className="rounded-xl border border-slate-200 bg-white px-4 py-3">
-              <div className="text-xs font-bold uppercase tracking-[0.22em] text-slate-400">Statut</div>
-              {generationSummary ? <p className="mt-2 text-sm text-slate-700">{generationSummary}</p> : null}
+            <h2 className="text-xs font-black uppercase tracking-[0.24em] text-[#7c3aed]">Generation</h2>
+            <div className="rounded-[1rem] border-[2px] border-[#180d2b] bg-[#f6f0ff] px-4 py-3 shadow-[3px_4px_0_#180d2b]">
+              <div className="text-xs font-black uppercase tracking-[0.22em] text-[#7c3aed]">Statut</div>
+              {generationSummary ? (
+                <p className="mt-2 text-sm font-semibold text-[#180d2b]">{generationSummary}</p>
+              ) : null}
               {generationError ? (
-                <p className="mt-2 text-sm font-medium text-rose-600">{generationError}</p>
+                <p className="mt-2 text-sm font-black text-[#be123c]">{generationError}</p>
               ) : generationSummary ? null : (
-                <p className="mt-2 text-sm text-slate-500">La generation apparaitra ici apres saisie.</p>
+                <p className="mt-2 text-sm font-semibold text-[#8a6a9c]">La generation apparaitra ici apres saisie.</p>
               )}
             </div>
           </div>
 
           <div className="grid gap-4 sm:grid-cols-2">
             <label className="space-y-1.5">
-              <span className="text-xs font-bold uppercase tracking-[0.22em] text-slate-500">Titre</span>
+              <span className={fieldLabelClass}>Titre</span>
               <input
                 name="title"
                 placeholder="Flowers grid"
@@ -648,12 +668,12 @@ export function WordSearchAdminForm({
                     setSlug(slugify(nextTitle));
                   }
                 }}
-                className="w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-950 shadow-sm outline-none transition focus:border-indigo-400 focus:ring-4 focus:ring-indigo-100"
+                className={inputClass}
               />
             </label>
 
             <label className="space-y-1.5">
-              <span className="text-xs font-bold uppercase tracking-[0.22em] text-slate-500">Slug</span>
+              <span className={fieldLabelClass}>Slug</span>
               <input
                 name="slug"
                 placeholder="flowers-grid"
@@ -662,29 +682,29 @@ export function WordSearchAdminForm({
                   setSlugTouched(true);
                   setSlug(slugify(event.target.value));
                 }}
-                className="w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-950 shadow-sm outline-none transition focus:border-indigo-400 focus:ring-4 focus:ring-indigo-100"
+                className={inputClass}
               />
             </label>
           </div>
 
           <label className="space-y-1.5">
-            <span className="text-xs font-bold uppercase tracking-[0.22em] text-slate-500">Description</span>
+            <span className={fieldLabelClass}>Description</span>
             <textarea
               name="description"
               placeholder="Decrivez rapidement le theme de la grille."
               value={description}
               onChange={(event) => setDescription(event.target.value)}
-              className="min-h-28 w-full resize-none rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-950 shadow-sm outline-none transition focus:border-indigo-400 focus:ring-4 focus:ring-indigo-100"
+              className={`${inputClass} min-h-28 resize-none`}
             />
           </label>
 
           <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-[0.95fr_0.95fr_1.1fr]">
             <label className="space-y-1.5">
-              <span className="text-xs font-bold uppercase tracking-[0.22em] text-slate-500">Difficulte</span>
+              <span className={fieldLabelClass}>Difficulte</span>
               <select
                 name="difficulty"
                 defaultValue={initial?.difficulty ?? "beginner"}
-                className="w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-950 shadow-sm outline-none transition focus:border-indigo-400 focus:ring-4 focus:ring-indigo-100"
+                className={inputClass}
               >
                 <option value="beginner">beginner</option>
                 <option value="intermediate">intermediate</option>
@@ -693,17 +713,17 @@ export function WordSearchAdminForm({
             </label>
 
             <label className="space-y-1.5">
-              <span className="text-xs font-bold uppercase tracking-[0.22em] text-slate-500">Temps limite</span>
+              <span className={fieldLabelClass}>Temps limite</span>
               <input
                 name="timeLimitSeconds"
                 type="number"
                 defaultValue={initial?.timeLimitSeconds ?? 180}
-                className="w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-950 shadow-sm outline-none transition focus:border-indigo-400 focus:ring-4 focus:ring-indigo-100"
+                className={inputClass}
               />
             </label>
 
             <div className="space-y-2 sm:col-span-2 xl:col-span-1">
-              <span className="text-xs font-bold uppercase tracking-[0.22em] text-slate-500">Taille de grille</span>
+              <span className={fieldLabelClass}>Taille de grille</span>
               <div className="flex flex-wrap items-center gap-2">
                 {GRID_SIZE_OPTIONS.map((size) => {
                   const active = gridSize === size;
@@ -716,10 +736,10 @@ export function WordSearchAdminForm({
                         setGridSize(size);
                         syncGeneratedContent(rawTamilWords, size, directionSelection);
                       }}
-                      className={`rounded-xl border px-4 py-2 text-xs font-semibold transition ${
+                      className={`rounded-full border-[2px] px-4 py-2 text-xs font-black shadow-[2px_3px_0_#180d2b] transition hover:-translate-y-0.5 ${
                         active
-                          ? "border-indigo-600 bg-indigo-600 text-white shadow-md shadow-indigo-200"
-                          : "border-slate-200 bg-white text-slate-600 hover:border-indigo-300 hover:text-indigo-600"
+                          ? "border-[#180d2b] bg-[#7c3aed] text-white"
+                          : "border-[#180d2b] bg-white text-[#180d2b]"
                       }`}
                       style={{ fontFamily: "ui-monospace, SFMono-Regular, Menlo, Consolas, monospace" }}
                     >
@@ -729,13 +749,13 @@ export function WordSearchAdminForm({
                 })}
 
                 <div
-                  className={`inline-flex items-center gap-2 rounded-xl border px-3 py-2 transition ${
+                  className={`inline-flex items-center gap-2 rounded-full border-[2px] px-3 py-2 shadow-[2px_3px_0_#180d2b] transition ${
                     gridSize !== null && !GRID_SIZE_OPTIONS.includes(gridSize as (typeof GRID_SIZE_OPTIONS)[number])
-                      ? "border-indigo-300 bg-indigo-50"
-                      : "border-slate-200 bg-white"
+                      ? "border-[#180d2b] bg-[#f6f0ff]"
+                      : "border-[#180d2b] bg-white"
                   }`}
                 >
-                  <span className="text-xs font-semibold text-slate-600">Custom</span>
+                  <span className="text-xs font-black text-[#180d2b]">Custom</span>
                   <input
                     type="number"
                     min={2}
@@ -757,7 +777,7 @@ export function WordSearchAdminForm({
                       setGridSize(nextValue);
                       syncGeneratedContent(rawTamilWords, nextValue, directionSelection);
                     }}
-                    className="w-20 rounded-lg border border-slate-200 bg-white px-2 py-1 text-sm font-semibold text-slate-950 outline-none transition focus:border-indigo-400 focus:ring-2 focus:ring-indigo-100"
+                    className="w-20 rounded-full border-[2px] border-[#180d2b] bg-white px-3 py-1 text-sm font-black text-[#180d2b] outline-none"
                     placeholder="10"
                   />
                 </div>
@@ -766,7 +786,7 @@ export function WordSearchAdminForm({
           </div>
 
           <div className="space-y-2">
-            <span className="text-xs font-bold uppercase tracking-[0.22em] text-slate-500">
+            <span className={fieldLabelClass}>
               Directions autorisees
             </span>
             <div className="flex flex-wrap gap-3">
@@ -776,10 +796,10 @@ export function WordSearchAdminForm({
                 return (
                   <label
                     key={option.key}
-                    className={`inline-flex items-center gap-3 rounded-xl border px-4 py-3 text-sm font-medium transition ${
+                    className={`inline-flex items-center gap-3 rounded-full border-[2px] px-4 py-3 text-sm font-black shadow-[2px_3px_0_#180d2b] transition hover:-translate-y-0.5 ${
                       checked
-                        ? "border-indigo-300 bg-indigo-50 text-indigo-700"
-                        : "border-slate-200 bg-white text-slate-600"
+                        ? "border-[#180d2b] bg-[#c6ff2e] text-[#180d2b]"
+                        : "border-[#180d2b] bg-white text-[#180d2b]"
                     }`}
                   >
                     <input
@@ -794,14 +814,14 @@ export function WordSearchAdminForm({
                         setDirectionSelection(nextDirectionSelection);
                         syncGeneratedContent(rawTamilWords, gridSize, nextDirectionSelection);
                       }}
-                      className="h-4 w-4 rounded border-slate-300 text-indigo-600 focus:ring-indigo-400"
+                      className="h-4 w-4 accent-[#7c3aed]"
                     />
                     <span>{option.label}</span>
                   </label>
                 );
               })}
             </div>
-            <p className="text-xs text-slate-500">
+            <p className="text-xs font-semibold text-[#8a6a9c]">
               Cochez les axes autorises pour le placement des mots dans la grille.
             </p>
           </div>
@@ -809,21 +829,23 @@ export function WordSearchAdminForm({
           <div className="space-y-1.5">
             <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
               <div>
-                <label className="block text-xs font-bold uppercase tracking-[0.22em] text-slate-500">
+                <label className={`block ${fieldLabelClass}`}>
                   Mots tamouls source
                 </label>
-                <p className="mt-1 text-xs text-slate-500">Un mot par ligne, ou separes par virgules / point-virgules.</p>
+                <p className="mt-1 text-xs font-semibold text-[#8a6a9c]">Un mot par ligne, ou separes par virgules / point-virgules.</p>
               </div>
               <div
-                className={`rounded-full px-3 py-1 text-xs font-medium ${
-                  hasOddTamilWordCount ? "bg-rose-50 text-rose-700" : "bg-indigo-50 text-indigo-700"
+                className={`rounded-full border-[2px] px-3 py-1 text-xs font-black shadow-[2px_3px_0_#180d2b] ${
+                  hasOddTamilWordCount
+                    ? "border-[#ff3b6f] bg-[#ffe4ee] text-[#be123c]"
+                    : "border-[#180d2b] bg-[#c6ff2e] text-[#180d2b]"
                 }`}
               >
                 {detectedTamilWordCount} mots detectes
               </div>
             </div>
             {hasOddTamilWordCount ? (
-              <p className="rounded-xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm font-medium text-rose-700">
+              <p className="rounded-[1rem] border-[2px] border-[#ff3b6f] bg-[#ffe4ee] px-4 py-3 text-sm font-black text-[#be123c]">
                 Le nombre de mots doit etre pair pour un affichage en deux lignes. Ajoutez ou retirez un mot.
               </p>
             ) : null}
@@ -835,34 +857,34 @@ export function WordSearchAdminForm({
                 setRawTamilWords(nextRawTamilWords);
                 syncGeneratedContent(nextRawTamilWords, gridSize, directionSelection);
               }}
-              className="min-h-72 w-full resize-none rounded-xl border border-slate-200 bg-white px-4 py-4 font-medium text-slate-950 shadow-sm outline-none transition focus:border-indigo-400 focus:ring-4 focus:ring-indigo-100"
+              className="min-h-64 w-full resize-none rounded-[1rem] border-[2px] border-[#180d2b] bg-white px-4 py-4 font-semibold text-[#180d2b] shadow-[3px_4px_0_#180d2b] outline-none transition focus:-translate-y-0.5 focus:bg-[#fff7ed]"
               style={{ fontFamily: "ui-monospace, SFMono-Regular, Menlo, Consolas, monospace" }}
             />
           </div>
 
           <label className="block space-y-1.5">
-            <span className="text-xs font-bold uppercase tracking-[0.22em] text-slate-500">JSON de la grille</span>
+            <span className={fieldLabelClass}>JSON de la grille</span>
             <textarea
               name="gridData"
               value={gridDataJson}
               onChange={(event) => setGridDataJson(event.target.value)}
-              className="min-h-80 w-full resize-none rounded-xl border border-slate-200 bg-[#0f172a] px-4 py-4 font-mono text-sm text-slate-100 shadow-sm outline-none transition focus:border-indigo-400"
+              className={codeTextareaClass}
             />
           </label>
 
           <label className="block space-y-1.5">
-            <span className="text-xs font-bold uppercase tracking-[0.22em] text-slate-500">JSON des mots</span>
+            <span className={fieldLabelClass}>JSON des mots</span>
             <textarea
               name="words"
               value={wordsJson}
               onChange={(event) => setWordsJson(event.target.value)}
-              className="min-h-80 w-full resize-none rounded-xl border border-slate-200 bg-[#0f172a] px-4 py-4 font-mono text-sm text-slate-100 shadow-sm outline-none transition focus:border-indigo-400"
+              className={codeTextareaClass}
             />
           </label>
 
           <div className="space-y-2">
-            <span className="text-xs font-bold uppercase tracking-[0.22em] text-slate-500">Placements verifies</span>
-            <div className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
+            <span className={fieldLabelClass}>Placements verifies</span>
+            <div className="rounded-[1rem] border-[2px] border-[#180d2b] bg-[#fff7ed] p-4 shadow-[3px_4px_0_#180d2b]">
               {placementPreview.length > 0 ? (
                 <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
                   {placementPreview.map((placement) => {
@@ -871,17 +893,17 @@ export function WordSearchAdminForm({
                     return (
                       <div
                         key={`${placement.word}-${placement.row}-${placement.col}-${placement.rowStep}-${placement.colStep}`}
-                        className="rounded-xl border border-slate-200 bg-slate-50 px-4 py-3"
+                        className="rounded-[1rem] border-[2px] border-[#180d2b] bg-white px-4 py-3"
                       >
                         <div className="flex items-start justify-between gap-3">
                           <div className="min-w-0">
-                            <div className="font-tamil text-lg font-bold leading-tight text-slate-950">
+                            <div className="font-tamil text-lg font-black leading-tight text-[#180d2b]">
                               {placement.word}
                             </div>
-                            <div className="mt-1 text-xs font-medium text-slate-600">{details.direction}</div>
+                            <div className="mt-1 text-xs font-black uppercase tracking-[0.12em] text-[#8a6a9c]">{details.direction}</div>
                           </div>
                           <div
-                            className="shrink-0 rounded-full bg-white px-2.5 py-1 text-[11px] font-semibold text-slate-500"
+                            className="shrink-0 rounded-full border-[2px] border-[#180d2b] bg-[#f6f0ff] px-2.5 py-1 text-[11px] font-black text-[#7c3aed]"
                             style={{ fontFamily: "ui-monospace, SFMono-Regular, Menlo, Consolas, monospace" }}
                           >
                             {details.start} → {details.end}
@@ -892,7 +914,7 @@ export function WordSearchAdminForm({
                   })}
                 </div>
               ) : (
-                <p className="text-sm text-slate-500">
+                <p className="text-sm font-semibold text-[#8a6a9c]">
                   Les coordonnees de placement apparaitront ici apres une generation valide.
                 </p>
               )}
@@ -902,7 +924,7 @@ export function WordSearchAdminForm({
           <div className="pt-1">
             <button
               disabled={pending || hasOddTamilWordCount}
-              className="rounded-xl bg-indigo-600 px-6 py-3 text-sm font-semibold text-white shadow-md shadow-indigo-200 transition hover:bg-indigo-700 disabled:opacity-60"
+              className="rounded-full border-[3px] border-[#180d2b] bg-[#20bf73] px-7 py-3 text-sm font-black text-white shadow-[4px_5px_0_#180d2b] transition hover:-translate-y-0.5 disabled:opacity-60"
             >
               Save grid
             </button>
@@ -986,6 +1008,10 @@ export function FillBlankAdminForm({
       )
     : "";
   const formTitle = initial ? "Edit Fill in the Blanks Exercise" : "Create Fill in the Blanks Exercise";
+  const fieldLabelClass = "block text-xs font-black uppercase tracking-[0.18em] text-[#8a6a9c]";
+  const flushInputClass =
+    "mt-1 w-full bg-transparent text-[0.98rem] font-semibold text-[#180d2b] outline-none placeholder:text-[#b49ac6]";
+  const panelClass = "overflow-hidden rounded-[1.15rem] border-[3px] border-[#180d2b] bg-white shadow-[5px_6px_0_#180d2b]";
 
   function updateQuestion(index: number, patch: Partial<FillBlankQuestionDraft>) {
     setQuestions((current) =>
@@ -1078,40 +1104,40 @@ export function FillBlankAdminForm({
   }
 
   return (
-    <form action={action} className="mx-auto mt-8 max-w-[48rem] pb-10">
+    <form action={action} className="mx-auto mt-6 max-w-[58rem] pb-10">
       <input type="hidden" name="locale" value={locale} />
       <input type="hidden" name="id" defaultValue={initial?.id} />
       <input type="hidden" name="questions" value={serializedQuestions} readOnly />
-      <h1 className="font-display text-[clamp(2.25rem,5vw,3rem)] leading-tight text-slate-950">{formTitle}</h1>
+      <h2 className="font-display text-[clamp(1.7rem,4vw,2.4rem)] font-black leading-tight text-[#180d2b]">{formTitle}</h2>
 
       <div className="mt-6 flex items-center gap-3">
-        <div className="h-1 flex-1 overflow-hidden rounded-full bg-slate-200">
-          <div className="h-full rounded-full bg-slate-950 transition-all" style={{ width: `${(completedFields / progressFields.length) * 100}%` }} />
+        <div className="h-4 flex-1 overflow-hidden rounded-full border-[2px] border-[#180d2b] bg-white">
+          <div className="h-full rounded-full bg-[#c6ff2e] transition-all" style={{ width: `${(completedFields / progressFields.length) * 100}%` }} />
         </div>
-        <span className="font-mono text-xs text-slate-500">
+        <span className="rounded-full border-[2px] border-[#180d2b] bg-[#f6f0ff] px-3 py-1 font-mono text-xs font-black text-[#7c3aed] shadow-[2px_3px_0_#180d2b]">
           {completedFields}/{progressFields.length}
         </span>
       </div>
 
-      <div className="mt-5 rounded-[1.25rem] bg-slate-950 p-5 text-white shadow-[0_22px_55px_-38px_rgba(15,23,42,0.7)]">
-        <p className="flex items-center gap-2 font-mono text-[0.68rem] uppercase tracking-[0.14em] text-slate-300">
-          <span className="h-1.5 w-1.5 rounded-full bg-[#ffd54a]" />
+      <div className="mt-5 rounded-[1.25rem] border-[3px] border-[#180d2b] bg-[#1b0d2f] p-5 text-white shadow-[6px_7px_0_#ffc43d]">
+        <p className="flex items-center gap-2 font-mono text-[0.68rem] font-black uppercase tracking-[0.14em] text-[#c6ff2e]">
+          <span className="h-2 w-2 rounded-full bg-[#ffc43d]" />
           Sentence preview
         </p>
-        <p className="mt-3 min-h-8 font-display text-xl leading-8">
-          {previewMarkup || <span className="font-sans text-sm italic text-slate-500">Preview appears when you write the sentence...</span>}
+        <p className="mt-3 min-h-8 font-display text-xl font-black leading-8">
+          {previewMarkup || <span className="font-sans text-sm font-semibold italic text-[#b49ac6]">Preview appears when you write the sentence...</span>}
         </p>
         <div className="mt-4 flex flex-wrap gap-2">
-          <span className="rounded-full border border-[#ffd54a]/30 bg-[#ffd54a]/15 px-3 py-1 font-mono text-xs text-[#ffd54a]">{difficulty}</span>
-          <span className="rounded-full border border-white/10 bg-white/[0.08] px-3 py-1 font-mono text-xs text-slate-200">{timeLimitSeconds} s</span>
+          <span className="rounded-full border-[2px] border-[#ffc43d] bg-[#ffc43d]/20 px-3 py-1 font-mono text-xs font-black text-[#ffc43d]">{difficulty}</span>
+          <span className="rounded-full border-[2px] border-white/20 bg-white/[0.08] px-3 py-1 font-mono text-xs font-black text-white">{timeLimitSeconds} s</span>
         </div>
       </div>
 
       <section className="mt-6">
-        <p className="mb-2 ml-1 text-xs font-semibold uppercase tracking-[0.14em] text-slate-500">General</p>
-        <div className="overflow-hidden rounded-[1.15rem] border border-slate-200 bg-white">
-          <label className="block border-b border-slate-100 px-4 py-3">
-            <span className="block text-xs font-medium text-slate-500">Title</span>
+        <p className="mb-2 ml-1 text-xs font-black uppercase tracking-[0.18em] text-[#7c3aed]">General</p>
+        <div className={panelClass}>
+          <label className="block border-b-[2px] border-[#180d2b] px-4 py-3">
+            <span className={fieldLabelClass}>Title</span>
             <input
               name="title"
               value={title}
@@ -1123,27 +1149,27 @@ export function FillBlankAdminForm({
                 }
               }}
               placeholder="Tamil basics: daily actions"
-              className="mt-1 w-full bg-transparent text-[0.98rem] text-slate-950 outline-none placeholder:text-slate-400"
+              className={flushInputClass}
             />
           </label>
-          <label className="block border-b border-slate-100 px-4 py-3">
-            <span className="block text-xs font-medium text-slate-500">Slug</span>
+          <label className="block border-b-[2px] border-[#180d2b] px-4 py-3">
+            <span className={fieldLabelClass}>Slug</span>
             <input
               name="slug"
               value={slug}
               onChange={(event) => setSlug(slugify(event.target.value))}
               placeholder="tamil-basics-daily-actions"
-              className="mt-1 w-full bg-transparent font-mono text-[0.92rem] text-slate-950 outline-none placeholder:text-slate-400"
+              className={`${flushInputClass} font-mono`}
             />
           </label>
           <div className="grid sm:grid-cols-2">
-            <label className="block border-b border-slate-100 px-4 py-3 sm:border-b-0 sm:border-r">
-              <span className="block text-xs font-medium text-slate-500">Difficulty</span>
+            <label className="block border-b-[2px] border-[#180d2b] px-4 py-3 sm:border-b-0 sm:border-r-[2px]">
+              <span className={fieldLabelClass}>Difficulty</span>
               <select
                 name="difficulty"
                 value={difficulty}
                 onChange={(event) => setDifficulty(event.target.value as FillBlankExercise["difficulty"])}
-                className="mt-1 w-full bg-transparent text-[0.98rem] text-slate-950 outline-none"
+                className={flushInputClass}
               >
                 <option value="beginner">beginner</option>
                 <option value="intermediate">intermediate</option>
@@ -1151,43 +1177,54 @@ export function FillBlankAdminForm({
               </select>
             </label>
             <label className="block px-4 py-3">
-              <span className="block text-xs font-medium text-slate-500">Time limit</span>
+              <span className={fieldLabelClass}>Time limit</span>
               <input
                 name="timeLimitSeconds"
                 type="number"
                 value={timeLimitSeconds}
                 onChange={(event) => setTimeLimitSeconds(Number(event.target.value))}
-                className="mt-1 w-full bg-transparent font-mono text-[0.98rem] text-slate-950 outline-none"
+                className={`${flushInputClass} font-mono`}
               />
             </label>
           </div>
         </div>
       </section>
 
-      <section className="mt-6 rounded-[1.25rem] border border-dashed border-slate-300 bg-white p-5">
+      <section className="mt-6 rounded-[1.25rem] border-[3px] border-dashed border-[#180d2b] bg-white p-5 shadow-[5px_6px_0_#180d2b]">
         <div className="flex flex-col gap-5 lg:flex-row lg:items-start lg:justify-between">
           <div className="max-w-2xl">
-            <p className="text-xs font-bold uppercase tracking-[0.18em] text-slate-500">Import CSV</p>
-            <h2 className="mt-2 font-display text-2xl text-slate-950">Importer les questions</h2>
-            <p className="mt-2 text-sm leading-6 text-slate-600">
+            <p className="text-xs font-black uppercase tracking-[0.18em] text-[#7c3aed]">Import CSV</p>
+            <h2 className="mt-1 font-display text-2xl font-black text-[#180d2b]">Importer les questions</h2>
+            <p className="mt-2 text-sm font-semibold leading-6 text-[#8a6a9c]">
               Le CSV remplace les questions affichees dans le formulaire. Verifie ensuite le resultat, puis sauvegarde
               l&apos;exercice.
             </p>
-            <code className="mt-4 block overflow-x-auto rounded-2xl bg-slate-950 px-4 py-3 text-xs leading-6 text-slate-100">
+            <code className="mt-4 block overflow-x-auto rounded-[1rem] border-[2px] border-[#180d2b] bg-[#1b0d2f] px-4 py-3 text-xs font-bold leading-6 text-white shadow-[3px_4px_0_#180d2b]">
               {FILL_BLANK_CSV_HEADER_TEXT}
             </code>
-            <p className="mt-3 text-xs leading-5 text-slate-500">
-              Colonne blanks: <span className="font-mono text-slate-700">{FILL_BLANK_CSV_BLANKS_EXAMPLE}</span>
+            <p className="mt-3 text-xs font-semibold leading-5 text-[#8a6a9c]">
+              Colonne blanks: <span className="font-mono font-black text-[#180d2b]">{FILL_BLANK_CSV_BLANKS_EXAMPLE}</span>
             </p>
           </div>
 
           <div className="w-full shrink-0 space-y-3 lg:w-[18rem]">
-            <label className="block rounded-2xl border border-slate-200 bg-slate-50 px-4 py-5 text-center text-sm text-slate-600">
-              <span className="font-semibold text-slate-950">Choisir un CSV</span>
-              <input type="file" accept=".csv,text/csv" onChange={importQuestionsCsv} className="mt-3 w-full text-sm" />
+            <label className="block rounded-[1rem] border-[3px] border-dashed border-[#180d2b] bg-[#fff7ed] px-4 py-5 text-center text-sm font-semibold text-[#8a6a9c]">
+              <span className="font-black text-[#180d2b]">Choisir un CSV</span>
+              <input
+                type="file"
+                accept=".csv,text/csv"
+                onChange={importQuestionsCsv}
+                className="mt-3 w-full text-sm font-semibold file:mr-3 file:rounded-full file:border-[2px] file:border-[#180d2b] file:bg-white file:px-3 file:py-2 file:text-xs file:font-black file:text-[#180d2b]"
+              />
             </label>
             {csvImportMessage ? (
-              <p className={`text-sm leading-6 ${csvImportMessage.ok ? "text-emerald-700" : "text-rose-600"}`}>
+              <p
+                className={`rounded-[1rem] border-[2px] px-4 py-3 text-sm font-black leading-6 ${
+                  csvImportMessage.ok
+                    ? "border-[#14b86a] bg-[#dcfce7] text-[#047857]"
+                    : "border-[#ff3b6f] bg-[#ffe4ee] text-[#be123c]"
+                }`}
+              >
                 {csvImportMessage.message}
               </p>
             ) : null}
@@ -1197,11 +1234,11 @@ export function FillBlankAdminForm({
 
       <section className="mt-6">
         <div className="mb-2 flex items-center justify-between gap-3">
-          <p className="ml-1 text-xs font-semibold uppercase tracking-[0.14em] text-slate-500">Questions</p>
+          <p className="ml-1 text-xs font-black uppercase tracking-[0.18em] text-[#7c3aed]">Questions</p>
           <button
             type="button"
             onClick={addQuestion}
-            className="rounded-full bg-slate-950 px-3 py-1.5 text-xs font-semibold text-white transition hover:bg-slate-800"
+            className="rounded-full border-[3px] border-[#180d2b] bg-[#180d2b] px-4 py-2 text-xs font-black text-white shadow-[3px_4px_0_#ffc43d] transition hover:-translate-y-0.5"
           >
             + Add question
           </button>
@@ -1221,12 +1258,12 @@ export function FillBlankAdminForm({
                 key={index}
                 type="button"
                 onClick={() => setActiveQuestionIndex(index)}
-                className={`shrink-0 rounded-full border px-3 py-2 text-xs font-semibold transition ${
+                className={`shrink-0 rounded-full border-[2px] px-3 py-2 text-xs font-black shadow-[2px_3px_0_#180d2b] transition hover:-translate-y-0.5 ${
                   activeQuestionIndex === index
-                    ? "border-slate-950 bg-slate-950 text-white"
+                    ? "border-[#180d2b] bg-[#7c3aed] text-white"
                     : isComplete
-                      ? "border-emerald-200 bg-emerald-50 text-emerald-700"
-                      : "border-slate-200 bg-white text-slate-500"
+                      ? "border-[#180d2b] bg-[#dcfce7] text-[#047857]"
+                      : "border-[#180d2b] bg-white text-[#8a6a9c]"
                 }`}
               >
                 Question {index + 1}
@@ -1234,73 +1271,73 @@ export function FillBlankAdminForm({
             );
           })}
         </div>
-        <div className="overflow-hidden rounded-[1.15rem] border border-slate-200 bg-white">
-          <div className="flex items-center justify-between border-b border-slate-100 px-4 py-3">
-            <p className="text-sm font-semibold text-slate-900">Question {activeQuestionIndex + 1}</p>
+        <div className={panelClass}>
+          <div className="flex items-center justify-between border-b-[2px] border-[#180d2b] px-4 py-3">
+            <p className="text-sm font-black text-[#180d2b]">Question {activeQuestionIndex + 1}</p>
             <button
               type="button"
               onClick={() => removeQuestion(activeQuestionIndex)}
               disabled={questions.length <= 1}
-              className="rounded-full bg-rose-50 px-3 py-1.5 text-xs font-semibold text-rose-600 transition hover:bg-rose-100 disabled:cursor-not-allowed disabled:opacity-40"
+              className="rounded-full border-[2px] border-[#ff3b6f] bg-white px-3 py-1.5 text-xs font-black text-[#ff3b6f] shadow-[2px_3px_0_#ff3b6f] transition hover:-translate-y-0.5 disabled:cursor-not-allowed disabled:opacity-40"
             >
               Remove
             </button>
           </div>
-          <label className="block border-b border-slate-100 px-4 py-3">
-            <span className="block text-xs font-medium text-slate-500">Sentence with blank</span>
+          <label className="block border-b-[2px] border-[#180d2b] px-4 py-3">
+            <span className={fieldLabelClass}>Sentence with blank</span>
             <textarea
               value={activeQuestion.sentenceTemplate}
               onChange={(event) => updateQuestion(activeQuestionIndex, { sentenceTemplate: event.target.value })}
               placeholder="நான் காலை உணவு ____."
-              className="mt-1 min-h-20 w-full resize-none bg-transparent text-[0.98rem] leading-7 text-slate-950 outline-none placeholder:text-slate-400"
+              className={`${flushInputClass} min-h-20 resize-none leading-7`}
             />
-            <span className="mt-1 block text-xs text-slate-400">
+            <span className="mt-1 block text-xs font-semibold text-[#8a6a9c]">
               Use [blank_1], [blank_2] for multiple blanks. Legacy ___ also works for the first blank.
             </span>
           </label>
-          <label className="block border-b border-slate-100 px-4 py-3">
-            <span className="block text-xs font-medium text-slate-500">English translation</span>
+          <label className="block border-b-[2px] border-[#180d2b] px-4 py-3">
+            <span className={fieldLabelClass}>English translation</span>
             <input
               value={activeQuestion.translationEn}
               onChange={(event) => updateQuestion(activeQuestionIndex, { translationEn: event.target.value })}
               placeholder="I eat breakfast."
-              className="mt-1 w-full bg-transparent text-[0.98rem] text-slate-950 outline-none placeholder:text-slate-400"
+              className={flushInputClass}
             />
           </label>
-          <label className="block border-b border-slate-100 px-4 py-3">
-            <span className="block text-xs font-medium text-slate-500">French translation</span>
+          <label className="block border-b-[2px] border-[#180d2b] px-4 py-3">
+            <span className={fieldLabelClass}>French translation</span>
             <input
               value={activeQuestion.translationFr}
               onChange={(event) => updateQuestion(activeQuestionIndex, { translationFr: event.target.value })}
               placeholder="Je mange le petit-déjeuner."
-              className="mt-1 w-full bg-transparent text-[0.98rem] text-slate-950 outline-none placeholder:text-slate-400"
+              className={flushInputClass}
             />
           </label>
-          <label className="block border-b border-slate-100 px-4 py-3">
-            <span className="block text-xs font-medium text-slate-500">English explanation</span>
+          <label className="block border-b-[2px] border-[#180d2b] px-4 py-3">
+            <span className={fieldLabelClass}>English explanation</span>
             <textarea
               value={activeQuestion.explanationEn}
               onChange={(event) => updateQuestion(activeQuestionIndex, { explanationEn: event.target.value })}
               placeholder="Explain the grammar point in English."
-              className="mt-1 min-h-20 w-full resize-none bg-transparent text-[0.98rem] leading-7 text-slate-950 outline-none placeholder:text-slate-400"
+              className={`${flushInputClass} min-h-20 resize-none leading-7`}
             />
           </label>
-          <label className="block border-b border-slate-100 px-4 py-3">
-            <span className="block text-xs font-medium text-slate-500">French explanation</span>
+          <label className="block border-b-[2px] border-[#180d2b] px-4 py-3">
+            <span className={fieldLabelClass}>French explanation</span>
             <textarea
               value={activeQuestion.explanationFr}
               onChange={(event) => updateQuestion(activeQuestionIndex, { explanationFr: event.target.value })}
               placeholder="Expliquez le point de grammaire en français."
-              className="mt-1 min-h-20 w-full resize-none bg-transparent text-[0.98rem] leading-7 text-slate-950 outline-none placeholder:text-slate-400"
+              className={`${flushInputClass} min-h-20 resize-none leading-7`}
             />
           </label>
           <label className="block px-4 py-3">
-            <span className="block text-xs font-medium text-slate-500">Tamil explanation</span>
+            <span className={fieldLabelClass}>Tamil explanation</span>
             <textarea
               value={activeQuestion.explanationTa}
               onChange={(event) => updateQuestion(activeQuestionIndex, { explanationTa: event.target.value })}
               placeholder="தமிழில் இலக்கண விளக்கத்தை எழுதுங்கள்."
-              className="mt-1 min-h-20 w-full resize-none bg-transparent text-[0.98rem] leading-7 text-slate-950 outline-none placeholder:text-slate-400"
+              className={`${flushInputClass} min-h-20 resize-none leading-7`}
             />
           </label>
         </div>
@@ -1308,11 +1345,11 @@ export function FillBlankAdminForm({
 
       <section className="mt-6">
         <div className="mb-2 flex items-center justify-between gap-3">
-          <p className="ml-1 text-xs font-semibold uppercase tracking-[0.14em] text-slate-500">Blanks and answers</p>
+          <p className="ml-1 text-xs font-black uppercase tracking-[0.18em] text-[#7c3aed]">Blanks and answers</p>
           <button
             type="button"
             onClick={() => addBlank(activeQuestionIndex)}
-            className="rounded-full bg-white px-3 py-1.5 text-xs font-semibold text-slate-700 ring-1 ring-slate-200 transition hover:bg-slate-50"
+            className="rounded-full border-[3px] border-[#180d2b] bg-white px-4 py-2 text-xs font-black text-[#180d2b] shadow-[3px_4px_0_#180d2b] transition hover:-translate-y-0.5"
           >
             + Add blank
           </button>
@@ -1325,48 +1362,48 @@ export function FillBlankAdminForm({
               .filter(Boolean);
 
             return (
-              <div key={`${blank.key}-${blankIndex}`} className="overflow-hidden rounded-[1.15rem] border border-slate-200 bg-white">
-                <div className="flex items-center justify-between border-b border-slate-100 px-4 py-3">
+              <div key={`${blank.key}-${blankIndex}`} className={panelClass}>
+                <div className="flex items-center justify-between border-b-[2px] border-[#180d2b] px-4 py-3">
                   <label className="flex-1">
-                    <span className="block text-xs font-medium text-slate-500">Blank key</span>
+                    <span className={fieldLabelClass}>Blank key</span>
                     <input
                       value={blank.key}
                       onChange={(event) => updateBlank(activeQuestionIndex, blankIndex, { key: slugify(event.target.value).replace(/-/g, "_") || `blank_${blankIndex + 1}` })}
                       placeholder={`blank_${blankIndex + 1}`}
-                      className="mt-1 w-full bg-transparent font-mono text-sm text-slate-950 outline-none"
+                      className={`${flushInputClass} font-mono text-sm`}
                     />
                   </label>
                   <button
                     type="button"
                     onClick={() => removeBlank(activeQuestionIndex, blankIndex)}
                     disabled={activeQuestion.blanks.length <= 1}
-                    className="rounded-full bg-rose-50 px-3 py-1.5 text-xs font-semibold text-rose-600 transition hover:bg-rose-100 disabled:cursor-not-allowed disabled:opacity-40"
+                    className="rounded-full border-[2px] border-[#ff3b6f] bg-white px-3 py-1.5 text-xs font-black text-[#ff3b6f] shadow-[2px_3px_0_#ff3b6f] transition hover:-translate-y-0.5 disabled:cursor-not-allowed disabled:opacity-40"
                   >
                     Remove
                   </button>
                 </div>
-                <label className="block border-b border-slate-100 px-4 py-3">
-                  <span className="block text-xs font-medium text-slate-500">Options for [{blank.key || `blank_${blankIndex + 1}`}]</span>
+                <label className="block border-b-[2px] border-[#180d2b] px-4 py-3">
+                  <span className={fieldLabelClass}>Options for [{blank.key || `blank_${blankIndex + 1}`}]</span>
                   <textarea
                     value={blank.options}
                     onChange={(event) => updateBlank(activeQuestionIndex, blankIndex, { options: event.target.value })}
                     placeholder={"One option per line\nகாலை\nமாலை\nஇரவு"}
-                    className="mt-1 min-h-24 w-full resize-none bg-transparent text-[0.98rem] leading-7 text-slate-950 outline-none placeholder:text-slate-400"
+                    className={`${flushInputClass} min-h-24 resize-none leading-7`}
                   />
                 </label>
                 {blankOptions.length > 0 ? (
-                  <div className="border-b border-slate-100 px-4 py-3">
-                    <p className="text-xs font-medium text-slate-500">Choose correct answer</p>
+                  <div className="border-b-[2px] border-[#180d2b] px-4 py-3">
+                    <p className={fieldLabelClass}>Choose correct answer</p>
                     <div className="mt-2 flex flex-wrap gap-2">
                       {blankOptions.map((option) => (
                         <button
                           key={option}
                           type="button"
                           onClick={() => updateBlank(activeQuestionIndex, blankIndex, { correctAnswer: option })}
-                          className={`rounded-lg border px-3 py-1.5 text-sm transition ${
+                          className={`rounded-full border-[2px] px-3 py-1.5 text-sm font-black shadow-[2px_3px_0_#180d2b] transition hover:-translate-y-0.5 ${
                             blank.correctAnswer === option
-                              ? "border-[#ffd54a] bg-[#ffd54a]/30 font-semibold text-[#5c4600]"
-                              : "border-slate-200 bg-slate-50 text-slate-600 hover:bg-slate-100"
+                              ? "border-[#180d2b] bg-[#c6ff2e] text-[#180d2b]"
+                              : "border-[#180d2b] bg-white text-[#8a6a9c]"
                           }`}
                         >
                           {option}
@@ -1376,12 +1413,12 @@ export function FillBlankAdminForm({
                   </div>
                 ) : null}
                 <label className="block px-4 py-3">
-                  <span className="block text-xs font-medium text-slate-500">Correct answer</span>
+                  <span className={fieldLabelClass}>Correct answer</span>
                   <input
                     value={blank.correctAnswer}
                     onChange={(event) => updateBlank(activeQuestionIndex, blankIndex, { correctAnswer: event.target.value })}
                     placeholder="காலை"
-                    className="mt-1 w-full bg-transparent text-[0.98rem] text-slate-950 outline-none placeholder:text-slate-400"
+                    className={flushInputClass}
                   />
                 </label>
               </div>
@@ -1390,13 +1427,204 @@ export function FillBlankAdminForm({
         </div>
       </section>
 
-      <div className="sticky bottom-0 mt-7 bg-[linear-gradient(to_top,#eff2f6_68%,transparent)] pt-4">
+      <div className="sticky bottom-0 mt-7 bg-[linear-gradient(to_top,#fdf4e7_68%,transparent)] pt-4">
         <button
           disabled={pending}
-          className="flex w-full items-center justify-center gap-2 rounded-xl bg-slate-950 px-5 py-4 text-sm font-semibold text-white transition hover:bg-slate-800 disabled:opacity-60"
+          className="flex w-full items-center justify-center gap-2 rounded-full border-[3px] border-[#180d2b] bg-[#20bf73] px-5 py-4 text-sm font-black text-white shadow-[5px_6px_0_#180d2b] transition hover:-translate-y-0.5 disabled:opacity-60"
         >
-          <span className="text-[#ffd54a]">✓</span>
+          <span className="text-[#c6ff2e]">✓</span>
           {initial ? "Save exercise" : "Create exercise"}
+        </button>
+        <StatusMessage message={state.message} ok={state.ok} />
+      </div>
+    </form>
+  );
+}
+
+type NimishamEditableWord = NimishamWord & {
+  translation: Partial<Record<Locale, string>>;
+};
+
+function createEmptyNimishamWord(index: number): NimishamEditableWord {
+  return {
+    id: `word-${index + 1}`,
+    word: "",
+    translation: { en: "", fr: "", ta: "" },
+    isCorrect: false,
+  };
+}
+
+export function NimishamAdminForm({
+  locale,
+  initial,
+}: {
+  locale: Locale;
+  initial?: NimishamExercise | null;
+}) {
+  const [state, action, pending] = useActionState(upsertNimishamAction, initialCrudState);
+  const [title, setTitle] = useState(initial?.title ?? "");
+  const [slug, setSlug] = useState(initial?.slug ?? "");
+  const [slugTouched, setSlugTouched] = useState(Boolean(initial?.slug));
+  const [words, setWords] = useState<NimishamEditableWord[]>(
+    initial?.words.length ? initial.words : Array.from({ length: 12 }, (_, index) => createEmptyNimishamWord(index)),
+  );
+  const serializedWords = JSON.stringify(
+    words
+      .map((word, index) => ({
+        id: word.id || `word-${index + 1}`,
+        word: word.word.trim(),
+        translation: {
+          en: word.translation.en?.trim() || word.word.trim(),
+          fr: word.translation.fr?.trim() || word.translation.en?.trim() || word.word.trim(),
+          ta: word.translation.ta?.trim() || word.word.trim(),
+        },
+        isCorrect: word.isCorrect,
+      }))
+      .filter((word) => word.word),
+  );
+  const correctCount = words.filter((word) => word.word.trim() && word.isCorrect).length;
+  const totalCount = words.filter((word) => word.word.trim()).length;
+  const nimishamPanelClass = "rounded-[1.5rem] border-[3px] border-[#180d2b] bg-white shadow-[6px_7px_0_#180d2b]";
+  const nimishamFieldClass = "block rounded-[1rem] border-[2px] border-[#180d2b] bg-white px-4 py-3 shadow-[3px_4px_0_#180d2b]";
+  const nimishamLabelClass = "block text-xs font-black uppercase tracking-[0.18em] text-[#8a6a9c]";
+  const nimishamInputClass = "mt-2 w-full bg-transparent text-sm font-semibold text-[#180d2b] outline-none placeholder:text-[#b49ac6]";
+
+  function updateWord(index: number, patch: Partial<NimishamEditableWord>) {
+    setWords((current) => current.map((word, wordIndex) => (wordIndex === index ? { ...word, ...patch } : word)));
+  }
+
+  function updateWordTranslation(index: number, key: Locale, value: string) {
+    setWords((current) =>
+      current.map((word, wordIndex) =>
+        wordIndex === index
+          ? {
+              ...word,
+              translation: {
+                ...word.translation,
+                [key]: value,
+              },
+            }
+          : word,
+      ),
+    );
+  }
+
+  return (
+    <form action={action} className={`mt-6 overflow-hidden ${nimishamPanelClass}`}>
+      <input type="hidden" name="locale" value={locale} />
+      <input type="hidden" name="id" defaultValue={initial?.id} />
+      <input type="hidden" name="words" value={serializedWords} readOnly />
+
+      <section className="grid gap-4 p-5 sm:p-6 md:grid-cols-2 xl:grid-cols-4">
+        <label className={nimishamFieldClass}>
+          <span className={nimishamLabelClass}>Title</span>
+          <input
+            name="title"
+            value={title}
+            onChange={(event) => {
+              const nextTitle = event.target.value;
+              setTitle(nextTitle);
+              if (!slugTouched) {
+                setSlug(slugify(nextTitle));
+              }
+            }}
+            placeholder="Animal Sprint"
+            className={`${nimishamInputClass} text-base font-black`}
+          />
+        </label>
+        <label className={nimishamFieldClass}>
+          <span className={nimishamLabelClass}>Slug</span>
+          <input
+            name="slug"
+            value={slug}
+            onChange={(event) => {
+              setSlugTouched(true);
+              setSlug(slugify(event.target.value));
+            }}
+            placeholder="animal-sprint"
+            className={`${nimishamInputClass} font-mono`}
+          />
+        </label>
+        <label className={nimishamFieldClass}>
+          <span className={nimishamLabelClass}>Difficulty</span>
+          <select name="difficulty" defaultValue={initial?.difficulty ?? "beginner"} className={`${nimishamInputClass} text-base font-black`}>
+            <option value="beginner">beginner</option>
+            <option value="intermediate">intermediate</option>
+            <option value="advanced">advanced</option>
+          </select>
+        </label>
+        <label className={nimishamFieldClass}>
+          <span className={nimishamLabelClass}>Time limit</span>
+          <input
+            name="timeLimitSeconds"
+            type="number"
+            defaultValue={initial?.timeLimitSeconds ?? 60}
+            className={`${nimishamInputClass} font-mono text-base font-black`}
+          />
+        </label>
+        <label className={`${nimishamFieldClass} md:col-span-2 xl:col-span-4`}>
+          <span className={nimishamLabelClass}>Description</span>
+          <input
+            name="description"
+            defaultValue={initial?.description ?? ""}
+            placeholder="Tap all matching Tamil words before time runs out."
+            className={nimishamInputClass}
+          />
+        </label>
+        <label className={`${nimishamFieldClass} md:col-span-2 xl:col-span-4`}>
+          <span className={nimishamLabelClass}>Question English</span>
+          <input name="promptEn" defaultValue={initial?.prompt.en ?? ""} placeholder="Tap every word that describes an animal." className={nimishamInputClass} />
+        </label>
+        <label className={`${nimishamFieldClass} md:col-span-2`}>
+          <span className={nimishamLabelClass}>Question French</span>
+          <input name="promptFr" defaultValue={initial?.prompt.fr ?? ""} placeholder="Clique sur tous les mots qui décrivent des animaux." className={nimishamInputClass} />
+        </label>
+        <label className={`${nimishamFieldClass} md:col-span-2`}>
+          <span className={nimishamLabelClass}>Question Tamil</span>
+          <input name="promptTa" defaultValue={initial?.prompt.ta ?? ""} placeholder="விலங்குகளை குறிக்கும் சொற்களைத் தொடுங்கள்." className={`${nimishamInputClass} font-tamil`} />
+        </label>
+      </section>
+
+      <section className="border-t-[3px] border-[#180d2b] bg-[#fff7ed] p-5 sm:p-6">
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <div>
+            <p className="text-xs font-black uppercase tracking-[0.22em] text-[#7c3aed]">Words</p>
+            <p className="mt-1 text-sm font-semibold text-[#8a6a9c]">{totalCount} words, {correctCount} correct targets.</p>
+          </div>
+          <button
+            type="button"
+            onClick={() => setWords((current) => [...current, createEmptyNimishamWord(current.length)])}
+            className="rounded-full border-[3px] border-[#180d2b] bg-[#180d2b] px-4 py-2 text-sm font-black text-white shadow-[3px_4px_0_#ffc43d] transition hover:-translate-y-0.5"
+          >
+            Add word
+          </button>
+        </div>
+        <div className="mt-5 grid gap-3">
+          {words.map((word, index) => (
+            <div key={`${word.id}-${index}`} className="grid gap-2 rounded-[1rem] border-[2px] border-[#180d2b] bg-white p-3 shadow-[3px_4px_0_#180d2b] md:grid-cols-[1fr_1fr_1fr_1fr_auto_auto]">
+              <input value={word.word} onChange={(event) => updateWord(index, { word: event.target.value, id: word.id || `word-${index + 1}` })} placeholder="Tamil word" className="rounded-[0.8rem] border-[2px] border-[#180d2b] px-3 py-2 font-tamil text-sm font-semibold text-[#180d2b] outline-none" />
+              <input value={word.translation.en ?? ""} onChange={(event) => updateWordTranslation(index, "en", event.target.value)} placeholder="English" className="rounded-[0.8rem] border-[2px] border-[#180d2b] px-3 py-2 text-sm font-semibold text-[#180d2b] outline-none" />
+              <input value={word.translation.fr ?? ""} onChange={(event) => updateWordTranslation(index, "fr", event.target.value)} placeholder="French" className="rounded-[0.8rem] border-[2px] border-[#180d2b] px-3 py-2 text-sm font-semibold text-[#180d2b] outline-none" />
+              <input value={word.translation.ta ?? ""} onChange={(event) => updateWordTranslation(index, "ta", event.target.value)} placeholder="Tamil display" className="rounded-[0.8rem] border-[2px] border-[#180d2b] px-3 py-2 font-tamil text-sm font-semibold text-[#180d2b] outline-none" />
+              <label className="inline-flex items-center justify-center gap-2 rounded-[0.8rem] border-[2px] border-[#180d2b] bg-[#dcfce7] px-3 py-2 text-sm font-black text-[#047857]">
+                <input type="checkbox" checked={word.isCorrect} onChange={(event) => updateWord(index, { isCorrect: event.target.checked })} className="h-4 w-4 accent-[#20bf73]" />
+                Correct
+              </label>
+              <button
+                type="button"
+                onClick={() => setWords((current) => current.filter((_, wordIndex) => wordIndex !== index))}
+                className="rounded-[0.8rem] border-[2px] border-[#ff3b6f] bg-white px-3 py-2 text-sm font-black text-[#ff3b6f] shadow-[2px_3px_0_#ff3b6f] transition hover:-translate-y-0.5"
+              >
+                Remove
+              </button>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      <div className="flex flex-col gap-4 border-t-[3px] border-[#180d2b] p-5 sm:flex-row sm:items-center sm:p-6">
+        <button disabled={pending || correctCount === 0 || totalCount === 0} className="rounded-full border-[3px] border-[#180d2b] bg-[#20bf73] px-6 py-3 text-sm font-black text-white shadow-[4px_5px_0_#180d2b] transition hover:-translate-y-0.5 disabled:opacity-60">
+          Save Nimisham
         </button>
         <StatusMessage message={state.message} ok={state.ok} />
       </div>
@@ -1432,6 +1660,10 @@ export function ImageHuntAdminForm({
     })) ?? [],
   );
   const serializedTargets = JSON.stringify(targets);
+  const huntPanelClass = "rounded-[1.5rem] border-[3px] border-[#180d2b] bg-white shadow-[6px_7px_0_#180d2b]";
+  const huntFieldClass = "block rounded-[1rem] border-[2px] border-[#180d2b] bg-white px-4 py-3 shadow-[3px_4px_0_#180d2b]";
+  const huntLabelClass = "block text-xs font-black uppercase tracking-[0.18em] text-[#8a6a9c]";
+  const huntInputClass = "mt-2 w-full bg-transparent text-sm font-semibold text-[#180d2b] outline-none placeholder:text-[#b49ac6]";
 
   function addTargetFromImage(event: MouseEvent<HTMLDivElement>) {
     if (!imageUrl.trim()) {
@@ -1549,113 +1781,113 @@ export function ImageHuntAdminForm({
   }
 
   return (
-    <form action={action} className="mx-auto mt-8 max-w-7xl space-y-5 pb-24 sm:px-4 lg:pb-10">
+    <form action={action} className="mx-auto mt-6 max-w-7xl space-y-5 pb-24 lg:pb-10">
       <input type="hidden" name="locale" value={locale} />
       <input type="hidden" name="id" defaultValue={initial?.id} />
       <input type="hidden" name="targets" value={serializedTargets} readOnly />
 
-      <div className="overflow-hidden rounded-[1.75rem] border border-[#ead5b8] bg-[#fff8ec] shadow-[0_24px_70px_-50px_rgba(74,51,36,0.45)]">
-        <div className="border-b border-[#ead5b8] px-5 py-4 sm:px-6">
-          <div className="grid grid-cols-3 overflow-hidden rounded-2xl border border-[#ead5b8] bg-white/70 text-center shadow-sm">
+      <div className={`overflow-hidden ${huntPanelClass}`}>
+        <div className="border-b-[3px] border-[#180d2b] bg-[#f6f0ff] px-5 py-4 sm:px-6">
+          <div className="grid grid-cols-3 overflow-hidden rounded-[1rem] border-[3px] border-[#180d2b] bg-white text-center shadow-[4px_5px_0_#180d2b]">
             <div className="px-4 py-3">
-              <p className="text-[0.65rem] font-bold uppercase tracking-[0.18em] text-[#9a6a2f]">Zones</p>
-              <p className="mt-1 text-2xl font-semibold text-[var(--brand-ink)]">{targets.length}</p>
+              <p className="text-[0.65rem] font-black uppercase tracking-[0.18em] text-[#7c3aed]">Zones</p>
+              <p className="mt-1 font-display text-2xl font-black text-[#180d2b]">{targets.length}</p>
             </div>
-            <div className="border-x border-[#ead5b8] px-4 py-3">
-              <p className="text-[0.65rem] font-bold uppercase tracking-[0.18em] text-[#9a6a2f]">Image</p>
-              <p className="mt-1 text-2xl font-semibold text-[var(--brand-ink)]">{imageUrl.trim() ? "OK" : "--"}</p>
+            <div className="border-x-[3px] border-[#180d2b] px-4 py-3">
+              <p className="text-[0.65rem] font-black uppercase tracking-[0.18em] text-[#7c3aed]">Image</p>
+              <p className="mt-1 font-display text-2xl font-black text-[#180d2b]">{imageUrl.trim() ? "OK" : "--"}</p>
             </div>
             <div className="px-4 py-3">
-              <p className="text-[0.65rem] font-bold uppercase tracking-[0.18em] text-[#9a6a2f]">Mode</p>
-              <p className="mt-1 text-2xl font-semibold text-[var(--brand-ink)]">Tap</p>
+              <p className="text-[0.65rem] font-black uppercase tracking-[0.18em] text-[#7c3aed]">Mode</p>
+              <p className="mt-1 font-display text-2xl font-black text-[#180d2b]">Tap</p>
             </div>
           </div>
         </div>
 
         <section className="grid gap-3 p-5 sm:p-6 md:grid-cols-2 xl:grid-cols-4">
-          <label className="block rounded-2xl border border-[#ead5b8] bg-white/80 px-4 py-3">
-            <span className="block text-xs font-semibold uppercase tracking-[0.16em] text-[#9a6a2f]">Title</span>
+          <label className={huntFieldClass}>
+            <span className={huntLabelClass}>Title</span>
             <input
               name="title"
               placeholder="Animals in the garden"
               defaultValue={initial?.title}
-              className="mt-2 w-full bg-transparent text-base font-semibold text-[var(--brand-ink)] outline-none placeholder:text-[#9d8974]"
+              className={`${huntInputClass} text-base font-black`}
             />
           </label>
-          <label className="block rounded-2xl border border-[#ead5b8] bg-white/80 px-4 py-3">
-            <span className="block text-xs font-semibold uppercase tracking-[0.16em] text-[#9a6a2f]">Slug</span>
+          <label className={huntFieldClass}>
+            <span className={huntLabelClass}>Slug</span>
             <input
               name="slug"
               placeholder="animals-garden"
               defaultValue={initial?.slug}
-              className="mt-2 w-full bg-transparent font-mono text-sm text-[var(--brand-ink)] outline-none placeholder:text-[#9d8974]"
+              className={`${huntInputClass} font-mono`}
             />
           </label>
-          <label className="block rounded-2xl border border-[#ead5b8] bg-white/80 px-4 py-3">
-            <span className="block text-xs font-semibold uppercase tracking-[0.16em] text-[#9a6a2f]">Difficulty</span>
+          <label className={huntFieldClass}>
+            <span className={huntLabelClass}>Difficulty</span>
             <select
               name="difficulty"
               defaultValue={initial?.difficulty ?? "beginner"}
-              className="mt-2 w-full bg-transparent text-base font-semibold text-[var(--brand-ink)] outline-none"
+              className={`${huntInputClass} text-base font-black`}
             >
               <option value="beginner">beginner</option>
               <option value="intermediate">intermediate</option>
               <option value="advanced">advanced</option>
             </select>
           </label>
-          <label className="block rounded-2xl border border-[#ead5b8] bg-white/80 px-4 py-3">
-            <span className="block text-xs font-semibold uppercase tracking-[0.16em] text-[#9a6a2f]">Time limit</span>
+          <label className={huntFieldClass}>
+            <span className={huntLabelClass}>Time limit</span>
             <input
               name="timeLimitSeconds"
               type="number"
               defaultValue={initial?.timeLimitSeconds ?? 240}
-              className="mt-2 w-full bg-transparent font-mono text-base font-semibold text-[var(--brand-ink)] outline-none"
+              className={`${huntInputClass} font-mono text-base font-black`}
             />
           </label>
-          <label className="block rounded-2xl border border-[#ead5b8] bg-white/80 px-4 py-3 md:col-span-2 xl:col-span-4">
-            <span className="block text-xs font-semibold uppercase tracking-[0.16em] text-[#9a6a2f]">Image URL</span>
+          <label className={`${huntFieldClass} md:col-span-2 xl:col-span-4`}>
+            <span className={huntLabelClass}>Image URL</span>
             <input
               name="imageUrl"
               value={imageUrl}
               onChange={(event) => setImageUrl(event.target.value)}
               placeholder="/image-hunt/animaux.jpg or https://..."
-              className="mt-2 w-full bg-transparent text-sm text-[var(--brand-ink)] outline-none placeholder:text-[#9d8974]"
+              className={huntInputClass}
             />
           </label>
-          <label className="block rounded-2xl border border-[#ead5b8] bg-white/80 px-4 py-3 md:col-span-2">
-            <span className="block text-xs font-semibold uppercase tracking-[0.16em] text-[#9a6a2f]">Instruction</span>
+          <label className={`${huntFieldClass} md:col-span-2`}>
+            <span className={huntLabelClass}>Instruction</span>
             <textarea
               name="instructionEn"
               defaultValue={initial?.instruction.en}
               placeholder="Find the requested object in the image."
-              className="mt-2 min-h-20 w-full resize-none bg-transparent text-sm leading-6 text-[var(--brand-ink)] outline-none placeholder:text-[#9d8974]"
+              className={`${huntInputClass} min-h-20 resize-none leading-6`}
             />
           </label>
         </section>
       </div>
 
       <section className="grid gap-5 xl:grid-cols-[minmax(0,1.45fr)_minmax(20rem,0.75fr)]">
-        <div className="rounded-[1.75rem] border border-[#ead5b8] bg-[#fff8ec] p-3 shadow-[0_24px_70px_-55px_rgba(74,51,36,0.45)] sm:p-4">
+        <div className={`${huntPanelClass} p-3 sm:p-4`}>
           <div className="mb-3 flex flex-col gap-2 px-1 sm:flex-row sm:items-center sm:justify-between">
             <div>
-              <p className="text-xs font-bold uppercase tracking-[0.22em] text-[#9a6a2f]">Image preview</p>
-              <p className="mt-1 text-sm text-[#755b43]">Tap to add a zone, drag to move, pull the black handle to resize.</p>
+              <p className="text-xs font-black uppercase tracking-[0.22em] text-[#7c3aed]">Image preview</p>
+              <p className="mt-1 text-sm font-semibold text-[#8a6a9c]">Tap to add a zone, drag to move, pull the black handle to resize.</p>
             </div>
-            <span className="w-fit rounded-full border border-[#ead5b8] bg-white/80 px-3 py-1.5 text-xs font-semibold text-[#7d5a38]">
+            <span className="w-fit rounded-full border-[2px] border-[#180d2b] bg-[#c6ff2e] px-3 py-1.5 text-xs font-black text-[#180d2b] shadow-[2px_3px_0_#180d2b]">
               {activeTargetIndex === null ? "No zone selected" : `Zone ${activeTargetIndex + 1} selected`}
             </span>
           </div>
           <div
             ref={previewRef}
             onClick={addTargetFromImage}
-            className={`relative aspect-[4/3] w-full overflow-hidden rounded-[1.4rem] border border-[#ead5b8] bg-[#f7ead7] text-left shadow-inner sm:aspect-[16/10] ${
+            className={`relative aspect-[4/3] w-full overflow-hidden rounded-[1.2rem] border-[3px] border-[#180d2b] bg-[#fff7ed] text-left shadow-inner sm:aspect-[16/10] ${
               imageUrl.trim() ? "cursor-crosshair" : "cursor-not-allowed"
             }`}
           >
             {imageUrl.trim() ? (
               <img src={imageUrl} alt="" className="h-full w-full object-cover" />
             ) : (
-              <span className="flex h-full items-center justify-center px-6 text-center text-sm text-[#80664c]">
+              <span className="flex h-full items-center justify-center px-6 text-center text-sm font-semibold text-[#8a6a9c]">
                 Ajoute une URL ou un chemin d&apos;image pour commencer le placement.
               </span>
             )}
@@ -1668,10 +1900,10 @@ export function ImageHuntAdminForm({
                   setActiveTargetIndex(index);
                 }}
                 onPointerDown={(event) => startTargetDrag(event, index)}
-                className={`absolute flex min-h-8 min-w-8 -translate-x-1/2 -translate-y-1/2 touch-none items-center justify-center rounded-full border-2 text-xs font-bold text-white shadow-lg ${
+                className={`absolute flex min-h-8 min-w-8 -translate-x-1/2 -translate-y-1/2 touch-none items-center justify-center rounded-full border-[3px] text-xs font-black text-white shadow-lg ${
                   activeTargetIndex === index
-                    ? "border-white bg-[#1f7a67]/50 ring-4 ring-[#9be3d4]/80"
-                    : "border-white bg-[#1f7a67]/28 ring-2 ring-[#1f7a67]/45"
+                    ? "border-white bg-[#20bf73]/60 ring-4 ring-[#c6ff2e]/80"
+                    : "border-white bg-[#20bf73]/35 ring-2 ring-[#180d2b]/35"
                 }`}
                 style={{
                   left: `${target.x}%`,
@@ -1683,85 +1915,85 @@ export function ImageHuntAdminForm({
                 {index + 1}
                 <span
                   onPointerDown={(event) => startTargetResize(event, index)}
-                  className="absolute -bottom-3 -right-3 h-7 w-7 rounded-full border-2 border-white bg-[#2d2017] shadow-md sm:h-6 sm:w-6"
+                  className="absolute -bottom-3 -right-3 h-7 w-7 rounded-full border-[3px] border-white bg-[#180d2b] shadow-md sm:h-6 sm:w-6"
                   aria-hidden="true"
                 />
               </button>
             ))}
           </div>
           {placementMessage ? (
-            <p className="mt-3 rounded-2xl border border-[#ead5b8] bg-white/75 px-4 py-3 text-sm leading-6 text-[#684f38]">
+            <p className="mt-3 rounded-[1rem] border-[2px] border-[#180d2b] bg-[#fff7ed] px-4 py-3 text-sm font-semibold leading-6 text-[#6b4a2b]">
               {placementMessage}
             </p>
           ) : null}
         </div>
 
         <div className="space-y-5 xl:sticky xl:top-6 xl:self-start">
-          <div className="rounded-[1.75rem] border border-[#ead5b8] bg-[#fff8ec] p-4 shadow-[0_18px_55px_-45px_rgba(74,51,36,0.45)] sm:p-5">
+          <div className={`${huntPanelClass} p-4 sm:p-5`}>
             <div className="flex items-center justify-between gap-3">
               <div>
-                <p className="text-xs font-bold uppercase tracking-[0.2em] text-[#9a6a2f]">New zone</p>
-                <h2 className="mt-1 text-xl font-semibold text-[var(--brand-ink)]">Target labels</h2>
+                <p className="text-xs font-black uppercase tracking-[0.2em] text-[#7c3aed]">New zone</p>
+                <h2 className="mt-1 font-display text-xl font-black text-[#180d2b]">Target labels</h2>
               </div>
-              <span className="rounded-full bg-[#1f7a67] px-3 py-1 text-xs font-bold text-white">Step 1</span>
+              <span className="rounded-full border-[2px] border-[#180d2b] bg-[#c6ff2e] px-3 py-1 text-xs font-black text-[#180d2b]">Step 1</span>
             </div>
             <div className="mt-4 space-y-3">
-              <label className="block rounded-2xl border border-[#ead5b8] bg-white/80 px-4 py-3">
-                <span className="block text-xs font-semibold uppercase tracking-[0.14em] text-[#9a6a2f]">Tamil</span>
+              <label className={huntFieldClass}>
+                <span className={huntLabelClass}>Tamil</span>
                 <input
                   value={targetLabelTa}
                   onChange={(event) => setTargetLabelTa(event.target.value)}
                   placeholder="நாய்"
-                  className="mt-1 w-full bg-transparent text-base font-semibold text-[var(--brand-ink)] outline-none placeholder:text-[#a28b72]"
+                  className={`${huntInputClass} text-base font-black`}
                 />
               </label>
-              <label className="block rounded-2xl border border-[#ead5b8] bg-white/80 px-4 py-3">
-                <span className="block text-xs font-semibold uppercase tracking-[0.14em] text-[#9a6a2f]">English</span>
+              <label className={huntFieldClass}>
+                <span className={huntLabelClass}>English</span>
                 <input
                   value={targetLabelEn}
                   onChange={(event) => setTargetLabelEn(event.target.value)}
                   placeholder="dog"
-                  className="mt-1 w-full bg-transparent text-base font-semibold text-[var(--brand-ink)] outline-none placeholder:text-[#a28b72]"
+                  className={`${huntInputClass} text-base font-black`}
                 />
               </label>
-              <label className="block rounded-2xl border border-[#ead5b8] bg-white/80 px-4 py-3">
-                <span className="block text-xs font-semibold uppercase tracking-[0.14em] text-[#9a6a2f]">French</span>
+              <label className={huntFieldClass}>
+                <span className={huntLabelClass}>French</span>
                 <input
                   value={targetLabelFr}
                   onChange={(event) => setTargetLabelFr(event.target.value)}
                   placeholder="chien"
-                  className="mt-1 w-full bg-transparent text-base font-semibold text-[var(--brand-ink)] outline-none placeholder:text-[#a28b72]"
+                  className={`${huntInputClass} text-base font-black`}
                 />
               </label>
-              <p className="rounded-2xl bg-[#f4e4cc] px-4 py-3 text-xs leading-5 text-[#72563d]">
+              <p className="rounded-[1rem] border-[2px] border-[#180d2b] bg-[#fff7d6] px-4 py-3 text-xs font-semibold leading-5 text-[#6b4a2b]">
                 Remplis ces champs, clique dans l&apos;image, puis deplace la zone ou etire-la avec la poignee noire.
               </p>
             </div>
           </div>
 
-          <div className="rounded-[1.75rem] border border-[#ead5b8] bg-white/90 p-4 shadow-[0_18px_55px_-45px_rgba(74,51,36,0.45)] sm:p-5">
+          <div className={`${huntPanelClass} p-4 sm:p-5`}>
             <div className="flex items-center justify-between gap-3">
               <div>
-                <p className="text-xs font-bold uppercase tracking-[0.2em] text-[#9a6a2f]">Zones</p>
-                <h2 className="mt-1 text-xl font-semibold text-[var(--brand-ink)]">Saved targets</h2>
+                <p className="text-xs font-black uppercase tracking-[0.2em] text-[#7c3aed]">Zones</p>
+                <h2 className="mt-1 font-display text-xl font-black text-[#180d2b]">Saved targets</h2>
               </div>
-              <span className="rounded-full border border-[#ead5b8] bg-[#fff8ec] px-3 py-1 text-xs font-semibold text-[#7d5a38]">
+              <span className="rounded-full border-[2px] border-[#180d2b] bg-[#c6ff2e] px-3 py-1 text-xs font-black text-[#180d2b]">
                 {targets.length}
               </span>
             </div>
             <div className="mt-4 max-h-[22rem] space-y-2 overflow-y-auto pr-1">
               {targets.length === 0 ? (
-                <p className="rounded-2xl border border-dashed border-[#d9b98f] bg-[#fff8ec] px-4 py-5 text-sm leading-6 text-[#72563d]">
+                <p className="rounded-[1rem] border-[2px] border-dashed border-[#180d2b] bg-[#fff7ed] px-4 py-5 text-sm font-semibold leading-6 text-[#8a6a9c]">
                   Aucune zone ajoutee.
                 </p>
               ) : (
                 targets.map((target, index) => (
                   <div
                     key={`${target.labelTa}-${target.x}-${target.y}`}
-                    className={`flex items-center justify-between gap-3 rounded-2xl border px-3 py-3 transition ${
+                    className={`flex items-center justify-between gap-3 rounded-[1rem] border-[2px] px-3 py-3 transition ${
                       activeTargetIndex === index
-                        ? "border-[#1f7a67] bg-[#e7f6f1]"
-                        : "border-[#ead5b8] bg-[#fff8ec]"
+                        ? "border-[#180d2b] bg-[#dcfce7]"
+                        : "border-[#180d2b] bg-[#fff7ed]"
                     }`}
                   >
                     <button
@@ -1769,20 +2001,20 @@ export function ImageHuntAdminForm({
                       onClick={() => setActiveTargetIndex(index)}
                       className="min-w-0 flex-1 text-left"
                     >
-                      <p className="truncate font-semibold text-[var(--brand-ink)]">
+                      <p className="truncate font-black text-[#180d2b]">
                         {index + 1}. {target.labelTa}
                       </p>
-                      <p className="mt-1 truncate text-xs text-[#72563d]">
+                      <p className="mt-1 truncate text-xs font-semibold text-[#8a6a9c]">
                         {target.en} / {target.fr}
                       </p>
-                      <p className="mt-1 font-mono text-[0.65rem] text-[#9a6a2f]">
+                      <p className="mt-1 font-mono text-[0.65rem] font-black text-[#7c3aed]">
                         {target.x}%, {target.y}% · {target.width}% x {target.height}%
                       </p>
                     </button>
                     <button
                       type="button"
                       onClick={() => removeTarget(index)}
-                      className="shrink-0 rounded-full bg-[#fee2e2] px-3 py-2 text-xs font-bold text-[#b42318] transition hover:bg-[#fecaca]"
+                      className="shrink-0 rounded-full border-[2px] border-[#ff3b6f] bg-white px-3 py-2 text-xs font-black text-[#ff3b6f] shadow-[2px_3px_0_#ff3b6f] transition hover:-translate-y-0.5"
                     >
                       Remove
                     </button>
@@ -1794,12 +2026,12 @@ export function ImageHuntAdminForm({
         </div>
       </section>
 
-      <div className="fixed inset-x-0 bottom-0 z-20 border-t border-[#ead5b8] bg-[#fff8ec]/95 px-4 py-3 shadow-[0_-18px_45px_-35px_rgba(74,51,36,0.55)] backdrop-blur sm:static sm:border-0 sm:bg-transparent sm:px-0 sm:py-0 sm:shadow-none sm:backdrop-blur-0">
+      <div className="fixed inset-x-0 bottom-0 z-20 border-t-[3px] border-[#180d2b] bg-[#fdf4e7]/95 px-4 py-3 shadow-[0_-18px_45px_-35px_rgba(24,13,43,0.65)] backdrop-blur sm:static sm:border-0 sm:bg-transparent sm:px-0 sm:py-0 sm:shadow-none sm:backdrop-blur-0">
         <div className="mx-auto flex max-w-7xl flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <StatusMessage message={state.message} ok={state.ok} />
           <button
             disabled={pending || targets.length === 0}
-            className="min-h-12 rounded-2xl bg-[#1f7a67] px-6 py-3 text-sm font-bold text-white shadow-[0_16px_35px_-22px_rgba(31,122,103,0.8)] transition hover:bg-[#176454] disabled:cursor-not-allowed disabled:opacity-50 sm:min-w-[12rem]"
+            className="min-h-12 rounded-full border-[3px] border-[#180d2b] bg-[#20bf73] px-6 py-3 text-sm font-black text-white shadow-[4px_5px_0_#180d2b] transition hover:-translate-y-0.5 disabled:cursor-not-allowed disabled:opacity-50 sm:min-w-[12rem]"
           >
             {pending ? "Saving..." : "Save exercise"}
           </button>

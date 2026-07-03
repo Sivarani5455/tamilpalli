@@ -1,4 +1,4 @@
-import { categories, fillBlankExercises, homeSplashSlides, imageHuntExercises, wordSearchGrids } from "@/lib/mock-data";
+import { categories, fillBlankExercises, homeSplashSlides, imageHuntExercises, nimishamExercises, wordSearchGrids } from "@/lib/mock-data";
 import { createSupabaseAdminClient } from "@/lib/supabase/admin";
 import { hasSupabaseEnv } from "@/lib/supabase/config";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
@@ -10,6 +10,7 @@ import type {
   ImageHuntExercise,
   ImageHuntProgress,
   Locale,
+  NimishamExercise,
   SplashSlide,
   WordSearchGrid,
 } from "@/types";
@@ -93,6 +94,20 @@ type ImageHuntExerciseRow = {
       height?: number;
     };
   }>;
+};
+
+type NimishamExerciseRow = {
+  id: string;
+  slug: string;
+  title: string;
+  description: string;
+  difficulty: NimishamExercise["difficulty"];
+  time_limit_seconds: number;
+  prompt_translation: Record<string, string>;
+  words: NimishamExercise["words"];
+  is_active?: boolean;
+  created_at?: string;
+  allowed_plans?: Array<"discovery" | "standard" | "elite">;
 };
 
 type DictionaryEntryRow = {
@@ -271,6 +286,21 @@ function mapImageHuntRows(rows: ImageHuntExerciseRow[]) {
         width: Number(target.coordinates?.width ?? Number(target.coordinates?.radius ?? 10) * 2),
         height: Number(target.coordinates?.height ?? Number(target.coordinates?.radius ?? 10) * 2),
       })) ?? [],
+  }));
+}
+
+function mapNimishamRows(rows: NimishamExerciseRow[]) {
+  return rows.map((row) => ({
+    id: row.id,
+    slug: row.slug,
+    title: row.title,
+    description: row.description,
+    difficulty: row.difficulty,
+    timeLimitSeconds: row.time_limit_seconds,
+    prompt: row.prompt_translation as NimishamExercise["prompt"],
+    words: row.words,
+    isActive: row.is_active,
+    createdAt: row.created_at,
   }));
 }
 
@@ -544,6 +574,51 @@ export async function getImageHuntExercises() {
 
 export async function getImageHuntExercise(id: string) {
   const exercises = await getImageHuntExercises();
+  return exercises.find((entry) => entry.id === id) ?? null;
+}
+
+export async function getNimishamExercises() {
+  if (!hasSupabaseEnv()) {
+    return nimishamExercises;
+  }
+
+  const supabase = await createSupabaseServerClient();
+
+  if (!supabase) {
+    return nimishamExercises;
+  }
+
+  const { data } = await supabase
+    .from("nimisham_exercises")
+    .select("id, slug, title, description, difficulty, time_limit_seconds, prompt_translation, words, is_active, created_at, allowed_plans")
+    .eq("is_active", true)
+    .order("created_at", { ascending: false });
+
+  if (data && data.length > 0) {
+    return mapNimishamRows(data as NimishamExerciseRow[]);
+  }
+
+  const adminClient = createSupabaseAdminClient();
+
+  if (!adminClient) {
+    return nimishamExercises;
+  }
+
+  const { data: adminData } = await adminClient
+    .from("nimisham_exercises")
+    .select("id, slug, title, description, difficulty, time_limit_seconds, prompt_translation, words, is_active, created_at, allowed_plans")
+    .eq("is_active", true)
+    .order("created_at", { ascending: false });
+
+  if (!adminData) {
+    return nimishamExercises;
+  }
+
+  return mapNimishamRows(adminData as NimishamExerciseRow[]);
+}
+
+export async function getNimishamExercise(id: string) {
+  const exercises = await getNimishamExercises();
   return exercises.find((entry) => entry.id === id) ?? null;
 }
 

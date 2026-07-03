@@ -72,6 +72,34 @@ const imageHuntSchema = z.object({
   targets: z.string().min(2),
 });
 
+const nimishamSchema = z.object({
+  id: z.string().optional(),
+  locale: z.string(),
+  title: z.string().min(2),
+  slug: z.string().min(2),
+  description: z.string().min(2),
+  difficulty: z.enum(["beginner", "intermediate", "advanced"]),
+  timeLimitSeconds: z.coerce.number().int().positive(),
+  promptEn: z.string().min(2),
+  promptFr: z.string().min(2),
+  promptTa: z.string().min(2),
+  words: z.string().min(2),
+});
+
+const nimishamWordSchema = z.object({
+  id: z.string().min(1),
+  word: z.string().min(1),
+  translation: z
+    .object({
+      en: z.string().optional(),
+      fr: z.string().optional(),
+      ta: z.string().optional(),
+    })
+    .optional()
+    .default({}),
+  isCorrect: z.boolean(),
+});
+
 const dictionarySchema = z.object({
   id: z.string().optional(),
   locale: z.string(),
@@ -600,6 +628,105 @@ export async function deleteImageHuntAction(formData: FormData) {
   }
 
   revalidatePath(`/${locale}/admin/image-hunt`);
+}
+
+export async function upsertNimishamAction(
+  _prev: AuthState,
+  formData: FormData,
+): Promise<AuthState> {
+  const parsed = nimishamSchema.safeParse(Object.fromEntries(formData));
+
+  if (!parsed.success) {
+    return stateError(parsed.error.issues[0]?.message);
+  }
+
+  let words: Array<z.infer<typeof nimishamWordSchema>>;
+
+  try {
+    const rawWords = JSON.parse(parsed.data.words) as unknown;
+    const wordList = z.array(nimishamWordSchema).min(1).safeParse(rawWords);
+
+    if (!wordList.success) {
+      return stateError(wordList.error.issues[0]?.message ?? "Invalid words.");
+    }
+
+    words = wordList.data.map((word, index) => ({
+      ...word,
+      id: word.id || `word-${index + 1}`,
+      translation: {
+        en: word.translation.en || word.word,
+        fr: word.translation.fr || word.translation.en || word.word,
+        ta: word.translation.ta || word.word,
+      },
+    }));
+  } catch {
+    return stateError("Invalid words JSON.");
+  }
+
+  if (!words.some((word) => word.isCorrect)) {
+    return stateError("At least one word must be marked correct.");
+  }
+
+  if (!hasSupabaseEnv()) {
+    return missingSupabaseState("Nimisham exercise");
+  }
+
+  try {
+    const supabase = requireAdminClient();
+    const payload = {
+      title: parsed.data.title,
+      slug: parsed.data.slug,
+      description: parsed.data.description,
+      difficulty: parsed.data.difficulty,
+      time_limit_seconds: parsed.data.timeLimitSeconds,
+      prompt_translation: {
+        en: parsed.data.promptEn,
+        fr: parsed.data.promptFr,
+        ta: parsed.data.promptTa,
+      },
+      words,
+      is_active: true,
+    };
+
+    if (parsed.data.id) {
+      const { error } = await supabase
+        .from("nimisham_exercises")
+        .update(payload)
+        .eq("id", parsed.data.id);
+
+      if (error) {
+        throw new Error(error.message);
+      }
+    } else {
+      const { error } = await supabase.from("nimisham_exercises").insert(payload);
+
+      if (error) {
+        throw new Error(error.message);
+      }
+    }
+
+    revalidatePath(`/${parsed.data.locale}/admin/nimisham`);
+    revalidatePath(`/${parsed.data.locale}/nimisham`);
+    redirect(`/${parsed.data.locale}/admin/nimisham`);
+  } catch (error) {
+    if (isRedirectLikeError(error)) {
+      throw error;
+    }
+
+    return stateError(error);
+  }
+}
+
+export async function deleteNimishamAction(formData: FormData) {
+  const id = String(formData.get("id") ?? "");
+  const locale = String(formData.get("locale") ?? "en");
+
+  if (hasSupabaseEnv()) {
+    const supabase = requireAdminClient();
+    await supabase.from("nimisham_exercises").delete().eq("id", id);
+  }
+
+  revalidatePath(`/${locale}/admin/nimisham`);
 }
 
 export async function upsertDictionaryAction(

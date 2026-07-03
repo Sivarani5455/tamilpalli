@@ -2,6 +2,28 @@ import { requireAdminUser } from "@/lib/auth";
 import { WordSearchAdminForm } from "@/components/admin/content-forms";
 import { getLocaleOrThrow } from "@/lib/i18n";
 
+function GridBadge() {
+  return (
+    <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full border-[3px] border-[#180d2b] bg-[#20bf73] text-white shadow-[3px_4px_0_#180d2b]">
+      <svg
+        aria-hidden="true"
+        viewBox="0 0 24 24"
+        className="h-5 w-5"
+        fill="none"
+        stroke="currentColor"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        strokeWidth="2.4"
+      >
+        <rect x="4" y="4" width="6" height="6" rx="1.5" />
+        <rect x="14" y="4" width="6" height="6" rx="1.5" />
+        <rect x="4" y="14" width="6" height="6" rx="1.5" />
+        <rect x="14" y="14" width="6" height="6" rx="1.5" />
+      </svg>
+    </span>
+  );
+}
+
 export default async function AdminWordSearchNewPage({
   params,
 }: {
@@ -12,7 +34,16 @@ export default async function AdminWordSearchNewPage({
   await requireAdminUser(locale);
 
   return (
-    <div className="w-full px-4 py-8 sm:px-6 xl:px-10 2xl:px-14">
+    <div className="mx-auto max-w-6xl px-2 py-6 sm:px-4">
+      <div className="flex min-w-0 items-center gap-4">
+        <GridBadge />
+        <div className="min-w-0">
+          <p className="text-xs font-black uppercase tracking-[0.22em] text-[#7c3aed]">Admin</p>
+          <h1 className="mt-1 font-display text-[clamp(1.9rem,4vw,2.6rem)] font-black leading-tight text-[#180d2b]">
+            Create Word Search
+          </h1>
+        </div>
+      </div>
       <WordSearchAdminForm locale={locale} />
     </div>
   );

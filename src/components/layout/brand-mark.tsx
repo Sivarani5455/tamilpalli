@@ -8,12 +8,30 @@ export function BrandMark({
   compact?: boolean;
   className?: string;
 }) {
+  if (compact) {
+    return (
+      <div
+        className={cn(
+          "inline-flex items-center gap-2 rounded-full border-[3px] border-[#180d2b] bg-white px-2.5 py-1.5 pr-4 shadow-[5px_6px_0_#180d2b] transition hover:-translate-y-0.5",
+          className,
+        )}
+      >
+        <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full border-[3px] border-[#180d2b] bg-[#ffc43d] font-tamil text-2xl font-black leading-none text-[#180d2b]">
+          அ
+        </span>
+        <span className="font-display text-[1.45rem] font-black leading-none text-[#180d2b]">
+          {appName}
+        </span>
+      </div>
+    );
+  }
+
   return (
-    <div className={cn("flex items-center", compact ? "gap-3" : "gap-4", className)}>
+    <div className={cn("flex items-center gap-4", className)}>
       <svg
         viewBox="0 0 120 120"
         aria-hidden="true"
-        className={cn("shrink-0", compact ? "h-12 w-12" : "h-20 w-20")}
+        className="h-20 w-20 shrink-0"
       >
         <defs>
           <linearGradient id="brandSun" x1="0%" y1="0%" x2="100%" y2="100%">
@@ -70,23 +88,19 @@ export function BrandMark({
         <div
           className={cn(
             "font-display leading-none bg-[linear-gradient(180deg,#5a3d2a,#2a1a11)] bg-clip-text text-transparent",
-            compact
-              ? "text-[1.8rem] font-semibold tracking-[-0.03em]"
-              : "text-[2.7rem] font-semibold tracking-[-0.04em]",
+            "text-[2.7rem] font-semibold tracking-[-0.04em]",
           )}
         >
           {appName}
         </div>
 
-        {!compact ? (
-          <div className="mt-2 flex items-center gap-3">
-            <span className="h-px w-10 bg-[#b9793f]" />
-            <div className="font-tamil text-[1.2rem] font-medium tracking-[0.02em] text-[#8a5a2e]">
-              கல்விக்கூடம்
-            </div>
-            <span className="h-px w-10 bg-[#b9793f]" />
+        <div className="mt-2 flex items-center gap-3">
+          <span className="h-px w-10 bg-[#b9793f]" />
+          <div className="font-tamil text-[1.2rem] font-medium tracking-[0.02em] text-[#8a5a2e]">
+            கல்விக்கூடம்
           </div>
-        ) : null}
+          <span className="h-px w-10 bg-[#b9793f]" />
+        </div>
       </div>
     </div>
   );

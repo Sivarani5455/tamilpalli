@@ -24,6 +24,7 @@ const gameItems = [
   { href: "/word-search", key: "wordSearch" },
   { href: "/fill-in-the-blanks", key: "fillBlanks" },
   { href: "/image-hunt", key: "imageHunt" },
+  { href: "/nimisham", key: "nimisham" },
 ] as const;
 
 type HeaderCopy = {
@@ -62,6 +63,7 @@ const headerCopy: Record<Locale, HeaderCopy> = {
       wordSearch: "Word Search",
       fillBlanks: "Fill in the Blanks",
       imageHunt: "Image Hunt",
+      nimisham: "Nimisham",
     },
     dropdown: {
       learning: "Learning",
@@ -76,6 +78,7 @@ const headerCopy: Record<Locale, HeaderCopy> = {
         wordSearch: "Interactive Tamil vocabulary grids.",
         fillBlanks: "Sentence completion with guided feedback.",
         imageHunt: "Visual identification with Tamil labels.",
+        nimisham: "Timed word tapping by category.",
       },
       newBadge: "New",
       currentPage: "Current page",
@@ -95,6 +98,7 @@ const headerCopy: Record<Locale, HeaderCopy> = {
       wordSearch: "Mots mêlés",
       fillBlanks: "Texte à trous",
       imageHunt: "Chasse aux images",
+      nimisham: "Nimisham",
     },
     dropdown: {
       learning: "Learning",
@@ -109,6 +113,7 @@ const headerCopy: Record<Locale, HeaderCopy> = {
         wordSearch: "Grilles interactives de vocabulaire tamoul.",
         fillBlanks: "Complétion de phrases avec retours guidés.",
         imageHunt: "Repérage visuel avec libellés tamouls.",
+        nimisham: "Course contre la montre avec mots tamouls.",
       },
       newBadge: "Nouveau",
       currentPage: "Page active",
@@ -128,6 +133,7 @@ const headerCopy: Record<Locale, HeaderCopy> = {
       wordSearch: "சொல் தேடல்",
       fillBlanks: "காலியிடங்களை நிரப்பு",
       imageHunt: "பட வேட்டை",
+      nimisham: "நிமிடம்",
     },
     dropdown: {
       learning: "கற்றல்",
@@ -142,6 +148,7 @@ const headerCopy: Record<Locale, HeaderCopy> = {
         wordSearch: "தமிழ் சொற்களுக்கான தொடர்பாடல் கட்டங்கள்.",
         fillBlanks: "வழிகாட்டும் பின்னூட்டத்துடன் வாக்கிய நிரப்பு.",
         imageHunt: "தமிழ் குறிச்சொற்களுடன் காட்சி அடையாளம் காணல்.",
+        nimisham: "நேரத்துக்கு எதிராக சரியான சொற்களைத் தேர்வு செய்யுங்கள்.",
       },
       newBadge: "புதியது",
       currentPage: "நடப்பு பக்கம்",

@@ -26,7 +26,7 @@ export function UserRoleForm({
       <select
         name="role"
         defaultValue={user.role}
-        className="rounded-full border border-slate-200 px-3 py-2 text-sm text-slate-700"
+        className="rounded-full border-[2px] border-[#180d2b] bg-white px-3 py-2 text-sm font-bold text-[#180d2b] outline-none"
       >
         <option value="user">user</option>
         <option value="admin">admin</option>
@@ -34,7 +34,7 @@ export function UserRoleForm({
       <button
         type="submit"
         disabled={pending}
-        className="rounded-full bg-slate-950 px-3 py-2 text-sm text-white disabled:opacity-60"
+        className="rounded-full border-[2px] border-[#180d2b] bg-[#ffc43d] px-3 py-2 text-sm font-black text-[#180d2b] shadow-[2px_3px_0_#180d2b] disabled:opacity-60"
       >
         Save
       </button>
@@ -68,13 +68,14 @@ export function CategoryAccessForm({
         {plans.map((plan) => (
           <label
             key={plan.id}
-            className="flex items-center gap-2 rounded-full border border-slate-200 px-4 py-2 text-sm text-slate-700"
+            className="flex items-center gap-2 rounded-full border-[2px] border-[#180d2b] bg-white px-4 py-2 text-sm font-black text-[#180d2b] shadow-[2px_3px_0_#180d2b]"
           >
             <input
               type="checkbox"
               name="enabledPlans"
               value={plan.slug}
               defaultChecked={category.enabledPlans.includes(plan.slug)}
+              className="h-4 w-4 accent-[#7c3aed]"
             />
             <span>{plan.name}</span>
           </label>
@@ -84,7 +85,7 @@ export function CategoryAccessForm({
         <button
           type="submit"
           disabled={pending}
-          className="rounded-full bg-slate-950 px-4 py-2 text-sm text-white disabled:opacity-60"
+          className="rounded-full border-[3px] border-[#180d2b] bg-[#ffc43d] px-5 py-2.5 text-sm font-black text-[#180d2b] shadow-[3px_4px_0_#180d2b] disabled:opacity-60"
         >
           Save access
         </button>

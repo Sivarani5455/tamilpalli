@@ -1,4 +1,4 @@
-import { UserRoleForm } from "@/components/admin/management-forms";
+import { AdminUsersList } from "@/components/admin/admin-users-list";
 import { getAdminUsers } from "@/lib/admin";
 import { requireAdminUser } from "@/lib/auth";
 import { getLocaleOrThrow } from "@/lib/i18n";
@@ -14,37 +14,20 @@ export default async function AdminUsersPage({
   const users = await getAdminUsers();
 
   return (
-    <div className="mx-auto max-w-6xl px-4 py-10 sm:px-6">
-      <h1 className="font-display text-5xl text-slate-950">Users</h1>
-      <div className="mt-8 overflow-hidden rounded-[2rem] border border-slate-200 bg-white">
-        <div className="grid grid-cols-5 gap-4 border-b border-slate-200 px-6 py-4 text-xs uppercase tracking-[0.25em] text-slate-500">
-          <span>Name</span>
-          <span>Email</span>
-          <span>Role</span>
-          <span>Plan</span>
-          <span>Status</span>
+    <div className="mx-auto max-w-5xl px-2 py-6 sm:px-4">
+      <div className="flex flex-wrap items-end justify-between gap-4">
+        <div>
+          <p className="text-xs font-black uppercase tracking-[0.22em] text-[#7c3aed]">Admin</p>
+          <h1 className="mt-1 font-display text-[clamp(1.9rem,4vw,2.6rem)] font-black leading-tight text-[#180d2b]">
+            Users
+          </h1>
         </div>
-        {users.length === 0 ? (
-          <div className="px-6 py-10 text-sm text-slate-500">
-            No users found. If accounts exist in Supabase Auth but not in `profiles`, create the profile rows or keep the service-role fallback enabled.
-          </div>
-        ) : null}
-        {users.map((user) => (
-          <div key={user.id} className="grid grid-cols-5 gap-4 border-b border-slate-100 px-6 py-5 text-sm text-slate-700 last:border-b-0">
-            <div>
-              <p className="font-medium text-slate-950">{user.fullName}</p>
-              <p className="text-xs text-slate-500">{user.preferredLanguage}</p>
-            </div>
-            <span>{user.email}</span>
-            <UserRoleForm locale={locale} user={user} />
-            <div>
-              <p>{user.currentPlan ?? "none"}</p>
-              <p className="text-xs text-slate-500">{user.subscriptionExpiresAt ?? "no expiry"}</p>
-            </div>
-            <span>{user.subscriptionStatus ?? "none"}</span>
-          </div>
-        ))}
+        <span className="rounded-full border-[3px] border-[#180d2b] bg-[#c6ff2e] px-4 py-2 text-sm font-black text-[#180d2b] shadow-[3px_4px_0_#180d2b]">
+          {users.length} users
+        </span>
       </div>
+
+      <AdminUsersList locale={locale} users={users} />
     </div>
   );
 }

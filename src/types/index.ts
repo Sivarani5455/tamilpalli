@@ -7,6 +7,7 @@ export type ContentType =
   | "word_search"
   | "fill_in_the_blanks"
   | "image_hunt"
+  | "nimisham"
   | "quiz"
   | "lesson"
   | "exercise";
@@ -140,6 +141,26 @@ export type ImageHuntProgress = {
   foundTargetIds: string[];
   wrongClicks: number;
   timeUsedSeconds: number;
+};
+
+export type NimishamWord = {
+  id: string;
+  word: string;
+  translation: Partial<Record<Locale, string>>;
+  isCorrect: boolean;
+};
+
+export type NimishamExercise = {
+  id: string;
+  slug: string;
+  title: string;
+  description: string;
+  difficulty: Difficulty;
+  timeLimitSeconds: number;
+  prompt: Record<Locale, string>;
+  words: NimishamWord[];
+  isActive?: boolean;
+  createdAt?: string;
 };
 
 export type DictionaryTranslation = {

@@ -1,4 +1,4 @@
-import { fillBlankExercises, homeSplashSlides, imageHuntExercises, wordSearchGrids } from "@/lib/mock-data";
+import { fillBlankExercises, homeSplashSlides, imageHuntExercises, nimishamExercises, wordSearchGrids } from "@/lib/mock-data";
 import { createSupabaseAdminClient } from "@/lib/supabase/admin";
 import { hasSupabaseEnv } from "@/lib/supabase/config";
 import type {
@@ -7,6 +7,7 @@ import type {
   FillBlankExercise,
   ImageHuntExercise,
   Locale,
+  NimishamExercise,
   SplashSlide,
   WordSearchGrid,
 } from "@/types";
@@ -66,6 +67,19 @@ type ImageHuntExerciseRow = {
       height?: number;
     };
   }>;
+};
+
+type NimishamExerciseRow = {
+  id: string;
+  slug: string;
+  title: string;
+  description: string;
+  difficulty: NimishamExercise["difficulty"];
+  time_limit_seconds: number;
+  prompt_translation: Record<string, string>;
+  words: NimishamExercise["words"];
+  is_active: boolean;
+  created_at?: string;
 };
 
 type DictionaryEntryRow = {
@@ -270,6 +284,45 @@ export async function getAdminImageHuntExercises() {
 
 export async function getAdminImageHuntExercise(id: string) {
   const exercises = await getAdminImageHuntExercises();
+  return exercises.find((item) => item.id === id) ?? null;
+}
+
+export async function getAdminNimishamExercises() {
+  if (!hasSupabaseEnv()) {
+    return nimishamExercises;
+  }
+
+  const supabase = createSupabaseAdminClient();
+
+  if (!supabase) {
+    return nimishamExercises;
+  }
+
+  const { data } = await supabase
+    .from("nimisham_exercises")
+    .select("id, slug, title, description, difficulty, time_limit_seconds, prompt_translation, words, is_active, created_at")
+    .order("created_at", { ascending: false });
+
+  if (!data) {
+    return nimishamExercises;
+  }
+
+  return (data as NimishamExerciseRow[]).map((row) => ({
+    id: row.id,
+    slug: row.slug,
+    title: row.title,
+    description: row.description,
+    difficulty: row.difficulty,
+    timeLimitSeconds: row.time_limit_seconds,
+    prompt: row.prompt_translation as NimishamExercise["prompt"],
+    words: row.words,
+    isActive: row.is_active,
+    createdAt: row.created_at,
+  }));
+}
+
+export async function getAdminNimishamExercise(id: string) {
+  const exercises = await getAdminNimishamExercises();
   return exercises.find((item) => item.id === id) ?? null;
 }
 

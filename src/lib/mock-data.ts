@@ -4,6 +4,7 @@ import type {
   SplashSlide,
   FillBlankExercise,
   ImageHuntExercise,
+  NimishamExercise,
   Plan,
   Subscription,
   WordSearchGrid,
@@ -86,6 +87,15 @@ export const categories: ContentCategory[] = [
     title: "Image Hunt",
     description: "Tap the right targets, learn Tamil labels and reinforce visual memory.",
     type: "image_hunt",
+    requiredPlan: "standard",
+    isActive: true,
+  },
+  {
+    id: "category-nimisham",
+    slug: "nimisham",
+    title: "Nimisham",
+    description: "Race the clock and tap every Tamil word matching the prompt.",
+    type: "nimisham",
     requiredPlan: "standard",
     isActive: true,
   },
@@ -233,6 +243,32 @@ export const imageHuntExercises: ImageHuntExercise[] = [
         width: 20,
         height: 20,
       },
+    ],
+  },
+];
+
+export const nimishamExercises: NimishamExercise[] = [
+  {
+    id: "nimisham-animals",
+    slug: "animal-words",
+    title: "Animal Words",
+    description: "Tap every animal word before the timer ends.",
+    difficulty: "beginner",
+    timeLimitSeconds: 60,
+    prompt: {
+      en: "Among the words below, tap every word that describes an animal.",
+      fr: "Parmi les mots ci-dessous, cliquez sur tous les mots qui décrivent des animaux.",
+      ta: "கீழே உள்ள சொற்களில் விலங்குகளை குறிக்கும் எல்லா சொற்களையும் தொடுங்கள்.",
+    },
+    words: [
+      { id: "duck", word: "வாத்து", translation: { en: "duck", fr: "canard", ta: "வாத்து" }, isCorrect: true },
+      { id: "dog", word: "நாய்", translation: { en: "dog", fr: "chien", ta: "நாய்" }, isCorrect: true },
+      { id: "cat", word: "பூனை", translation: { en: "cat", fr: "chat", ta: "பூனை" }, isCorrect: true },
+      { id: "deer", word: "மான்", translation: { en: "deer", fr: "cerf", ta: "மான்" }, isCorrect: true },
+      { id: "tree", word: "மரம்", translation: { en: "tree", fr: "arbre", ta: "மரம்" }, isCorrect: false },
+      { id: "water", word: "நீர்", translation: { en: "water", fr: "eau", ta: "நீர்" }, isCorrect: false },
+      { id: "rice", word: "சாதம்", translation: { en: "rice", fr: "riz", ta: "சாதம்" }, isCorrect: false },
+      { id: "house", word: "வீடு", translation: { en: "house", fr: "maison", ta: "வீடு" }, isCorrect: false },
     ],
   },
 ];

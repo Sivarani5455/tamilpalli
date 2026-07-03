@@ -11,13 +11,35 @@ import { getAdminHomeSplashSlides } from "@/lib/content-admin";
 import { getLocaleOrThrow } from "@/lib/i18n";
 import Link from "next/link";
 
+function SplashBadge() {
+  return (
+    <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full border-[3px] border-[#180d2b] bg-[#f59e0b] text-white shadow-[3px_4px_0_#180d2b]">
+      <svg
+        aria-hidden="true"
+        viewBox="0 0 24 24"
+        className="h-5 w-5"
+        fill="none"
+        stroke="currentColor"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        strokeWidth="2.4"
+      >
+        <path d="M12 3v18" />
+        <path d="M5 7h14" />
+        <path d="M7 7c0 4 2 6 5 6s5-2 5-6" />
+        <path d="M8 17h8" />
+      </svg>
+    </span>
+  );
+}
+
 function getSlideAssetStatus(imageUrl: string) {
   const isRemote = /^https?:\/\//i.test(imageUrl);
 
   if (isRemote) {
     return {
       label: "URL distante",
-      tone: "bg-sky-100 text-sky-700",
+      tone: "border-[#22d3ee] bg-[#e0fbff] text-[#0e7490]",
       hint: imageUrl,
     };
   }
@@ -25,7 +47,7 @@ function getSlideAssetStatus(imageUrl: string) {
   if (!imageUrl.startsWith("/")) {
     return {
       label: "Chemin invalide",
-      tone: "bg-rose-100 text-rose-700",
+      tone: "border-[#ff3b6f] bg-[#ffe4ee] text-[#be123c]",
       hint: "Utilise /nom-image.png ou une URL https://...",
     };
   }
@@ -36,12 +58,12 @@ function getSlideAssetStatus(imageUrl: string) {
   return exists
     ? {
         label: "Image trouvée",
-        tone: "bg-emerald-100 text-emerald-700",
+        tone: "border-[#14b86a] bg-[#dcfce7] text-[#047857]",
         hint: localPath,
       }
     : {
         label: "Image introuvable",
-        tone: "bg-rose-100 text-rose-700",
+        tone: "border-[#ff3b6f] bg-[#ffe4ee] text-[#be123c]",
         hint: localPath,
       };
 }
@@ -58,24 +80,26 @@ export default async function AdminSplashPage({
   const slides = await getAdminHomeSplashSlides();
 
   return (
-    <div className="mx-auto max-w-6xl px-4 py-10 sm:px-6">
-      <div className="rounded-[2rem] border border-slate-200 bg-white p-6 shadow-[0_24px_80px_rgba(15,23,42,0.06)]">
-        <p className="text-xs font-semibold uppercase tracking-[0.26em] text-slate-400">Splash admin</p>
-        <h1 className="mt-3 text-4xl font-semibold text-slate-950">Gestion des images splash</h1>
-        <p className="mt-3 max-w-3xl text-sm leading-7 text-slate-600">
-          Ajoute autant d&apos;écrans splash que tu veux. Les slides sont triés par ordre croissant. Le type
-          <strong> intro</strong> garde la mise en page encadrée, le type <strong>plein écran</strong> affiche
-          l&apos;image sur toute la page.
+    <div className="mx-auto max-w-6xl px-2 py-6 sm:px-4">
+      <div className="relative overflow-hidden rounded-[1.75rem] border-[3px] border-[#180d2b] bg-[#1b0d2f] p-6 text-white shadow-[8px_9px_0_#ffc43d] sm:p-8">
+        <div className="absolute -right-10 -top-12 h-36 w-36 rounded-full bg-[#7c3aed]/45" />
+        <p className="relative text-xs font-black uppercase tracking-[0.24em] text-[#ffc43d]">Splash admin</p>
+        <h1 className="relative mt-2 font-display text-[clamp(2rem,5vw,3.2rem)] font-black leading-tight">
+          Gestion des images splash
+        </h1>
+        <p className="relative mt-3 max-w-3xl text-sm font-semibold leading-7 text-[#efe6ff]">
+          Ajoute et ordonne les écrans splash. Le type intro garde la mise en page encadrée, le type plein écran
+          affiche l&apos;image sur toute la page.
         </p>
-        <div className="mt-5 flex flex-wrap gap-3">
+        <div className="relative mt-5 flex flex-wrap gap-3">
           <Link
             href={`/${locale}`}
-            className="rounded-full bg-slate-950 px-5 py-3 text-sm font-semibold text-white"
+            className="rounded-full border-[3px] border-[#180d2b] bg-[#c6ff2e] px-5 py-3 text-sm font-black text-[#180d2b] shadow-[4px_5px_0_#180d2b] transition hover:-translate-y-0.5"
           >
             Tester le splash
           </Link>
-          <span className="rounded-full border border-slate-200 px-4 py-3 text-sm text-slate-600">
-            Les images locales doivent exister dans le dossier `public` du projet.
+          <span className="rounded-full border-[3px] border-[#ffc43d] bg-white/10 px-4 py-3 text-sm font-black text-white">
+            {slides.length} slides
           </span>
         </div>
       </div>
@@ -91,26 +115,33 @@ export default async function AdminSplashPage({
           return (
             <section
               key={slide.id}
-              className="rounded-[2rem] border border-slate-200 bg-white p-6 shadow-[0_20px_60px_rgba(15,23,42,0.05)]"
+              className="rounded-[1.5rem] border-[3px] border-[#180d2b] bg-white p-5 shadow-[6px_7px_0_#180d2b]"
             >
-              <div className="mb-5 flex flex-wrap items-center justify-between gap-3">
-                <div className="flex flex-wrap items-center gap-3">
-                  <span className="rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold uppercase tracking-[0.2em] text-slate-600">
-                    {slide.kind}
-                  </span>
-                  <span className="rounded-full bg-indigo-50 px-3 py-1 text-xs font-semibold text-indigo-600">
-                    ordre {slide.sortOrder}
-                  </span>
-                  <span
-                    className={`rounded-full px-3 py-1 text-xs font-semibold ${
-                      slide.isActive ? "bg-emerald-100 text-emerald-700" : "bg-slate-100 text-slate-500"
-                    }`}
-                  >
-                    {slide.isActive ? "actif" : "inactif"}
-                  </span>
-                  <span className={`rounded-full px-3 py-1 text-xs font-semibold ${assetStatus.tone}`}>
-                    {assetStatus.label}
-                  </span>
+              <div className="mb-5 flex flex-col justify-between gap-4 lg:flex-row lg:items-center">
+                <div className="flex min-w-0 items-center gap-4">
+                  <SplashBadge />
+                  <div className="min-w-0">
+                    <h2 className="truncate font-display text-2xl font-black leading-tight text-[#180d2b]">
+                      {slide.kind === "fullscreen" ? "Image plein écran" : "Intro encadrée"}
+                    </h2>
+                    <div className="mt-2 flex flex-wrap items-center gap-2">
+                      <span className="rounded-full border-[2px] border-[#180d2b] bg-[#efe6ff] px-3 py-1 text-xs font-black uppercase text-[#7c3aed]">
+                        ordre {slide.sortOrder}
+                      </span>
+                      <span
+                        className={`rounded-full border-[2px] px-3 py-1 text-xs font-black uppercase ${
+                          slide.isActive
+                            ? "border-[#14b86a] bg-[#dcfce7] text-[#047857]"
+                            : "border-[#8a6a9c] bg-[#f6f0ff] text-[#6b5a78]"
+                        }`}
+                      >
+                        {slide.isActive ? "actif" : "inactif"}
+                      </span>
+                      <span className={`rounded-full border-[2px] px-3 py-1 text-xs font-black uppercase ${assetStatus.tone}`}>
+                        {assetStatus.label}
+                      </span>
+                    </div>
+                  </div>
                 </div>
 
                 <div className="flex flex-wrap items-center gap-2">
@@ -120,9 +151,10 @@ export default async function AdminSplashPage({
                     <input type="hidden" name="direction" value="up" />
                     <button
                       type="submit"
-                      className="rounded-full border border-slate-200 px-4 py-2 text-sm font-medium text-slate-700"
+                      className="inline-flex h-11 w-11 items-center justify-center rounded-full border-[3px] border-[#180d2b] bg-white text-[#180d2b] shadow-[3px_4px_0_#180d2b] transition hover:-translate-y-0.5"
+                      aria-label="Monter"
                     >
-                      Monter
+                      ↑
                     </button>
                   </form>
 
@@ -132,9 +164,10 @@ export default async function AdminSplashPage({
                     <input type="hidden" name="direction" value="down" />
                     <button
                       type="submit"
-                      className="rounded-full border border-slate-200 px-4 py-2 text-sm font-medium text-slate-700"
+                      className="inline-flex h-11 w-11 items-center justify-center rounded-full border-[3px] border-[#180d2b] bg-white text-[#180d2b] shadow-[3px_4px_0_#180d2b] transition hover:-translate-y-0.5"
+                      aria-label="Descendre"
                     >
-                      Descendre
+                      ↓
                     </button>
                   </form>
 
@@ -143,14 +176,14 @@ export default async function AdminSplashPage({
                     <input type="hidden" name="locale" value={locale} />
                     <button
                       type="submit"
-                      className="rounded-full border border-rose-200 px-4 py-2 text-sm font-medium text-rose-600"
+                      className="rounded-full border-[3px] border-[#ff3b6f] bg-white px-5 py-2.5 text-sm font-black text-[#ff3b6f] shadow-[3px_4px_0_#ff3b6f] transition hover:-translate-y-0.5"
                     >
                       Supprimer
                     </button>
                   </form>
                 </div>
               </div>
-              <div className="mb-5 rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-600">
+              <div className="mb-5 overflow-hidden rounded-[1rem] border-[2px] border-[#180d2b] bg-[#fff7ed] px-4 py-3 text-sm font-semibold text-[#6b4a2b]">
                 {assetStatus.hint}
               </div>
 
