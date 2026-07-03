@@ -477,21 +477,19 @@ export function WordSearchGame({
     return (
       <li
         key={entry.word}
-        className={`relative flex min-w-0 items-center gap-3 overflow-visible rounded-[14px] border px-3 py-3 transition-all duration-300 ${
-          activePulse ? "scale-[1.02] shadow-[0_0_26px_rgba(204,154,60,0.18)]" : ""
+        className={`relative flex min-w-0 items-center gap-2 overflow-visible rounded-[0.85rem] border-[3px] border-[#180d2b] px-3 py-2 transition-all duration-300 ${
+          activePulse ? "scale-[1.02] shadow-[4px_5px_0_#180d2b]" : ""
         }`}
         style={{
-          background: found
-            ? "linear-gradient(180deg, rgba(63,154,120,0.20), rgba(63,154,120,0.06))"
-            : "linear-gradient(180deg, rgba(244,236,220,0.05), rgba(244,236,220,0.015))",
-          borderColor: found ? "rgba(63,154,120,0.45)" : "rgba(212,164,55,0.16)",
+          background: found ? "#e7fff3" : "#fff7ec",
+          opacity: found ? 0.78 : 1,
         }}
       >
         <span
           className="h-2.5 w-2.5 shrink-0 rounded-full"
           style={{
             background: found ? "#3f9a78" : color,
-            boxShadow: found ? "0 0 6px rgba(63,154,120,0.7)" : `0 0 6px ${color}99`,
+            boxShadow: found ? "0 0 0 2px rgba(63,154,120,0.18)" : `0 0 0 2px ${color}33`,
           }}
         />
         <span
@@ -499,9 +497,9 @@ export function WordSearchGame({
             isTamil ? "text-[1.18rem]" : "text-[1.08rem]"
           }`}
           style={{
-            color: found ? "#8fbab6" : "#f4ecdc",
+            color: "#180d2b",
             textDecoration: found ? "line-through" : "none",
-            textDecorationColor: found ? "rgba(143,186,182,0.5)" : "transparent",
+            textDecorationColor: found ? "#13885c" : "transparent",
           }}
         >
           {entry.word}
@@ -510,7 +508,7 @@ export function WordSearchGame({
           <span className="group/info relative shrink-0">
             <button
               type="button"
-              className="flex h-7 w-7 items-center justify-center rounded-full border border-[rgba(240,206,134,0.38)] bg-[rgba(244,236,220,0.08)] text-[#f0ce86] transition hover:border-[#f0ce86] hover:bg-[rgba(240,206,134,0.16)] focus:outline-none focus:ring-2 focus:ring-[#f0ce86]/45"
+              className="flex h-7 w-7 items-center justify-center rounded-full border-[2px] border-[#180d2b] bg-white text-[#7c3aed] shadow-[2px_3px_0_#180d2b] transition hover:-translate-y-0.5 focus:outline-none focus:ring-2 focus:ring-[#7c3aed]/45"
               aria-label={`${copy.dictionaryInfo}: ${entry.word}`}
             >
               <InfoIcon className="h-4 w-4" />
@@ -586,64 +584,65 @@ export function WordSearchGame({
             </span>
           </span>
         ) : null}
-        {found ? <CheckIcon className="h-4 w-4 shrink-0 text-[#3f9a78]" /> : null}
+        {found ? <CheckIcon className="h-4 w-4 shrink-0 text-[#13885c]" /> : null}
       </li>
     );
   };
 
   return (
     <div
-      className="relative min-h-[100dvh] overflow-hidden bg-[#4a3324] px-[18px] py-[18px] text-[#f4ecdc]"
+      className="relative min-h-[100dvh] overflow-hidden bg-[#fff7ec] px-3 py-4 text-[#180d2b] sm:px-5 sm:py-5"
       style={{
         userSelect: "none",
         WebkitUserSelect: "none",
       }}
     >
-      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_900px_500px_at_50%_-10%,rgba(255,222,145,0.24),transparent_64%),radial-gradient(ellipse_700px_600px_at_100%_100%,rgba(211,146,82,0.22),transparent_64%),linear-gradient(180deg,#5a3d2a_0%,#493122_52%,#3a271b_100%)]" />
-      <div className="pointer-events-none absolute inset-0 opacity-[0.025] mix-blend-overlay [background-image:repeating-linear-gradient(90deg,rgba(255,242,221,0.45)_0px,transparent_1px,transparent_3px),repeating-linear-gradient(0deg,rgba(255,242,221,0.45)_0px,transparent_1px,transparent_3px)] [background-size:3px_3px]" />
+      <div className="pointer-events-none absolute left-20 top-3 h-4 w-4 rotate-12 rounded-[0.25rem] bg-[#b7ff2a]" />
+      <div className="pointer-events-none absolute left-1/2 top-5 h-3 w-3 rounded-full bg-[#ff3b6f]" />
+      <div className="pointer-events-none absolute right-20 top-4 h-3 w-3 rounded-full bg-[#7c3aed]" />
 
-      <div className="relative mx-auto flex min-h-[calc(100dvh-36px)] max-w-[60rem] flex-col">
-        <header className="mb-5 flex flex-wrap items-center justify-between gap-3">
+      <div className="relative mx-auto flex min-h-[calc(100dvh-32px)] max-w-[48rem] flex-col">
+        <header className="mb-6 flex flex-wrap items-start justify-between gap-3 sm:items-center">
           <div className="flex min-w-0 items-center gap-3">
               <Link
                 href={`/${locale}/word-search`}
-              className="inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-[14px] border border-[rgba(212,164,55,0.16)] bg-[linear-gradient(180deg,rgba(244,236,220,0.06),rgba(244,236,220,0.02))] text-[#f0ce86] transition active:scale-95"
+              className="inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-full border-[3px] border-[#180d2b] bg-white text-[#180d2b] shadow-[4px_5px_0_#180d2b] transition hover:-translate-y-0.5 active:translate-y-0.5 active:shadow-[2px_2px_0_#180d2b]"
                 aria-label={copy.back}
               >
                 <ChevronLeftIcon className="h-5 w-5" />
               </Link>
 
               <div className="min-w-0">
-              <p className={`font-display text-[#f0ce86] ${isTamil ? "text-[0.9rem] font-semibold tracking-[0.04em]" : "text-[11px] font-bold uppercase tracking-[0.14em]"}`}>
+              <p className={`inline-flex rounded-full border-[3px] border-[#180d2b] bg-[#efe6ff] px-3 py-1 font-display text-[#7c3aed] shadow-[3px_4px_0_#180d2b] ${isTamil ? "text-[0.78rem] font-black tracking-[0.04em]" : "text-[0.68rem] font-black uppercase tracking-[0.14em]"}`}>
                   {copy.category}
                 </p>
-              <h1 className={`font-tamil truncate text-[#f4ecdc] ${isTamil ? "text-[1.75rem] font-bold" : "text-[1.65rem] font-bold"}`}>
+              <h1 className={`mt-2 font-tamil truncate text-[#180d2b] ${isTamil ? "text-[1.55rem] font-black" : "text-[1.45rem] font-black"}`}>
                   {grid.title}
                 </h1>
               </div>
             </div>
 
-          <div className="flex w-full flex-wrap items-stretch gap-2 sm:w-auto">
+          <div className="flex w-full flex-wrap items-stretch gap-2 sm:w-auto sm:justify-end">
               {toastWord ? (
                 <div
-                className="hidden rounded-[14px] border border-[rgba(212,164,55,0.16)] px-4 py-2 text-sm font-bold text-[#f4ecdc] sm:flex sm:items-center"
+                className="hidden rounded-[0.9rem] border-[3px] border-[#180d2b] px-4 py-2 text-sm font-black text-white shadow-[4px_5px_0_#180d2b] sm:flex sm:items-center"
                   style={{ backgroundColor: toastWord.color }}
                 >
                   +{toastWord.points} {copy.points}
                 </div>
               ) : null}
 
-            <div className="flex min-w-[78px] flex-1 flex-col gap-1 rounded-[14px] border border-[rgba(212,164,55,0.16)] bg-[linear-gradient(180deg,rgba(244,236,220,0.06),rgba(244,236,220,0.02))] px-3 py-2 sm:flex-none sm:px-4">
-              <span className="font-display text-[10.5px] font-semibold uppercase tracking-[0.13em] text-[#8fbab6]">
+            <div className="flex min-w-[70px] flex-1 flex-col gap-1 rounded-[0.85rem] border-[3px] border-[#180d2b] bg-white px-3 py-2 shadow-[3px_4px_0_#180d2b] sm:flex-none">
+              <span className="font-display text-[0.58rem] font-black uppercase tracking-[0.13em] text-[#7c3aed]">
                   {copy.score}
               </span>
-              <span className="text-lg font-bold tabular-nums text-[#f4ecdc]">
+              <span className="text-lg font-black tabular-nums text-[#180d2b]">
                   {score}
               </span>
               </div>
 
-            <div className="flex min-w-[86px] flex-1 flex-col gap-1 rounded-[14px] border border-[rgba(212,164,55,0.16)] bg-[linear-gradient(180deg,rgba(244,236,220,0.06),rgba(244,236,220,0.02))] px-3 py-2 sm:flex-none sm:px-4">
-              <span className="font-display text-[10.5px] font-semibold uppercase tracking-[0.13em] text-[#8fbab6]">
+            <div className="flex min-w-[82px] flex-1 flex-col gap-1 rounded-[0.85rem] border-[3px] border-[#180d2b] bg-white px-3 py-2 shadow-[3px_4px_0_#180d2b] sm:flex-none">
+              <span className="font-display text-[0.58rem] font-black uppercase tracking-[0.13em] text-[#7c3aed]">
                 Streak
               </span>
               <div className="flex h-[18px] items-center gap-1.5">
@@ -653,28 +652,28 @@ export function WordSearchGame({
                     className="h-[9px] w-[9px] rounded-full border transition"
                     style={{
                       background: index < attemptsLeft ? "#c1442e" : "rgba(244,236,220,0.16)",
-                      borderColor: index < attemptsLeft ? "#c1442e" : "rgba(212,164,55,0.35)",
-                      boxShadow: index < attemptsLeft ? "0 0 8px rgba(193,68,46,0.7)" : "none",
+                      borderColor: index < attemptsLeft ? "#ff3b6f" : "#180d2b",
+                      boxShadow: "none",
                     }}
                   />
                 ))}
               </div>
             </div>
 
-            <div className="flex min-w-[98px] flex-1 flex-col gap-1 rounded-[14px] border border-[rgba(212,164,55,0.16)] bg-[linear-gradient(180deg,rgba(244,236,220,0.06),rgba(244,236,220,0.02))] px-3 py-2 sm:flex-none sm:px-4">
-              <span className="font-display text-[10.5px] font-semibold uppercase tracking-[0.13em] text-[#8fbab6]">
+            <div className="flex min-w-[92px] flex-1 flex-col gap-1 rounded-[0.85rem] border-[3px] border-[#180d2b] bg-white px-3 py-2 shadow-[3px_4px_0_#180d2b] sm:flex-none">
+              <span className="font-display text-[0.58rem] font-black uppercase tracking-[0.13em] text-[#7c3aed]">
                   {copy.progress}
               </span>
-              <span className="text-lg font-bold tabular-nums text-[#f4ecdc]">
+              <span className="text-lg font-black tabular-nums text-[#180d2b]">
                   {foundCount}/{grid.words.length}
               </span>
               </div>
 
-            <div className="flex min-w-[82px] flex-1 flex-col gap-1 rounded-[14px] border border-[rgba(212,164,55,0.16)] bg-[linear-gradient(180deg,rgba(244,236,220,0.06),rgba(244,236,220,0.02))] px-3 py-2 sm:flex-none sm:px-4">
-              <span className="font-display text-[10.5px] font-semibold uppercase tracking-[0.13em] text-[#8fbab6]">
+            <div className="flex min-w-[78px] flex-1 flex-col gap-1 rounded-[0.85rem] border-[3px] border-[#180d2b] bg-white px-3 py-2 shadow-[3px_4px_0_#180d2b] sm:flex-none">
+              <span className="font-display text-[0.58rem] font-black uppercase tracking-[0.13em] text-[#7c3aed]">
                   {copy.time}
               </span>
-              <span className={`text-lg font-bold tabular-nums ${isLowTime ? "text-[#f0ce86]" : "text-[#f4ecdc]"}`}>
+              <span className={`text-lg font-black tabular-nums ${isLowTime ? "text-[#ff3b6f]" : "text-[#180d2b]"}`}>
                   {formatClock(timeLeft)}
               </span>
               </div>
@@ -690,10 +689,10 @@ export function WordSearchGame({
                   setHoverCell(null);
                   setIsPaused((current) => !current);
                 }}
-              className={`inline-flex min-h-[54px] min-w-[52px] items-center justify-center rounded-[14px] border px-4 text-[#f0ce86] transition active:scale-95 ${
+              className={`inline-flex min-h-[54px] min-w-[52px] items-center justify-center rounded-full border-[3px] border-[#180d2b] px-4 text-[#180d2b] shadow-[4px_5px_0_#180d2b] transition hover:-translate-y-0.5 active:translate-y-0.5 active:shadow-[2px_2px_0_#180d2b] ${
                   isPaused
-                  ? "border-[rgba(212,164,55,0.28)] bg-[linear-gradient(180deg,rgba(204,154,60,0.30),rgba(204,154,60,0.12))]"
-                  : "border-[rgba(212,164,55,0.16)] bg-[linear-gradient(180deg,rgba(204,154,60,0.22),rgba(204,154,60,0.08))]"
+                  ? "bg-[#b7ff2a]"
+                  : "bg-[#ffc43d]"
                 }`}
               aria-label={copy.pause}
               >
@@ -702,22 +701,22 @@ export function WordSearchGame({
             </div>
         </header>
 
-        <main className="flex flex-1 flex-col items-center justify-center gap-[18px]">
+        <main className="flex flex-1 flex-col items-center justify-center gap-4">
               {isPaused ? (
-            <section className="w-full max-w-[32.5rem] rounded-[24px] border border-[rgba(212,164,55,0.16)] bg-[#654632] p-8 text-center shadow-[0_30px_60px_-20px_rgba(0,0,0,0.7)]">
-              <p className="font-display text-xs font-semibold uppercase tracking-[0.14em] text-[#f0ce86]">
+            <section className="w-full max-w-[32.5rem] rounded-[1.4rem] border-[3px] border-[#180d2b] bg-white p-8 text-center shadow-[8px_9px_0_#180d2b]">
+              <p className="font-display text-xs font-black uppercase tracking-[0.14em] text-[#7c3aed]">
                   {copy.pause}
                 </p>
-              <h2 className="mt-3 text-3xl font-bold tracking-[-0.03em] text-[#f4ecdc]">
+              <h2 className="mt-3 text-3xl font-black tracking-[-0.03em] text-[#180d2b]">
                   {copy.paused}
                 </h2>
-              <p className="mx-auto mt-3 max-w-sm text-sm leading-6 text-[#8fbab6]">
+              <p className="mx-auto mt-3 max-w-sm text-sm font-bold leading-6 text-[#6b5441]">
                   {copy.pausedBody}
                 </p>
                 <button
                   type="button"
                   onClick={() => setIsPaused(false)}
-                className="mt-7 inline-flex items-center gap-2 rounded-[14px] bg-[linear-gradient(160deg,#f0ce86,#cc9a3c)] px-6 py-3 text-sm font-bold text-[#1c1300]"
+                className="mt-7 inline-flex items-center gap-2 rounded-[1rem] border-[3px] border-[#180d2b] bg-[#c6ff2e] px-6 py-3 text-sm font-black text-[#180d2b] shadow-[4px_5px_0_#180d2b]"
                 >
                   <PlayIcon className="h-4 w-4" />
                   {copy.resume}
@@ -726,7 +725,7 @@ export function WordSearchGame({
               ) : (
             <>
                     <div
-                className="relative w-full max-w-[32.5rem] rounded-[22px] border border-[rgba(212,164,55,0.16)] bg-[linear-gradient(165deg,rgba(244,236,220,0.045),rgba(244,236,220,0.01)),#654632] p-5 shadow-[0_20px_50px_-25px_rgba(0,0,0,0.6)]"
+                className="relative w-full max-w-[32.5rem] rounded-[1.4rem] border-[3px] border-[#180d2b] bg-white p-4 shadow-[8px_9px_0_#180d2b] sm:p-5"
                 style={{ maxWidth: boardWidth }}
                     >
                     <div
@@ -760,7 +759,6 @@ export function WordSearchGame({
                           );
                           const foundColorIdx = foundPlacements[key];
                           const found = foundColorIdx !== undefined;
-                          const foundColor = found ? PILL_COLORS[foundColorIdx] : null;
                           const wrong = Boolean(wrongKeys[key]);
 
                           return (
@@ -791,7 +789,7 @@ export function WordSearchGame({
                                 setAnchor([rowIndex, colIndex]);
                                 setHoverCell([rowIndex, colIndex]);
                               }}
-                          className="font-tamil flex aspect-square items-center justify-center rounded-[16px] border font-semibold transition-all duration-150"
+                          className="font-tamil flex aspect-square items-center justify-center rounded-[1rem] border-[3px] border-[#180d2b] font-black text-white shadow-[4px_5px_0_#180d2b] transition-all duration-150"
                               aria-label={`cell ${rowIndex}-${colIndex} ${letter}`}
                               style={{
                                 fontSize:
@@ -799,26 +797,26 @@ export function WordSearchGame({
                                     ? `calc(${boardFontSize} - 0.06rem)`
                                     : boardFontSize,
                                 lineHeight: 1,
-                            color: "#f4ecdc",
+                            color: found || selected ? "#180d2b" : "#ffffff",
                             background: found
-                              ? "linear-gradient(160deg, rgba(204,154,60,0.55), rgba(193,68,46,0.30))"
+                              ? "#b7ff2a"
                               : selected
-                                ? "linear-gradient(160deg, rgba(79,166,160,0.45), rgba(79,166,160,0.18))"
+                                ? "#ffc43d"
                                 : wrong
-                                  ? "linear-gradient(160deg, rgba(193,68,46,0.45), rgba(193,68,46,0.16))"
-                                  : "linear-gradient(160deg, rgba(244,236,220,0.10), rgba(244,236,220,0.02))",
-                            borderColor: found
-                              ? (foundColor ?? "#cc9a3c")
-                              : selected
-                                ? "#4fa6a0"
-                                : wrong
-                                  ? "#c1442e"
-                                  : "rgba(212,164,55,0.22)",
+                                  ? "#ff7b7b"
+                                  : colIndex % 4 === 0
+                                    ? "#7c3aed"
+                                    : colIndex % 4 === 1
+                                      ? "#22a6b3"
+                                      : colIndex % 4 === 2
+                                        ? "#ff3b6f"
+                                        : "#18b66f",
+                            borderColor: "#180d2b",
                                 boxShadow: found
-                              ? "0 0 18px rgba(204,154,60,0.22)"
+                              ? "4px 5px 0 #180d2b"
                                   : selected
-                                ? "0 0 18px rgba(79,166,160,0.24)"
-                                : "none",
+                                ? "2px 3px 0 #180d2b"
+                                : "4px 5px 0 #180d2b",
                                 transform: found
                               ? "scale(1)"
                                   : selected
@@ -838,12 +836,12 @@ export function WordSearchGame({
                     </div>
                       </div>
 
-              <section className="w-full max-w-[32.5rem] rounded-[22px] border border-[rgba(212,164,55,0.16)] bg-[linear-gradient(165deg,rgba(244,236,220,0.045),rgba(244,236,220,0.01)),#654632] p-5 shadow-[0_20px_50px_-25px_rgba(0,0,0,0.6)]">
-                <div className="mb-4 flex items-baseline justify-between gap-3">
-                  <h2 className="font-display text-xs font-semibold uppercase tracking-[0.14em] text-[#f0ce86]">
+              <section className="w-full max-w-[32.5rem] rounded-[1.25rem] border-[3px] border-[#180d2b] bg-white p-4 shadow-[7px_8px_0_#180d2b] sm:p-5">
+                <div className="mb-3 flex items-baseline justify-between gap-3">
+                  <h2 className="font-display text-xs font-black uppercase tracking-[0.14em] text-[#9a83b3]">
                     {copy.wordsToFind}
                   </h2>
-                  <span className="text-sm font-semibold text-[#8fbab6]">
+                  <span className="rounded-full border-[2px] border-[#180d2b] bg-[#c6ff2e] px-3 py-1 text-xs font-black text-[#180d2b]">
                     {foundCount}/{grid.words.length} {copy.found}
                   </span>
                 </div>
@@ -856,17 +854,17 @@ export function WordSearchGame({
           </main>
 
         {gameState !== "playing" && !isPaused ? (
-          <div className="fixed inset-0 z-40 flex items-center justify-center bg-[rgba(74,51,36,0.78)] p-5 backdrop-blur-[6px]">
-            <div className="w-full max-w-[20rem] rounded-[24px] border border-[rgba(212,164,55,0.16)] bg-[#654632] px-7 py-8 text-center shadow-[0_30px_60px_-20px_rgba(0,0,0,0.7)]">
-              <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-[linear-gradient(160deg,#f0ce86,#cc9a3c)] text-[#1c1300]">
+          <div className="fixed inset-0 z-40 flex items-center justify-center bg-[#180d2b]/45 p-5 backdrop-blur-[6px]">
+            <div className="w-full max-w-[20rem] rounded-[1.5rem] border-[3px] border-[#180d2b] bg-white px-7 py-8 text-center shadow-[8px_9px_0_#180d2b]">
+              <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full border-[3px] border-[#180d2b] bg-[#ffc43d] text-[#180d2b] shadow-[4px_5px_0_#180d2b]">
                 {gameState === "won" ? <TrophyIcon className="h-8 w-8" /> : <ClockIcon className="h-8 w-8" />}
               </div>
 
-              <h2 className="mt-4 text-2xl font-bold tracking-[-0.03em] text-[#f0ce86]">
+              <h2 className="mt-4 text-2xl font-black tracking-[-0.03em] text-[#180d2b]">
                 {overlayTitle}
               </h2>
 
-              <p className="mx-auto mt-2 max-w-sm text-sm leading-6 text-[#8fbab6]">
+              <p className="mx-auto mt-2 max-w-sm text-sm font-bold leading-6 text-[#6b5441]">
                 {gameState === "won"
                   ? copy.allFound
                   : lossReason === "mistakes"
@@ -874,11 +872,11 @@ export function WordSearchGame({
                     : copy.foundBeforeTime(foundCount, grid.words.length)}
               </p>
 
-              <div className="mt-4 text-[34px] font-bold tabular-nums text-[#f4ecdc]">
+              <div className="mt-4 text-[34px] font-black tabular-nums text-[#180d2b]">
                   {score}
                 </div>
 
-              <div className="mt-5 max-h-40 space-y-2 overflow-y-auto rounded-[16px] border border-[rgba(212,164,55,0.16)] bg-[rgba(244,236,220,0.035)] p-3 text-left">
+              <div className="mt-5 max-h-40 space-y-2 overflow-y-auto rounded-[1rem] border-[2px] border-[#180d2b] bg-[#fff7ec] p-3 text-left">
                 {grid.words.map((entry, index) => {
                   const found = foundWords.includes(entry.word);
                   const color = PILL_COLORS[index % PILL_COLORS.length];
@@ -901,7 +899,7 @@ export function WordSearchGame({
                         </span>
                       </span>
                       {locale !== "ta" ? (
-                      <span className="text-[#8fbab6]">{entry.translation[locale]}</span>
+                      <span className="text-[#6b5441]">{entry.translation[locale]}</span>
                       ) : null}
                     </div>
                   );
@@ -912,7 +910,7 @@ export function WordSearchGame({
                 <button
                   type="button"
                   onClick={() => window.location.reload()}
-                className="inline-flex items-center justify-center gap-2 rounded-[14px] bg-[linear-gradient(160deg,#f0ce86,#cc9a3c)] px-4 py-3 text-sm font-bold text-[#1c1300]"
+                className="inline-flex items-center justify-center gap-2 rounded-[1rem] border-[3px] border-[#180d2b] bg-[#ffc43d] px-4 py-3 text-sm font-black text-[#180d2b] shadow-[4px_5px_0_#180d2b]"
                 >
                   <RotateCcwIcon className="h-4 w-4" />
                   {copy.replay}
@@ -920,7 +918,7 @@ export function WordSearchGame({
 
                 <Link
                   href={`/${locale}/word-search`}
-                className="inline-flex items-center justify-center rounded-[14px] border border-[rgba(212,164,55,0.16)] bg-[rgba(244,236,220,0.05)] px-4 py-3 text-sm font-bold text-[#f4ecdc]"
+                className="inline-flex items-center justify-center rounded-[1rem] border-[3px] border-[#180d2b] bg-white px-4 py-3 text-sm font-black text-[#180d2b] shadow-[4px_5px_0_#180d2b]"
                 >
                   {copy.backToList}
                 </Link>

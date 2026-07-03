@@ -8,6 +8,7 @@ import type {
   DictionaryProgressSummary,
   FillBlankExercise,
   ImageHuntExercise,
+  ImageHuntProgress,
   Locale,
   SplashSlide,
   WordSearchGrid,
@@ -544,6 +545,58 @@ export async function getImageHuntExercises() {
 export async function getImageHuntExercise(id: string) {
   const exercises = await getImageHuntExercises();
   return exercises.find((entry) => entry.id === id) ?? null;
+}
+
+export async function getImageHuntProgress(exerciseId: string): Promise<ImageHuntProgress | null> {
+  if (!hasSupabaseEnv()) {
+    return null;
+  }
+
+  const supabase = await createSupabaseServerClient();
+
+  if (!supabase) {
+    return null;
+  }
+
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  if (!user) {
+    return null;
+  }
+
+  const { data: latestScore } = await supabase
+    .from("image_hunt_scores")
+    .select("found_targets,total_targets,wrong_clicks,time_used_seconds")
+    .eq("user_id", user.id)
+    .eq("exercise_id", exerciseId)
+    .order("completed_at", { ascending: false })
+    .limit(1)
+    .maybeSingle();
+
+  if (!latestScore || latestScore.found_targets >= latestScore.total_targets || latestScore.wrong_clicks >= 3) {
+    return null;
+  }
+
+  const { data: clicks } = await supabase
+    .from("image_hunt_user_clicks")
+    .select("target_id")
+    .eq("user_id", user.id)
+    .eq("exercise_id", exerciseId)
+    .eq("is_correct", true)
+    .not("target_id", "is", null)
+    .order("clicked_at", { ascending: true });
+
+  const foundTargetIds = Array.from(
+    new Set((clicks ?? []).map((click) => click.target_id).filter((targetId): targetId is string => Boolean(targetId))),
+  ).slice(0, latestScore.found_targets);
+
+  return {
+    foundTargetIds,
+    wrongClicks: latestScore.wrong_clicks,
+    timeUsedSeconds: latestScore.time_used_seconds,
+  };
 }
 
 export async function getDictionaryEntries() {

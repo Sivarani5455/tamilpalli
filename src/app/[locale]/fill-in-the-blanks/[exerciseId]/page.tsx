@@ -20,7 +20,7 @@ export default async function FillBlanksDetailPage({
   }
 
   return (
-    <div className="mx-auto max-w-7xl px-4 py-10 sm:px-6">
+    <div className="mx-auto max-w-6xl px-2 py-3 sm:px-5 sm:py-5 lg:py-6">
       <FillBlanksGame exercise={exercise} locale={locale} />
     </div>
   );

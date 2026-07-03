@@ -1,7 +1,7 @@
 import { notFound } from "next/navigation";
 
 import { ImageHuntGame } from "@/components/image-hunt/image-hunt-game";
-import { getImageHuntExercise } from "@/lib/content";
+import { getImageHuntExercise, getImageHuntProgress } from "@/lib/content";
 import { getLocaleOrThrow } from "@/lib/i18n";
 import { requireCategoryAccess } from "@/lib/permissions";
 
@@ -19,9 +19,11 @@ export default async function ImageHuntDetailPage({
     notFound();
   }
 
+  const progress = await getImageHuntProgress(exercise.id);
+
   return (
     <div className="mx-auto max-w-[92rem] px-3 py-6 sm:px-5 lg:py-10">
-      <ImageHuntGame exercise={exercise} locale={locale} />
+      <ImageHuntGame exercise={exercise} initialProgress={progress} locale={locale} />
     </div>
   );
 }

@@ -88,9 +88,15 @@ export async function saveImageHuntScoreAction(
     return { ok: false, message: "You must be logged in to save your result." };
   }
 
+  const exerciseId = String(formData.get("exerciseId"));
+  const foundTargetIds = String(formData.get("foundTargetIds") ?? "")
+    .split(",")
+    .map((targetId) => targetId.trim())
+    .filter(Boolean);
+
   await supabase.from("image_hunt_scores").insert({
     user_id: userId,
-    exercise_id: String(formData.get("exerciseId")),
+    exercise_id: exerciseId,
     score: Number(formData.get("score") ?? 0),
     total_targets: Number(formData.get("totalTargets") ?? 0),
     found_targets: Number(formData.get("foundTargets") ?? 0),
@@ -99,6 +105,19 @@ export async function saveImageHuntScoreAction(
     time_used_seconds: Number(formData.get("timeUsedSeconds") ?? 0),
   });
 
+  if (foundTargetIds.length > 0) {
+    await supabase.from("image_hunt_user_clicks").insert(
+      foundTargetIds.map((targetId) => ({
+        user_id: userId,
+        exercise_id: exerciseId,
+        target_id: targetId,
+        clicked_x: 0,
+        clicked_y: 0,
+        is_correct: true,
+      })),
+    );
+  }
+
   revalidatePath(String(formData.get("path") ?? "/"));
-  return { ok: true, message: "Image Hunt score saved." };
+  return { ok: true, message: "Image Hunt progress saved." };
 }

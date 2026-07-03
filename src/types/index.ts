@@ -136,6 +136,12 @@ export type ImageHuntExercise = {
   targets: ImageHuntTarget[];
 };
 
+export type ImageHuntProgress = {
+  foundTargetIds: string[];
+  wrongClicks: number;
+  timeUsedSeconds: number;
+};
+
 export type DictionaryTranslation = {
   word: string;
   description: string | null;
