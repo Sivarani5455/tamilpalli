@@ -58,53 +58,61 @@ export default async function PricingPage({
           };
 
   return (
-    <div className="mx-auto max-w-[120rem] px-4 py-10 sm:px-6 xl:px-8">
-      <section className="mb-8 rounded-[1.8rem] border border-[rgba(185,121,63,0.22)] bg-[linear-gradient(160deg,rgba(255,222,145,0.18),rgba(255,255,255,0.16)_46%),#fff8ec] p-6 shadow-[0_20px_50px_-38px_rgba(74,51,36,0.34)] sm:p-8">
-        <p className="text-xs font-semibold uppercase tracking-[0.28em] text-[#8a5a2e]">Pricing</p>
-        <h1 className="mt-3 max-w-4xl font-display text-5xl tracking-[-0.04em] text-[var(--brand-ink)] sm:text-6xl">
+    <div className="relative min-h-screen overflow-hidden bg-[#fbf1e2] px-4 py-8 text-[#180d2b] sm:px-6 xl:px-8">
+      <div className="pointer-events-none absolute left-[8%] top-16 h-4 w-4 rotate-12 rounded-[0.25rem] bg-[#c6ff2e]" />
+      <div className="pointer-events-none absolute right-[16%] top-24 h-3 w-3 rounded-full bg-[#7c3aed]" />
+      <div className="pointer-events-none absolute bottom-20 left-[12%] h-4 w-4 rotate-45 rounded-[0.25rem] bg-[#ffc43d]" />
+      <div className="mx-auto max-w-[76rem]">
+        <section className="relative mb-8 overflow-hidden rounded-[1.5rem] border-[3px] border-[#180d2b] bg-white p-6 shadow-[7px_8px_0_#180d2b] sm:p-8">
+          <div className="pointer-events-none absolute -right-10 -top-12 h-36 w-36 rounded-full bg-[#7c3aed]" />
+          <p className="inline-flex rounded-full border-2 border-[#180d2b] bg-[#c6ff2e] px-4 py-1 text-xs font-black uppercase tracking-[0.24em] text-[#180d2b] shadow-[2px_3px_0_#180d2b]">
+            Pricing
+          </p>
+          <h1 className="relative mt-5 max-w-4xl font-display text-4xl font-black tracking-[-0.02em] text-[#180d2b] sm:text-5xl lg:text-6xl">
           Choose the right Tamil learning plan.
-        </h1>
-        <p className="mt-4 max-w-3xl text-lg leading-8 text-[#6f553d]">
+          </h1>
+          <p className="relative mt-4 max-w-3xl text-base font-semibold leading-8 text-[#6f587f] sm:text-lg">
           Clear monthly access, cleaner upgrade paths and content-aware guidance across every learning format.
-        </p>
-      </section>
+          </p>
+        </section>
 
-      {content ? (
-        <div className="mb-8 rounded-[1.6rem] border border-[rgba(185,121,63,0.22)] bg-[#fff8ec]/95 p-6 shadow-[0_16px_40px_-30px_rgba(74,51,36,0.32)]">
-          <p className="text-sm font-semibold uppercase tracking-[0.28em] text-[#8a6a4c]">{copy.access}</p>
+        {content ? (
+          <div className="mb-8 rounded-[1.25rem] border-[3px] border-[#180d2b] bg-white p-6 shadow-[6px_7px_0_#180d2b]">
+            <p className="text-sm font-black uppercase tracking-[0.28em] text-[#7c3aed]">{copy.access}</p>
           {disabled ? (
             <div className="mt-4">
-              <h2 className="font-display text-3xl text-[var(--brand-ink)]">
+              <h2 className="font-display text-3xl font-black text-[#180d2b]">
                 {content} {copy.unavailable}
               </h2>
-              <p className="mt-3 max-w-3xl text-base leading-7 text-[#6f553d]">{copy.disabledMessage}</p>
+              <p className="mt-3 max-w-3xl text-base font-semibold leading-7 text-[#6f587f]">{copy.disabledMessage}</p>
             </div>
           ) : (
             <div className="mt-4">
-              <h2 className="font-display text-3xl text-[var(--brand-ink)]">
+              <h2 className="font-display text-3xl font-black text-[#180d2b]">
                 {content} {copy.availableWith}{" "}
-                <span className="text-[#8a5a2e]">
+                <span className="text-[#7c3aed]">
                   {requestedPlans.map((plan) => planLabel[plan]).join(" / ")}
                 </span>
               </h2>
-              <p className="mt-3 max-w-3xl text-base leading-7 text-[#6f553d]">{copy.unlockMessage}</p>
+              <p className="mt-3 max-w-3xl text-base font-semibold leading-7 text-[#6f587f]">{copy.unlockMessage}</p>
               {focusPlan ? (
                 <a
                   href={`#plan-${focusPlan}`}
-                  className="mt-5 inline-flex rounded-xl bg-[#8a5a2e] px-5 py-3 text-sm font-semibold uppercase tracking-[0.18em] text-[#fff2dd] transition hover:bg-[#654632]"
+                  className="mt-5 inline-flex rounded-full border-[3px] border-[#180d2b] bg-[#ffc43d] px-5 py-3 text-sm font-black uppercase tracking-[0.18em] text-[#180d2b] shadow-[3px_4px_0_#180d2b] transition hover:-translate-y-0.5"
                 >
                   {copy.viewPlan} {planLabel[focusPlan]}
                 </a>
               ) : null}
             </div>
           )}
-        </div>
-      ) : null}
+          </div>
+        ) : null}
 
-      <div className={`grid gap-6 ${visiblePlans.length > 1 ? "lg:grid-cols-3" : "max-w-xl"}`}>
-        {visiblePlans.map((plan) => (
-          <PricingCard key={plan.id} locale={locale} plan={plan} />
-        ))}
+        <div className={`grid gap-6 ${visiblePlans.length > 1 ? "lg:grid-cols-3" : "max-w-xl"}`}>
+          {visiblePlans.map((plan) => (
+            <PricingCard key={plan.id} locale={locale} plan={plan} />
+          ))}
+        </div>
       </div>
     </div>
   );

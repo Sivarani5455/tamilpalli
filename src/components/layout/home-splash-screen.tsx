@@ -60,15 +60,17 @@ export function HomeSplashScreen({
       <div className="pointer-events-none fixed inset-0 bg-[radial-gradient(circle_at_10%_12%,rgba(198,255,46,0.12),transparent_22%),radial-gradient(circle_at_90%_16%,rgba(255,59,111,0.1),transparent_20%),linear-gradient(180deg,#fff7ea_0%,#fdf1df_100%)]" />
 
       <div className="relative z-10 mx-auto flex min-h-screen w-full max-w-[640px] flex-col px-4 pb-24 pt-4 sm:justify-center sm:px-6 sm:py-8">
-        <div className="mb-4 flex items-center justify-end sm:mb-5">
-          <button
-            type="button"
-            onClick={closeSplash}
-            className="rounded-full border-[2px] border-[#180d2b] bg-white px-3.5 py-1.5 text-[11px] font-black uppercase tracking-[0.12em] text-[#180d2b] shadow-[2px_3px_0_#180d2b] transition hover:-translate-y-0.5"
-          >
-            Skip
-          </button>
-        </div>
+        {!isIntroScreen ? (
+          <div className="mb-4 flex items-center justify-end sm:mb-5">
+            <button
+              type="button"
+              onClick={closeSplash}
+              className="rounded-full border-[2px] border-[#180d2b] bg-white px-3.5 py-1.5 text-[11px] font-black uppercase tracking-[0.12em] text-[#180d2b] shadow-[2px_3px_0_#180d2b] transition hover:-translate-y-0.5"
+            >
+              Skip
+            </button>
+          </div>
+        ) : null}
 
         {isIntroScreen ? (
           <>
@@ -85,7 +87,17 @@ export function HomeSplashScreen({
               <span className="h-[2px] flex-1 bg-[#b49ac6]" />
             </div>
 
-            <div className="relative mx-auto mt-2 w-full max-w-[470px]">
+            <div className="mx-auto mb-3 flex w-full max-w-[470px] justify-start">
+              <button
+                type="button"
+                onClick={closeSplash}
+                className="rounded-full border-[2px] border-[#180d2b] bg-white px-3.5 py-1.5 text-[11px] font-black uppercase tracking-[0.12em] text-[#180d2b] shadow-[2px_3px_0_#180d2b] transition hover:-translate-y-0.5"
+              >
+                Skip
+              </button>
+            </div>
+
+            <div className="relative mx-auto w-full max-w-[470px]">
               <div className="relative aspect-[0.88] overflow-hidden rounded-[1.25rem] border-[3px] border-[#180d2b] bg-[linear-gradient(135deg,#7c3aed_0%,#c13ab6_44%,#ff3b6f_100%)] shadow-[8px_9px_0_#180d2b]">
                 <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_20%_15%,rgba(255,255,255,0.22),transparent_24%),radial-gradient(circle_at_80%_78%,rgba(198,255,46,0.16),transparent_28%)]" />
                 {imageReady ? (
@@ -127,7 +139,7 @@ export function HomeSplashScreen({
                   type="button"
                   onClick={goToNextScreen}
                   aria-label="Écran suivant"
-                  className="absolute right-[-1.15rem] top-[calc(50%-1.75rem)] z-20 flex h-12 w-12 items-center justify-center rounded-full border-[3px] border-[#180d2b] bg-[#ffc43d] p-0 text-[#180d2b] shadow-[4px_5px_0_#180d2b] transition hover:-translate-y-0.5 sm:right-[-1.35rem] sm:h-[52px] sm:w-[52px]"
+                  className="absolute right-[-1.15rem] top-[42%] z-20 flex h-12 w-12 -translate-y-1/2 items-center justify-center rounded-full border-[3px] border-[#180d2b] bg-[#ffc43d] p-0 text-[#180d2b] shadow-[4px_5px_0_#180d2b] transition hover:-translate-y-[55%] sm:right-[-1.35rem] sm:h-[52px] sm:w-[52px]"
                 >
                   <SplashChevronIcon direction="next" />
                 </button>

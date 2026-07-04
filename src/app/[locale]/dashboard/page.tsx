@@ -25,35 +25,35 @@ const categoryTheme = {
     badge: "Vocabulary",
     tone: "Medium",
     points: 120,
-    ribbon: "from-[#b9793f] to-[#d3a238]",
-    surface: "from-[#fff8ec] to-[#f4dfb6]",
-    border: "border-[rgba(185,121,63,0.24)]",
-    accent: "bg-[#f4dfb6] text-[#8a5a2e]",
+    ribbon: "from-[#7c3aed] to-[#22c6d8]",
+    surface: "from-white to-[#f6f0ff]",
+    border: "border-[#180d2b]",
+    accent: "bg-[#f6f0ff] text-[#7c3aed]",
   },
   "fill-in-the-blanks": {
     badge: "Grammar",
     tone: "Easy",
     points: 80,
-    ribbon: "from-[#d3a238] to-[#e8c876]",
-    surface: "from-[#fff7ea] to-[#ead7bd]",
-    border: "border-[rgba(211,162,56,0.28)]",
-    accent: "bg-[#fff2d0] text-[#8a5a2e]",
+    ribbon: "from-[#ffc43d] to-[#c6ff2e]",
+    surface: "from-white to-[#fff7d6]",
+    border: "border-[#180d2b]",
+    accent: "bg-[#dcfce7] text-[#047857]",
   },
   "image-hunt": {
     badge: "Visual",
     tone: "Easy",
     points: 90,
-    ribbon: "from-[#9c3b2e] to-[#b9793f]",
-    surface: "from-[#fff8ec] to-[#f0c7bd]",
-    border: "border-[rgba(156,59,46,0.24)]",
-    accent: "bg-[#f0c7bd] text-[#7f2f24]",
+    ribbon: "from-[#ff3b6f] to-[#ffc43d]",
+    surface: "from-white to-[#ffe4ee]",
+    border: "border-[#180d2b]",
+    accent: "bg-[#ffe4ee] text-[#be123c]",
   },
 } as const;
 
 const difficultyTone = {
-  Easy: "bg-[#fff2d0] text-[#8a5a2e]",
-  Medium: "bg-[#f4dfb6] text-[#7a4725]",
-  Hard: "bg-[#f0c7bd] text-[#7f2f24]",
+  Easy: "bg-[#dcfce7] text-[#047857]",
+  Medium: "bg-[#f6f0ff] text-[#7c3aed]",
+  Hard: "bg-[#ffe4ee] text-[#be123c]",
 };
 
 export default async function DashboardPage({
@@ -220,28 +220,28 @@ export default async function DashboardPage({
           };
 
   return (
-    <div className="mx-auto max-w-[120rem] px-4 py-8 sm:px-6 xl:px-8">
+    <div className="mx-auto max-w-[120rem] px-3 py-6 sm:px-5 xl:px-7">
       <div
-        className={`overflow-hidden rounded-[2rem] border border-[rgba(185,121,63,0.2)] bg-[#fff8ec]/90 shadow-[0_24px_60px_-45px_rgba(74,51,36,0.28)] lg:grid ${
+        className={`overflow-hidden rounded-[1.5rem] border-[3px] border-[#180d2b] bg-white shadow-[8px_9px_0_#180d2b] lg:grid ${
           isTamil ? "lg:grid-cols-[17rem_1fr]" : "lg:grid-cols-[15rem_1fr]"
         }`}
       >
-        <aside className="hidden border-r border-[rgba(185,121,63,0.18)] bg-[#f7ead6]/75 lg:flex lg:flex-col">
-          <div className="border-b border-[rgba(185,121,63,0.18)] px-5 py-5">
+        <aside className="hidden border-r-[3px] border-[#180d2b] bg-[#fff7ed] lg:flex lg:flex-col">
+          <div className="border-b-[3px] border-[#180d2b] px-5 py-5">
             <div className="flex items-center gap-3">
-              <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-[#8a5a2e] text-sm font-black text-[#fff2dd]">
+              <div className="flex h-11 w-11 items-center justify-center rounded-full border-[3px] border-[#180d2b] bg-[#7c3aed] text-sm font-black text-white shadow-[3px_4px_0_#180d2b]">
                 {user.fullName.charAt(0).toUpperCase()}
               </div>
               <div>
                 <p
-                  className={`tracking-tight text-[var(--brand-ink)] ${
+                  className={`tracking-tight text-[#180d2b] ${
                     isTamil ? "text-[1.02rem] font-semibold" : "text-sm font-black"
                   }`}
                 >
                   {user.fullName}
                 </p>
                 <p
-                  className={`text-[#8a6a4c] ${
+                  className={`text-[#8a6a9c] ${
                     isTamil ? "text-[0.9rem] font-medium tracking-[0.02em]" : "text-xs uppercase tracking-[0.22em]"
                   }`}
                 >
@@ -252,7 +252,7 @@ export default async function DashboardPage({
           </div>
 
           <div className="px-4 pt-4">
-            <div className="rounded-xl border border-[rgba(185,121,63,0.2)] bg-[#fff8ec] px-4 py-3 text-xs font-medium text-[#8a6a4c]">
+            <div className="rounded-full border-[2px] border-[#180d2b] bg-white px-4 py-3 text-xs font-black text-[#8a6a9c] shadow-[2px_3px_0_#180d2b]">
               {copy.search}
             </div>
           </div>
@@ -263,36 +263,36 @@ export default async function DashboardPage({
                 key={item}
                 className={`rounded-xl px-4 py-3 ${
                   isTamil ? "text-[1rem] font-medium tracking-[0.01em]" : "text-sm font-semibold"
-                } ${index === 0 ? "bg-[#f4dfb6] text-[#8a5a2e]" : "text-[#8a6a4c]"}`}
+                } ${index === 0 ? "border-[2px] border-[#180d2b] bg-[#7c3aed] text-white shadow-[2px_3px_0_#180d2b]" : "text-[#8a6a9c]"}`}
               >
                 {item}
               </div>
             ))}
           </nav>
 
-          <div className="border-t border-[rgba(185,121,63,0.18)] px-4 py-4">
-            <div className="rounded-[1.2rem] border border-[rgba(185,121,63,0.2)] bg-[#fff8ec] p-4">
+          <div className="border-t-[3px] border-[#180d2b] px-4 py-4">
+            <div className="rounded-[1.2rem] border-[3px] border-[#180d2b] bg-white p-4 shadow-[4px_5px_0_#180d2b]">
               <p
-                className={`text-[#8a6a4c] ${
+                className={`text-[#7c3aed] ${
                   isTamil ? "text-[0.9rem] font-medium tracking-[0.02em]" : "text-[11px] font-black uppercase tracking-[0.26em]"
                 }`}
               >
                 {copy.activePlan}
               </p>
               <h2
-                className={`mt-2 text-[var(--brand-ink)] ${
+                className={`mt-2 text-[#180d2b] ${
                   isTamil ? "text-[1.8rem] font-semibold leading-tight" : "text-xl font-black"
                 }`}
               >
                 {planLabel[subscription.planSlug]}
               </h2>
-              <p className={`mt-2 text-[#6f553d] ${isTamil ? "text-[0.98rem] leading-7" : "text-sm leading-6"}`}>
+              <p className={`mt-2 font-semibold text-[#8a6a9c] ${isTamil ? "text-[0.98rem] leading-7" : "text-sm leading-6"}`}>
                 {nextPlan ? copy.upgrade(nextPlan.name) : copy.maxAccess}
               </p>
               {nextPlan ? (
                 <Link
                   href={`/${locale}/pricing#plan-${nextPlan.slug}`}
-                  className={`mt-4 inline-flex rounded-xl bg-[#8a5a2e] text-[#fff2dd] ${
+                  className={`mt-4 inline-flex rounded-full border-[3px] border-[#180d2b] bg-[#180d2b] text-white shadow-[3px_4px_0_#ffc43d] ${
                     isTamil ? "px-4 py-2.5 text-[0.95rem] font-medium tracking-[0.02em]" : "px-4 py-2 text-xs font-black uppercase tracking-[0.2em]"
                   }`}
                 >
@@ -304,18 +304,18 @@ export default async function DashboardPage({
         </aside>
 
         <div className="min-w-0">
-          <header className="border-b border-[rgba(185,121,63,0.18)] bg-[#fff8ec]/82 px-6 py-5">
+          <header className="border-b-[3px] border-[#180d2b] bg-white px-6 py-5">
             <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
               <div>
                 <p
-                  className={`text-[#8a5a2e] ${
+                  className={`text-[#7c3aed] ${
                     isTamil ? "text-[0.92rem] font-medium tracking-[0.02em]" : "text-[11px] font-black uppercase tracking-[0.28em]"
                   }`}
                 >
                   {copy.dashboard}
                 </p>
                 <h1
-                  className={`mt-1 text-[var(--brand-ink)] ${
+                  className={`mt-1 text-[#180d2b] ${
                     isTamil ? "text-[2.8rem] font-semibold leading-tight tracking-[-0.025em] sm:text-[3.2rem]" : "text-3xl font-black tracking-[-0.04em] sm:text-4xl"
                   }`}
                 >
@@ -324,7 +324,7 @@ export default async function DashboardPage({
               </div>
               <div className="flex items-center gap-3">
                 <div
-                  className={`rounded-xl border border-[rgba(185,121,63,0.2)] bg-[#fff7ea] px-4 py-3 text-[#6f553d] ${
+                  className={`rounded-full border-[3px] border-[#180d2b] bg-[#c6ff2e] px-4 py-3 text-[#180d2b] shadow-[3px_4px_0_#180d2b] ${
                     isTamil ? "text-[1rem] font-medium tracking-[0.01em]" : "text-sm font-semibold"
                   }`}
                 >
@@ -341,53 +341,53 @@ export default async function DashboardPage({
                   label: copy.daysLeft,
                   value: String(daysRemaining(subscription.expiresAt)),
                   sub: copy.untilRenewal,
-                  tone: "from-[#fff8ec] to-[#ead7bd]",
-                  border: "border-[rgba(185,121,63,0.2)]",
+                  tone: "from-white to-[#f6f0ff]",
+                  border: "border-[#180d2b]",
                   icon: "DY",
-                  iconTone: "bg-[#ead7bd] text-[#654632]",
+                  iconTone: "bg-[#7c3aed] text-white",
                 },
                 {
                   label: copy.accessible,
                   value: `${accessibleCount}/${categoryAccess.length}`,
                   sub: copy.unlocked,
-                  tone: "from-[#fff8ec] to-[#f4dfb6]",
-                  border: "border-[rgba(211,162,56,0.28)]",
+                  tone: "from-white to-[#dcfce7]",
+                  border: "border-[#180d2b]",
                   icon: "AC",
-                  iconTone: "bg-[#f4dfb6] text-[#8a5a2e]",
+                  iconTone: "bg-[#20bf73] text-white",
                 },
                 {
                   label: copy.xpAvailable,
                   value: String(totalXp),
                   sub: copy.pointsToEarn,
-                  tone: "from-[#fff8eb] to-[#fff2d7]",
-                  border: "border-[#f5dfaa]",
+                  tone: "from-white to-[#fff7d6]",
+                  border: "border-[#180d2b]",
                   icon: "XP",
-                  iconTone: "bg-[#fff2d0] text-[#8a5a2e]",
+                  iconTone: "bg-[#ffc43d] text-[#180d2b]",
                 },
                 {
                   label: copy.locked,
                   value: String(lockedCount),
                   sub: copy.anotherPlan,
-                  tone: "from-[#fff8ec] to-[#f0c7bd]",
-                  border: "border-[rgba(156,59,46,0.24)]",
+                  tone: "from-white to-[#ffe4ee]",
+                  border: "border-[#180d2b]",
                   icon: "LK",
-                  iconTone: "bg-[#f0c7bd] text-[#7f2f24]",
+                  iconTone: "bg-[#ff3b6f] text-white",
                 },
               ].map((item) => (
                 <article
                   key={item.label}
-                  className={`rounded-[1.2rem] border bg-gradient-to-br ${item.tone} ${item.border} p-5`}
+                  className={`rounded-[1.2rem] border-[3px] bg-gradient-to-br ${item.tone} ${item.border} p-5 shadow-[5px_6px_0_#180d2b]`}
                 >
                   <div className="mb-4 flex items-start justify-between gap-3">
                     <p
-                      className={`text-[#8a6a4c] ${
+                      className={`text-[#8a6a9c] ${
                         isTamil ? "text-[0.88rem] font-medium tracking-[0.02em]" : "text-xs font-semibold uppercase tracking-[0.24em]"
                       }`}
                     >
                       {item.label}
                     </p>
                     <span
-                      className={`rounded-xl px-2.5 py-1 ${
+                      className={`rounded-full border-[2px] border-[#180d2b] px-2.5 py-1 shadow-[2px_3px_0_#180d2b] ${
                         isTamil ? "text-[0.8rem] font-medium tracking-[0.02em]" : "text-[10px] font-black uppercase tracking-[0.2em]"
                       } ${item.iconTone}`}
                     >
@@ -395,41 +395,41 @@ export default async function DashboardPage({
                     </span>
                   </div>
                   <p
-                    className={`text-[var(--brand-ink)] ${
+                    className={`text-[#180d2b] ${
                       isTamil ? "text-[2.2rem] font-semibold tracking-[-0.03em]" : "text-3xl font-black tracking-[-0.04em]"
                     }`}
                   >
                     {item.value}
                   </p>
-                  <p className={`mt-1 text-[#6f553d] ${isTamil ? "text-[0.96rem] leading-7" : "text-sm"}`}>{item.sub}</p>
+                  <p className={`mt-1 font-semibold text-[#8a6a9c] ${isTamil ? "text-[0.96rem] leading-7" : "text-sm"}`}>{item.sub}</p>
                 </article>
               ))}
             </div>
 
-            <section className="mb-7 rounded-[1.5rem] border border-[rgba(185,121,63,0.2)] bg-[#fff8ec]/92 p-5 shadow-[0_16px_40px_-30px_rgba(74,51,36,0.28)]">
+            <section className="mb-7 rounded-[1.5rem] border-[3px] border-[#180d2b] bg-white p-5 shadow-[6px_7px_0_#180d2b]">
               <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
                 <div>
                   <p
-                    className={`text-[#8a5a2e] ${
+                    className={`text-[#7c3aed] ${
                       isTamil ? "text-[0.92rem] font-medium tracking-[0.02em]" : "text-[11px] font-black uppercase tracking-[0.28em]"
                     }`}
                   >
                     AGARATHI
                   </p>
                   <h2
-                    className={`mt-1 text-[var(--brand-ink)] ${
+                    className={`mt-1 text-[#180d2b] ${
                       isTamil ? "text-[2rem] font-semibold tracking-[-0.02em]" : "text-xl font-black tracking-[-0.03em]"
                     }`}
                   >
                     {dictionaryCopy.title}
                   </h2>
-                  <p className={`mt-1 max-w-3xl text-[#6f553d] ${isTamil ? "text-[0.98rem] leading-7" : "text-sm leading-6"}`}>
+                  <p className={`mt-1 max-w-3xl font-semibold text-[#8a6a9c] ${isTamil ? "text-[0.98rem] leading-7" : "text-sm leading-6"}`}>
                     {dictionaryCopy.hint}
                   </p>
                 </div>
                 <Link
                   href={`/${locale}/agarathi`}
-                  className={`inline-flex rounded-xl bg-[#8a5a2e] text-[#fff2dd] ${
+                  className={`inline-flex rounded-full border-[3px] border-[#180d2b] bg-[#180d2b] text-white shadow-[3px_4px_0_#ffc43d] ${
                     isTamil ? "px-4 py-2.5 text-[0.95rem] font-medium tracking-[0.02em]" : "px-4 py-2 text-xs font-black uppercase tracking-[0.2em]"
                   }`}
                 >
@@ -442,50 +442,50 @@ export default async function DashboardPage({
                   {
                     label: dictionaryCopy.viewed,
                     value: String(dictionaryProgress.totalViewed),
-                    tone: "from-[#fff8ec] to-[#f4dfb6]",
-                    border: "border-[rgba(211,162,56,0.28)]",
+                    tone: "from-white to-[#f6f0ff]",
+                    border: "border-[#180d2b]",
                     icon: "VW",
-                    iconTone: "bg-[#f4dfb6] text-[#8a5a2e]",
+                    iconTone: "bg-[#7c3aed] text-white",
                   },
                   {
                     label: dictionaryCopy.learned,
                     value: String(dictionaryProgress.totalLearned),
-                    tone: "from-[#fff8ec] to-[#ead7bd]",
-                    border: "border-[rgba(185,121,63,0.2)]",
+                    tone: "from-white to-[#dcfce7]",
+                    border: "border-[#180d2b]",
                     icon: "LR",
-                    iconTone: "bg-[#ead7bd] text-[#654632]",
+                    iconTone: "bg-[#20bf73] text-white",
                   },
                   {
                     label: dictionaryCopy.mastered,
                     value: String(dictionaryProgress.totalMastered),
-                    tone: "from-[#fff8eb] to-[#fff2d7]",
-                    border: "border-[#f5dfaa]",
+                    tone: "from-white to-[#fff7d6]",
+                    border: "border-[#180d2b]",
                     icon: "MS",
-                    iconTone: "bg-[#fff2d0] text-[#8a5a2e]",
+                    iconTone: "bg-[#ffc43d] text-[#180d2b]",
                   },
                   {
                     label: dictionaryCopy.today,
                     value: String(dictionaryProgress.reviewedToday),
-                    tone: "from-[#fff8ec] to-[#f0c7bd]",
-                    border: "border-[rgba(156,59,46,0.24)]",
+                    tone: "from-white to-[#ffe4ee]",
+                    border: "border-[#180d2b]",
                     icon: "TD",
-                    iconTone: "bg-[#f0c7bd] text-[#7f2f24]",
+                    iconTone: "bg-[#ff3b6f] text-white",
                   },
                 ].map((item) => (
                   <article
                     key={item.label}
-                    className={`rounded-[1.2rem] border bg-gradient-to-br ${item.tone} ${item.border} p-5`}
+                    className={`rounded-[1.2rem] border-[3px] bg-gradient-to-br ${item.tone} ${item.border} p-5 shadow-[4px_5px_0_#180d2b]`}
                   >
                     <div className="mb-4 flex items-start justify-between gap-3">
                       <p
-                        className={`text-[#8a6a4c] ${
+                        className={`text-[#8a6a9c] ${
                           isTamil ? "text-[0.88rem] font-medium tracking-[0.02em]" : "text-xs font-semibold uppercase tracking-[0.24em]"
                         }`}
                       >
                         {item.label}
                       </p>
                       <span
-                        className={`rounded-xl px-2.5 py-1 ${
+                        className={`rounded-full border-[2px] border-[#180d2b] px-2.5 py-1 shadow-[2px_3px_0_#180d2b] ${
                           isTamil ? "text-[0.8rem] font-medium tracking-[0.02em]" : "text-[10px] font-black uppercase tracking-[0.2em]"
                         } ${item.iconTone}`}
                       >
@@ -493,7 +493,7 @@ export default async function DashboardPage({
                       </span>
                     </div>
                     <p
-                      className={`text-[var(--brand-ink)] ${
+                      className={`text-[#180d2b] ${
                         isTamil ? "text-[2.2rem] font-semibold tracking-[-0.03em]" : "text-3xl font-black tracking-[-0.04em]"
                       }`}
                     >
@@ -507,33 +507,33 @@ export default async function DashboardPage({
             <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
               <div>
                 <h2
-                  className={`text-[var(--brand-ink)] ${
+                  className={`text-[#180d2b] ${
                     isTamil ? "text-[2rem] font-semibold tracking-[-0.02em]" : "text-xl font-black tracking-[-0.03em]"
                   }`}
                 >
                   {copy.exercises}
                 </h2>
-                <p className={`mt-1 text-[#6f553d] ${isTamil ? "text-[0.98rem] leading-7" : "text-sm"}`}>
+                <p className={`mt-1 font-semibold text-[#8a6a9c] ${isTamil ? "text-[0.98rem] leading-7" : "text-sm"}`}>
                   {copy.exerciseHint}
                 </p>
               </div>
-              <div className="inline-flex rounded-xl border border-[rgba(185,121,63,0.2)] bg-[#fff8ec] p-1 shadow-sm">
+              <div className="inline-flex rounded-full border-[3px] border-[#180d2b] bg-white p-1 shadow-[3px_4px_0_#180d2b]">
                 <span
-                  className={`rounded-lg bg-[#8a5a2e] text-[#fff2dd] ${
+                  className={`rounded-full bg-[#7c3aed] text-white ${
                     isTamil ? "px-4 py-2.5 text-[0.95rem] font-medium tracking-[0.02em]" : "px-4 py-2 text-xs font-black uppercase tracking-[0.2em]"
                   }`}
                 >
                   {copy.all}
                 </span>
                 <span
-                  className={`text-[#8a6a4c] ${
+                  className={`text-[#8a6a9c] ${
                     isTamil ? "px-4 py-2.5 text-[0.95rem] font-medium tracking-[0.02em]" : "px-4 py-2 text-xs font-black uppercase tracking-[0.2em]"
                   }`}
                 >
                   {copy.accessibleTab}
                 </span>
                 <span
-                  className={`text-[#8a6a4c] ${
+                  className={`text-[#8a6a9c] ${
                     isTamil ? "px-4 py-2.5 text-[0.95rem] font-medium tracking-[0.02em]" : "px-4 py-2 text-xs font-black uppercase tracking-[0.2em]"
                   }`}
                 >
@@ -548,10 +548,10 @@ export default async function DashboardPage({
                   badge: "Learning",
                   tone: "Easy",
                   points: 60,
-                  ribbon: "from-[#b9793f] to-[#d3a238]",
-                  surface: "from-[#fff8ec] to-[#f4dfb6]",
-                  border: "border-[rgba(185,121,63,0.22)]",
-                  accent: "bg-[#f4dfb6] text-[#8a5a2e]",
+                  ribbon: "from-[#7c3aed] to-[#ffc43d]",
+                  surface: "from-white to-[#f6f0ff]",
+                  border: "border-[#180d2b]",
+                  accent: "bg-[#f6f0ff] text-[#7c3aed]",
                 };
 
                 const lockedPlans = category.enabledPlans ?? [];
@@ -560,27 +560,27 @@ export default async function DashboardPage({
                 return (
                   <article
                     key={category.id}
-                    className={`overflow-hidden rounded-[1.5rem] border bg-[#fff8ec]/92 shadow-[0_16px_40px_-30px_rgba(74,51,36,0.28)] transition ${
-                      category.accessible ? "hover:-translate-y-1 hover:shadow-[0_24px_50px_-32px_rgba(74,51,36,0.32)]" : "opacity-95"
+                    className={`overflow-hidden rounded-[1.5rem] border-[3px] bg-white shadow-[6px_7px_0_#180d2b] transition ${
+                      category.accessible ? "hover:-translate-y-1" : "opacity-95"
                     } ${theme.border}`}
                   >
-                    <div className={`h-1.5 bg-gradient-to-r ${theme.ribbon}`} />
+                    <div className={`h-2 bg-gradient-to-r ${theme.ribbon}`} />
                     <div className="bg-gradient-to-br p-5" style={{ backgroundImage: "linear-gradient(135deg, var(--tw-gradient-stops))" }}>
-                      <div className={`rounded-[1.1rem] border bg-gradient-to-br ${theme.surface} ${theme.border} p-5`}>
+                      <div className={`rounded-[1.1rem] border-[3px] bg-gradient-to-br ${theme.surface} ${theme.border} p-5`}>
                         <div className="mb-4 flex items-start justify-end gap-4">
                           {category.accessible ? (
-                            <span className="rounded-full bg-[#fff2d0] px-3 py-1 text-[10px] font-black uppercase tracking-[0.2em] text-[#8a5a2e]">
+                            <span className="rounded-full border-[2px] border-[#180d2b] bg-[#c6ff2e] px-3 py-1 text-[10px] font-black uppercase tracking-[0.2em] text-[#180d2b]">
                               {copy.open}
                             </span>
                           ) : (
-                            <span className="rounded-full bg-[#ead7bd] px-3 py-1 text-[10px] font-black uppercase tracking-[0.2em] text-[#8a6a4c]">
+                            <span className="rounded-full border-[2px] border-[#180d2b] bg-[#ffe4ee] px-3 py-1 text-[10px] font-black uppercase tracking-[0.2em] text-[#be123c]">
                               {copy.lockedState}
                             </span>
                           )}
                         </div>
 
-                        <h3 className="text-xl font-black tracking-[-0.03em] text-[var(--brand-ink)]">{category.title}</h3>
-                        <p className="mt-2 text-sm leading-6 text-[#6f553d]">{category.description}</p>
+                        <h3 className="text-xl font-black tracking-[-0.03em] text-[#180d2b]">{category.title}</h3>
+                        <p className="mt-2 text-sm font-semibold leading-6 text-[#8a6a9c]">{category.description}</p>
 
                         <div className="mt-5 flex items-center justify-between gap-3">
                           <div className="flex flex-wrap gap-2">
@@ -592,30 +592,30 @@ export default async function DashboardPage({
                             </span>
                           </div>
                           <span className="text-[11px] font-black uppercase tracking-[0.18em] text-[#b9793f]">
-                            {theme.points} XP
+                              + {theme.points} XP
                           </span>
                         </div>
 
                         {category.accessible ? (
                           <Link
                             href={`/${locale}/${category.slug}`}
-                            className="mt-5 inline-flex w-full items-center justify-center rounded-xl bg-[#8a5a2e] px-4 py-3 text-sm font-black uppercase tracking-[0.18em] text-[#fff2dd]"
+                            className="mt-5 inline-flex w-full items-center justify-center rounded-full border-[3px] border-[#180d2b] bg-[#180d2b] px-4 py-3 text-sm font-black uppercase tracking-[0.18em] text-white shadow-[3px_4px_0_#ffc43d]"
                           >
                             {copy.start}
                           </Link>
                         ) : category.accessConfigured && lockedPlans.length === 0 ? (
-                          <div className="mt-5 rounded-xl border border-[rgba(185,121,63,0.2)] bg-[#fff7ea] px-4 py-3 text-center text-sm font-semibold text-[#8a6a4c]">
+                          <div className="mt-5 rounded-[1rem] border-[2px] border-[#180d2b] bg-[#fff7ed] px-4 py-3 text-center text-sm font-black text-[#8a6a9c]">
                             {copy.disabledForAll}
                           </div>
                         ) : primaryLockedPlan ? (
                           <Link
                             href={`/${locale}/pricing?content=${encodeURIComponent(category.title)}&plans=${lockedPlans.join(",")}&focus=${primaryLockedPlan}`}
-                            className="mt-5 inline-flex w-full items-center justify-center rounded-xl bg-[#8a5a2e] px-4 py-3 text-sm font-black uppercase tracking-[0.18em] text-[#fff2dd]"
+                            className="mt-5 inline-flex w-full items-center justify-center rounded-full border-[3px] border-[#180d2b] bg-[#180d2b] px-4 py-3 text-sm font-black uppercase tracking-[0.18em] text-white shadow-[3px_4px_0_#ffc43d]"
                           >
                             {copy.unlockWith} {planLabel[primaryLockedPlan]}
                           </Link>
                         ) : (
-                          <div className="mt-5 rounded-xl border border-[rgba(185,121,63,0.2)] bg-[#fff7ea] px-4 py-3 text-center text-sm font-semibold text-[#8a6a4c]">
+                          <div className="mt-5 rounded-[1rem] border-[2px] border-[#180d2b] bg-[#fff7ed] px-4 py-3 text-center text-sm font-black text-[#8a6a9c]">
                             {copy.lockedContent}
                           </div>
                         )}

@@ -328,10 +328,10 @@ function persistProgressSnapshot(progress: ProgressSnapshot) {
 function Shapes() {
   return (
     <div className="pointer-events-none absolute inset-0 overflow-hidden">
-      <div className="absolute -left-16 top-20 h-56 w-56 rounded-full bg-[#ffb703]/14 blur-3xl" />
-      <div className="absolute right-0 top-10 h-64 w-64 rounded-full bg-[#4f46e5]/10 blur-3xl" />
-      <div className="absolute bottom-24 left-6 h-36 w-36 rounded-[2rem] bg-[#14b8a6]/12 blur-2xl" />
-      <div className="absolute -bottom-16 right-10 h-60 w-60 rounded-full bg-[#ff6b6b]/10 blur-3xl" />
+      <div className="absolute left-[8%] top-16 h-4 w-4 rotate-12 rounded-[0.25rem] bg-[#c6ff2e]" />
+      <div className="absolute right-[18%] top-24 h-3 w-3 rounded-full bg-[#7c3aed]" />
+      <div className="absolute bottom-24 left-[12%] h-3 w-8 -rotate-12 rounded-full bg-[#ff3b6f]" />
+      <div className="absolute bottom-36 right-[10%] h-4 w-4 rotate-45 rounded-[0.2rem] bg-[#ffc43d]" />
     </div>
   );
 }
@@ -1029,33 +1029,30 @@ export function DictionaryIndex({
   }
 
   if (initialSelectedSlug && currentEntry) {
-    const accent = getAccent(currentEntry);
     const primaryWord = getPrimaryWord(currentEntry, locale) || getTamilWord(currentEntry);
     const tamilWord = getTamilWord(currentEntry);
     const tamilDescription = getTamilDescription(currentEntry);
 
     return (
-      <div className="agarathi-theme relative min-h-screen overflow-hidden pb-16">
+      <div className="relative min-h-screen overflow-hidden bg-[#fbf1e2] pb-16 text-[#180d2b]">
         <Shapes />
         <div className="relative z-10 mx-auto max-w-[31rem] px-4 pt-6">
-          <div className="rounded-[2.25rem] border border-white/70 bg-white/90 p-3 shadow-[0_28px_70px_-38px_rgba(15,23,42,0.28)] backdrop-blur">
+          <div className="rounded-[1.75rem] border-[3px] border-[#180d2b] bg-white p-3 shadow-[7px_8px_0_#180d2b]">
             <div className="mb-3 flex items-center rounded-[1.5rem] px-1">
               <button
                 type="button"
                 onClick={goBack}
-                className="inline-flex h-12 w-12 items-center justify-center rounded-[1.15rem] border bg-white text-xl font-medium transition"
-                style={{ borderColor: accent.border, color: accent.solid }}
+                className="inline-flex h-12 w-12 items-center justify-center rounded-full border-[3px] border-[#180d2b] bg-white text-xl font-black text-[#ff9f1c] shadow-[3px_4px_0_#180d2b] transition hover:-translate-y-0.5"
               >
                 ←
               </button>
             </div>
 
-            <div className="overflow-hidden rounded-[2rem] border bg-white" style={{ borderColor: accent.border, boxShadow: `0 34px 64px -42px ${accent.glow}` }}>
+            <div className="overflow-hidden rounded-[1.35rem] border-[3px] border-[#ffc43d] bg-[#fff8ec]">
               {currentEntry.imageUrl ? (
-                <div className="relative" style={{ backgroundColor: accent.soft }}>
+                <div className="relative border-b-[3px] border-[#180d2b] bg-white">
                   {/* eslint-disable-next-line @next/next/no-img-element */}
                   <img src={currentEntry.imageUrl} alt={primaryWord} className="h-[17rem] w-full object-cover" />
-                  <div className="absolute inset-x-0 bottom-0 h-20 bg-gradient-to-t from-white via-white/60 to-transparent" />
                 </div>
               ) : null}
 
@@ -1064,15 +1061,15 @@ export function DictionaryIndex({
                   <h1
                     className={
                       locale === "ta"
-                        ? "break-words font-tamil text-[clamp(2.15rem,7vw,3rem)] font-semibold leading-[1.18] text-slate-900"
-                        : "text-[clamp(2.9rem,10vw,4.25rem)] font-semibold leading-[0.92] tracking-[-0.065em] text-slate-900"
+                        ? "break-words font-tamil text-[clamp(2.1rem,7vw,3rem)] font-black leading-[1.18] text-[#180d2b]"
+                        : "text-[clamp(2.85rem,10vw,4.15rem)] font-black leading-[0.92] tracking-[-0.04em] text-[#180d2b]"
                     }
                   >
                     {primaryWord}
                   </h1>
                   {locale !== "ta" && tamilWord ? (
                     <div className="mt-4">
-                      <span className="font-tamil text-[1.9rem] font-normal leading-none text-slate-800">{tamilWord}</span>
+                      <span className="font-tamil text-[1.9rem] font-black leading-none text-[#2a1a11]">{tamilWord}</span>
                     </div>
                   ) : null}
                   {getTamilSynonyms(currentEntry).length > 0 ? (
@@ -1081,7 +1078,7 @@ export function DictionaryIndex({
                         {getTamilSynonyms(currentEntry).map((synonym) => (
                           <span
                             key={synonym}
-                            className="rounded-full border border-[#b97832]/20 bg-[#b97832]/[0.13] px-4 py-2 font-tamil text-[0.98rem] font-semibold text-[#75481f]"
+                            className="rounded-full border-2 border-[#180d2b] bg-[#ffe6b4] px-4 py-2 font-tamil text-[0.98rem] font-black text-[#75481f] shadow-[2px_3px_0_#180d2b]"
                           >
                             {synonym}
                           </span>
@@ -1091,21 +1088,21 @@ export function DictionaryIndex({
                   ) : null}
                 </div>
 
-                <div className="rounded-[1.7rem] p-5" style={{ backgroundColor: accent.soft }}>
-                  <p className="font-tamil text-[1.08rem] font-normal leading-8 text-slate-700">{tamilDescription || "—"}</p>
+                <div className="rounded-[1.25rem] border-2 border-[#f1d29a] bg-[#fff2cf] p-5">
+                  <p className="font-tamil text-[1.08rem] font-black leading-8 text-[#654632]">{tamilDescription || "—"}</p>
                 </div>
 
                 <div className="flex flex-wrap gap-2">
                   {currentEntry.type ? (
-                    <span className="rounded-full border border-[#1f6f64]/20 bg-[#1f6f64]/[0.12] px-4 py-2 font-tamil text-[0.98rem] font-semibold text-[#154b44]">
+                    <span className="rounded-full border-2 border-[#180d2b] bg-[#dff8ee] px-4 py-2 font-tamil text-[0.98rem] font-black text-[#154b44] shadow-[2px_3px_0_#180d2b]">
                       {currentEntry.type}
                     </span>
                   ) : null}
                 </div>
 
                 {getExample(currentEntry) ? (
-                  <div className="rounded-[1.4rem] border border-slate-200 bg-white px-4 py-4 text-sm text-slate-600">
-                    <p className="text-[0.68rem] font-medium uppercase tracking-[0.22em]" style={{ color: accent.solid }}>
+                  <div className="rounded-[1.25rem] border-2 border-[#f1d29a] bg-white px-4 py-4 text-sm text-[#654632]">
+                    <p className="text-[0.68rem] font-black uppercase tracking-[0.22em] text-[#ff9f1c]">
                       {labels.example}
                     </p>
                     <p className="mt-2 leading-7">{getExample(currentEntry)}</p>
@@ -1117,7 +1114,7 @@ export function DictionaryIndex({
                     type="button"
                     onClick={goPrev}
                     disabled={currentIndex <= 0}
-                    className="flex h-14 items-center justify-center rounded-[1.35rem] border border-slate-200 text-slate-500 transition hover:bg-slate-50 disabled:opacity-40"
+                    className="flex h-14 items-center justify-center rounded-[1.15rem] border-[3px] border-[#180d2b] bg-[#fff8ec] text-[#180d2b] shadow-[3px_4px_0_#180d2b] transition hover:-translate-y-0.5 disabled:cursor-not-allowed disabled:opacity-40"
                     aria-label={labels.previous}
                   >
                     <DirectionIcon direction="previous" />
@@ -1127,8 +1124,7 @@ export function DictionaryIndex({
                     type="button"
                     onClick={goNext}
                     disabled={currentIndex >= entries.length - 1}
-                    className="flex h-14 items-center justify-center rounded-[1.35rem] text-white transition hover:brightness-105 disabled:opacity-40"
-                    style={{ backgroundColor: accent.solid }}
+                    className="flex h-14 items-center justify-center rounded-[1.15rem] border-[3px] border-[#180d2b] bg-[#ff9f1c] text-white shadow-[3px_4px_0_#180d2b] transition hover:-translate-y-0.5 disabled:cursor-not-allowed disabled:opacity-40"
                     aria-label={labels.next}
                   >
                     <DirectionIcon direction="next" />
@@ -1144,10 +1140,10 @@ export function DictionaryIndex({
   }
 
   return (
-    <div className="agarathi-theme relative min-h-screen overflow-hidden pb-20">
+    <div className="relative min-h-screen overflow-hidden bg-[#fbf1e2] pb-20 text-[#180d2b]">
       <Shapes />
-      <div className="relative z-10 mx-auto max-w-[96rem] px-4 pt-6 lg:px-6">
-        <div className="rounded-[2.3rem] border border-white/70 bg-white/90 p-4 shadow-[0_30px_80px_-42px_rgba(15,23,42,0.26)] backdrop-blur lg:p-5">
+      <div className="relative z-10 mx-auto max-w-[70rem] px-4 pt-6 lg:px-6">
+        <div className="rounded-[1.5rem] border-[3px] border-[#180d2b] bg-white p-4 shadow-[7px_8px_0_#180d2b] lg:p-5">
           {panelCount > 1 ? (
             <div className="mb-3 flex items-center justify-between px-1 text-[0.68rem] uppercase tracking-[0.22em] text-slate-400 lg:hidden">
               {showStudyPanel ? <span>{showStudyQuiz ? `✦ ${labels.quizTitle}` : `◉ ${labels.wordOfDay}`}</span> : null}
@@ -1157,7 +1153,7 @@ export function DictionaryIndex({
           <div
             ref={mobilePanelsRef}
             onScroll={handleMobilePanelsScroll}
-            className={`-mx-1 flex snap-x snap-mandatory gap-4 overflow-x-auto px-1 pb-2 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden lg:mx-0 lg:min-h-[52rem] lg:grid lg:items-stretch lg:overflow-visible lg:px-0 lg:pb-0 ${desktopGridClass}`}
+            className={`-mx-1 flex snap-x snap-mandatory gap-4 overflow-x-auto px-1 pb-2 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden lg:mx-0 lg:min-h-[42rem] lg:grid lg:items-stretch lg:overflow-visible lg:px-0 lg:pb-0 ${desktopGridClass}`}
           >
             {showStudyPanel ? <div className="min-w-[86vw] snap-center lg:min-w-0 lg:h-full">
               {showStudyQuiz ? (
@@ -1321,9 +1317,9 @@ export function DictionaryIndex({
             </div> : null}
 
             {showExplorer ? <div className="min-w-[86vw] snap-center lg:min-w-0 lg:h-full">
-              <div className="flex h-full flex-col rounded-[1.9rem] border border-slate-100 bg-[#fcfdff] p-4 shadow-[0_20px_48px_-38px_rgba(15,23,42,0.28)] lg:h-full">
-                <div className="flex items-center gap-3 rounded-[1.15rem] border border-slate-200 bg-white px-4 py-3">
-                  <span className="text-lg text-slate-400">⌕</span>
+              <div className="flex h-full flex-col rounded-[1.25rem] bg-white lg:h-full">
+                <div className="flex items-center gap-3 rounded-full border-[3px] border-[#180d2b] bg-white px-4 py-3 shadow-[4px_5px_0_#180d2b]">
+                  <span className="text-lg text-[#7c3aed]">⌕</span>
                   <input
                     value={query}
                     onChange={(event) => {
@@ -1331,13 +1327,13 @@ export function DictionaryIndex({
                       setVisibleEntriesCount(18);
                     }}
                     placeholder={labels.searchPlaceholder}
-                    className="w-full bg-transparent text-sm font-normal text-slate-900 outline-none placeholder:text-slate-400"
+                    className="w-full bg-transparent text-sm font-semibold text-[#180d2b] outline-none placeholder:text-[#8a6a9c]"
                   />
                   {query ? (
                     <button type="button" onClick={() => {
                         setQuery("");
                         setVisibleEntriesCount(18);
-                      }} className="text-lg text-slate-400 transition hover:text-slate-700">
+                      }} className="text-lg font-bold text-[#8a6a9c] transition hover:text-[#180d2b]">
                       ×
                     </button>
                   ) : null}
@@ -1350,8 +1346,8 @@ export function DictionaryIndex({
                       setSelectedLetter("all");
                       setVisibleEntriesCount(18);
                     }}
-                    className={`shrink-0 rounded-full px-4 py-2 text-sm font-medium transition ${
-                      selectedLetter === "all" ? "bg-[#4361ee] text-white" : "bg-slate-100 text-slate-500"
+                    className={`shrink-0 rounded-full border-2 border-[#180d2b] px-4 py-2 text-sm font-bold shadow-[2px_3px_0_#180d2b] transition ${
+                      selectedLetter === "all" ? "bg-[#7c3aed] text-white" : "bg-white text-[#180d2b]"
                     }`}
                   >
                     {labels.allLetters}
@@ -1368,10 +1364,10 @@ export function DictionaryIndex({
                           setSelectedLetter(active ? "all" : letter);
                           setVisibleEntriesCount(18);
                         }}
-                        className="shrink-0 rounded-full border px-4 py-2 text-sm font-medium shadow-[0_12px_24px_-22px_rgba(15,23,42,0.28)] transition"
+                        className="shrink-0 rounded-full border-2 px-4 py-2 text-sm font-bold shadow-[2px_3px_0_#180d2b] transition hover:-translate-y-0.5"
                         style={{
                           backgroundColor: active ? accent.solid : accent.soft,
-                          borderColor: active ? accent.solid : accent.border,
+                          borderColor: "#180d2b",
                           color: active ? "#ffffff" : accent.solid,
                         }}
                       >
@@ -1381,15 +1377,15 @@ export function DictionaryIndex({
                   })}
                 </div>
 
-                <p className="mt-4 rounded-[1.25rem] border border-slate-100 bg-white px-4 py-3 text-sm leading-6 text-slate-500">
+                <p className="mt-4 rounded-[1rem] border-2 border-[#180d2b] bg-[#fff8ec] px-4 py-3 text-sm font-semibold leading-6 text-[#6f587f]">
                   {labels.browseHint}
                 </p>
 
-                <div className="mt-4 flex min-h-0 flex-1 flex-col rounded-[1.4rem] border border-slate-100 bg-white p-3 shadow-[0_18px_34px_-30px_rgba(15,23,42,0.2)]">
+                <div className="mt-4 flex min-h-0 flex-1 flex-col rounded-[1.25rem] border-[3px] border-[#180d2b] bg-white p-3 shadow-[6px_7px_0_#180d2b]">
                   <div className="mb-3 flex items-center justify-between gap-3 px-1">
                     <div>
-                      <p className="text-[0.68rem] font-medium uppercase tracking-[0.24em] text-slate-400">{labels.results}</p>
-                      <p className="mt-1 text-sm text-slate-500">
+                      <p className="text-[0.68rem] font-black uppercase tracking-[0.24em] text-[#8a6a9c]">{labels.results}</p>
+                      <p className="mt-1 text-sm font-semibold text-[#6f587f]">
                         {labels.shown} {Math.min(visibleEntries.length, filteredEntries.length)}/{filteredEntries.length}
                       </p>
                     </div>
@@ -1397,7 +1393,7 @@ export function DictionaryIndex({
                       <button
                         type="button"
                         onClick={() => setVisibleEntriesCount((current) => current + 24)}
-                        className="rounded-full bg-[#eef2ff] px-3 py-2 text-[0.68rem] font-medium uppercase tracking-[0.18em] text-[#4361ee] transition hover:bg-[#dfe7ff]"
+                        className="rounded-full border-2 border-[#180d2b] bg-[#ffc43d] px-3 py-2 text-[0.68rem] font-black uppercase tracking-[0.18em] text-[#180d2b] shadow-[2px_3px_0_#180d2b] transition hover:-translate-y-0.5"
                       >
                         {labels.loadMore}
                       </button>
@@ -1405,7 +1401,7 @@ export function DictionaryIndex({
                   </div>
 
                   {filteredEntries.length === 0 ? (
-                    <div className="rounded-[1.2rem] border border-dashed border-slate-200 px-4 py-8 text-center text-sm text-slate-500">
+                    <div className="rounded-[1rem] border-2 border-dashed border-[#8a6a9c] px-4 py-8 text-center text-sm font-semibold text-[#6f587f]">
                       {isFiltered ? labels.emptyFiltered : labels.empty}
                     </div>
                   ) : (
@@ -1423,7 +1419,7 @@ export function DictionaryIndex({
                             key={`compact-${entry.id}`}
                             type="button"
                             onClick={() => openEntry(entry.slug)}
-                            className="group grid w-full grid-cols-[2.75rem_minmax(0,1fr)_2.4rem] items-center gap-3 rounded-[1.1rem] border border-slate-100 bg-white px-3 py-2.5 text-left transition hover:border-slate-200 hover:bg-slate-50"
+                            className="group grid w-full grid-cols-[2.75rem_minmax(0,1fr)_2.4rem] items-center gap-3 rounded-[1rem] border-[3px] border-[#180d2b] bg-[#fff8ec] px-3 py-2.5 text-left shadow-[3px_4px_0_#180d2b] transition hover:-translate-y-0.5 hover:bg-white"
                           >
                             <WordThumbnail
                               entry={entry}
@@ -1433,18 +1429,17 @@ export function DictionaryIndex({
                             />
                             <div className="min-w-0 flex-1">
                               <div className="flex items-center gap-2">
-                                <p className="truncate text-[0.98rem] font-medium text-slate-900">{primaryWord}</p>
+                                <p className="truncate text-[0.98rem] font-black text-[#180d2b]">{primaryWord}</p>
                                 <LearningStatusIcon status={learningStatus} />
                               </div>
                               {secondaryLine ? (
-                                <p className="mt-0.5 truncate font-tamil text-[0.84rem] font-normal text-slate-500">
+                                <p className="mt-0.5 truncate font-tamil text-[0.84rem] font-semibold text-[#6f587f]">
                                   {secondaryLine}
                                 </p>
                               ) : null}
                             </div>
                             <div
-                              className="flex h-9 w-9 shrink-0 items-center justify-center rounded-[0.9rem] transition group-hover:scale-105"
-                              style={{ backgroundColor: accent.soft, color: accent.solid }}
+                              className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border-2 border-[#180d2b] bg-white text-[#7c3aed] shadow-[2px_3px_0_#180d2b] transition group-hover:scale-105"
                             >
                               <DetailIcon />
                             </div>
@@ -1479,11 +1474,11 @@ export function DictionaryIndex({
 
           {showExplorer ? <div className="mt-4 lg:hidden">
             {entries.length === 0 ? (
-              <div className="rounded-[1.9rem] border border-dashed border-slate-300 bg-white px-5 py-12 text-center text-sm text-slate-500">
+              <div className="rounded-[1.25rem] border-[3px] border-dashed border-[#8a6a9c] bg-white px-5 py-12 text-center text-sm font-semibold text-[#6f587f]">
                 {labels.empty}
               </div>
             ) : filteredEntries.length === 0 ? (
-              <div className="rounded-[1.9rem] border border-dashed border-slate-300 bg-white px-5 py-12 text-center text-sm text-slate-500">
+              <div className="rounded-[1.25rem] border-[3px] border-dashed border-[#8a6a9c] bg-white px-5 py-12 text-center text-sm font-semibold text-[#6f587f]">
                 {isFiltered ? labels.emptyFiltered : labels.empty}
               </div>
             ) : (
@@ -1499,10 +1494,9 @@ export function DictionaryIndex({
                       key={entry.id}
                       type="button"
                       onClick={() => openEntry(entry.slug)}
-                      className="group w-full overflow-hidden rounded-[2rem] border bg-white text-left shadow-[0_24px_56px_-38px_rgba(15,23,42,0.24)] transition hover:-translate-y-0.5"
-                      style={{ borderColor: accent.border }}
+                      className="group w-full overflow-hidden rounded-[1.25rem] border-[3px] border-[#180d2b] bg-white text-left shadow-[5px_6px_0_#180d2b] transition hover:-translate-y-0.5"
                     >
-                      <div className="border-b p-4" style={{ borderColor: accent.border, background: `linear-gradient(135deg, ${accent.soft} 0%, #ffffff 140%)` }}>
+                      <div className="border-b-[3px] border-[#180d2b] p-4" style={{ background: `linear-gradient(135deg, ${accent.soft} 0%, #ffffff 140%)` }}>
                         <div className="flex items-start gap-4">
                           <WordThumbnail
                             entry={entry}
@@ -1513,24 +1507,23 @@ export function DictionaryIndex({
                           <div className="min-w-0 flex-1">
                             <div className="flex items-start justify-between gap-3">
                               <div className="min-w-0">
-                                <p className="text-[0.68rem] font-medium uppercase tracking-[0.26em]" style={{ color: accent.solid }}>
+                                <p className="text-[0.68rem] font-black uppercase tracking-[0.26em]" style={{ color: accent.solid }}>
                                   {entry.type ?? labels.title}
                                 </p>
-                                <p className="mt-1 truncate text-[1.75rem] font-semibold leading-none tracking-[-0.05em] text-slate-900">
+                                <p className="mt-1 truncate text-[1.75rem] font-black leading-none tracking-[-0.04em] text-[#180d2b]">
                                   {primaryWord}
                                 </p>
                                 {locale !== "ta" && tamilWord ? (
-                                  <p className="mt-2 truncate font-tamil text-lg font-normal text-slate-600">{tamilWord}</p>
+                                  <p className="mt-2 truncate font-tamil text-lg font-semibold text-[#6f587f]">{tamilWord}</p>
                                 ) : null}
                                 {getTamilSynonyms(entry).length > 0 ? (
-                                  <p className="mt-2 truncate font-tamil text-sm font-normal text-slate-500">
+                                  <p className="mt-2 truncate font-tamil text-sm font-semibold text-[#8a6a9c]">
                                     {getTamilSynonyms(entry).join(" • ")}
                                   </p>
                                 ) : null}
                               </div>
                               <div
-                                className="flex h-11 w-11 shrink-0 items-center justify-center rounded-[1rem] transition group-hover:scale-105"
-                                style={{ backgroundColor: "#fff", color: accent.solid }}
+                                className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full border-2 border-[#180d2b] bg-white text-[#7c3aed] shadow-[2px_3px_0_#180d2b] transition group-hover:scale-105"
                               >
                                 <DetailIcon className="h-5 w-5" />
                               </div>
@@ -1542,7 +1535,7 @@ export function DictionaryIndex({
                       <div className="flex flex-wrap items-center gap-2 px-4 py-4">
                         <LearningStatusIcon status={learningStatus} />
                         {entry.type ? (
-                          <span className="rounded-full bg-slate-100 px-3 py-1 text-[0.68rem] font-medium uppercase tracking-[0.18em] text-slate-500">
+                          <span className="rounded-full border-2 border-[#180d2b] bg-[#fff8ec] px-3 py-1 text-[0.68rem] font-bold uppercase tracking-[0.18em] text-[#6f587f]">
                             {entry.type}
                           </span>
                         ) : null}

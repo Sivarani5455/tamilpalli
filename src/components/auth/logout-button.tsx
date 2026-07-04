@@ -9,7 +9,7 @@ export function LogoutButton({ locale }: { locale: Locale }) {
       <input type="hidden" name="locale" value={locale} />
       <button
         type="submit"
-        className="rounded-full border border-[rgba(185,121,63,0.24)] bg-[#fff7ea] px-4 py-2.5 text-xs font-medium uppercase tracking-[0.16em] text-[#654632] transition hover:border-[#8a5a2e] hover:bg-[#3a271b] hover:text-[#fff2dd]"
+        className="rounded-full border-[3px] border-[#180d2b] bg-white px-4 py-2.5 text-xs font-black uppercase tracking-[0.16em] text-[#180d2b] shadow-[3px_4px_0_#180d2b] transition hover:-translate-y-0.5 hover:bg-[#ff3b6f] hover:text-white"
       >
         {label}
       </button>

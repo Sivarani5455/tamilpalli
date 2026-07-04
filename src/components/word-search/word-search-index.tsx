@@ -28,18 +28,18 @@ const levelConfig: Record<
   { accent: string; badge: string; label: Record<Locale, string> }
 > = {
   BEGINNER: {
-    accent: "#d3a238",
-    badge: "bg-[#f4dfb6] text-[#8a5a2e] ring-1 ring-[#d3a238]/35",
+    accent: "#20bf73",
+    badge: "border-[#20bf73] bg-[#dcfce7] text-[#047857]",
     label: { en: "Beginner", fr: "Débutant", ta: "தொடக்கநிலை" },
   },
   INTERMEDIATE: {
-    accent: "#b9793f",
-    badge: "bg-[#ead7bd] text-[#7a4725] ring-1 ring-[#b9793f]/35",
+    accent: "#7c3aed",
+    badge: "border-[#7c3aed] bg-[#f6f0ff] text-[#7c3aed]",
     label: { en: "Intermediate", fr: "Intermédiaire", ta: "இடைநிலை" },
   },
   ADVANCED: {
-    accent: "#9c3b2e",
-    badge: "bg-[#f0c7bd] text-[#7f2f24] ring-1 ring-[#9c3b2e]/35",
+    accent: "#ff3b6f",
+    badge: "border-[#ff3b6f] bg-[#ffe4ee] text-[#be123c]",
     label: { en: "Advanced", fr: "Avancé", ta: "மேம்பட்டது" },
   },
 };
@@ -341,34 +341,34 @@ export function WordSearchIndex({
   }, [dateFilter, difficultyFilter, grids, levelFilter, query, sortBy, statusFilter, userScores]);
 
   return (
-    <div className="min-h-screen px-5 py-10 text-[var(--brand-ink)]">
-      <main className="mx-auto max-w-3xl">
+    <div className="min-h-screen px-5 py-6 text-[#180d2b]">
+      <main className="mx-auto max-w-[46rem]">
         <div className="mb-3 flex gap-3">
           <div className="relative flex-1">
             <Icon
               name="search"
-              className="pointer-events-none absolute left-3.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-[#8a6a4c]"
+              className="pointer-events-none absolute left-4 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-[#8a6a9c]"
             />
             <input
               value={query}
               onChange={(event) => setQuery(event.target.value)}
               placeholder={copy.search}
-              className="w-full rounded-xl border border-[rgba(185,121,63,0.22)] bg-[#fff8ec] py-2.5 pl-9 pr-4 text-sm text-[#2a1a11] transition-colors placeholder:text-[#9b8267] focus:border-[#b9793f] focus:outline-none"
+              className="w-full rounded-full border-[3px] border-[#180d2b] bg-white py-3 pl-10 pr-4 text-sm font-semibold text-[#180d2b] shadow-[4px_5px_0_#180d2b] outline-none transition placeholder:text-[#b49ac6] focus:-translate-y-0.5"
             />
           </div>
           <button
             type="button"
             onClick={() => setShowFilters((value) => !value)}
-            className={`relative flex flex-shrink-0 items-center gap-2 rounded-xl border px-4 py-2.5 text-sm font-semibold transition-all ${
+            className={`relative flex flex-shrink-0 items-center gap-2 rounded-full border-[3px] px-4 py-2.5 text-sm font-black shadow-[4px_5px_0_#180d2b] transition-all hover:-translate-y-0.5 ${
               showFilters || activeFilterCount > 0
-                ? "border-[#b9793f]/50 bg-[#f4dfb6] text-[#8a5a2e]"
-                : "border-[rgba(185,121,63,0.22)] bg-[#fff8ec] text-[#8a6a4c] hover:text-[#2a1a11]"
+                ? "border-[#180d2b] bg-[#7c3aed] text-white"
+                : "border-[#180d2b] bg-[#7c3aed] text-white"
             }`}
           >
             <Icon name="sliders" className="h-3.5 w-3.5" />
             {copy.filters}
             {activeFilterCount > 0 ? (
-              <span className="absolute -right-1.5 -top-1.5 flex h-4 w-4 items-center justify-center rounded-full bg-[#b9793f] text-[9px] font-bold text-[#fff2dd]">
+              <span className="absolute -right-1.5 -top-1.5 flex h-5 w-5 items-center justify-center rounded-full border-[2px] border-[#180d2b] bg-[#c6ff2e] text-[10px] font-black text-[#180d2b]">
                 {activeFilterCount}
               </span>
             ) : null}
@@ -376,18 +376,18 @@ export function WordSearchIndex({
         </div>
 
         {showFilters ? (
-          <div className="mb-6 space-y-5 rounded-2xl border border-[rgba(185,121,63,0.22)] bg-[#fff8ec]/95 p-5 shadow-[0_20px_45px_-36px_rgba(74,51,36,0.38)]">
+          <div className="mb-6 space-y-5 rounded-[1.25rem] border-[3px] border-[#180d2b] bg-white p-5 shadow-[5px_6px_0_#180d2b]">
             <div className="grid gap-5 sm:grid-cols-2">
               <div>
-                <p className="mb-2 text-[10px] font-bold uppercase tracking-widest text-[#8a6a4c]">{copy.level}</p>
+                <p className="mb-2 text-[10px] font-black uppercase tracking-widest text-[#8a6a9c]">{copy.level}</p>
                 <div className="flex flex-wrap gap-1.5">
                   {(["ALL", "BEGINNER", "INTERMEDIATE", "ADVANCED"] as const).map((filter) => (
                     <button
                       key={filter}
                       type="button"
                       onClick={() => setLevelFilter(filter)}
-                      className={`rounded-lg px-2.5 py-1 text-[10px] font-bold uppercase tracking-wide transition-all ${
-                        levelFilter === filter ? "bg-[#8a5a2e] text-[#fff2dd]" : "bg-[#f4dfb6]/60 text-[#8a6a4c] hover:text-[#2a1a11]"
+                      className={`rounded-full border-[2px] border-[#180d2b] px-3 py-1 text-[10px] font-black uppercase tracking-wide shadow-[2px_3px_0_#180d2b] transition-all hover:-translate-y-0.5 ${
+                        levelFilter === filter ? "bg-[#7c3aed] text-white" : "bg-[#fff7ed] text-[#180d2b]"
                       }`}
                     >
                       {filter === "ALL" ? copy.all : levelConfig[filter].label[locale]}
@@ -397,17 +397,17 @@ export function WordSearchIndex({
               </div>
 
               <div>
-                <p className="mb-2 text-[10px] font-bold uppercase tracking-widest text-[#8a6a4c]">{copy.difficulty}</p>
+                <p className="mb-2 text-[10px] font-black uppercase tracking-widest text-[#8a6a9c]">{copy.difficulty}</p>
                 <div className="flex flex-wrap gap-1.5">
                   {(["ALL", "EASY", "MEDIUM", "HARD"] as const).map((filter) => (
                     <button
                       key={filter}
                       type="button"
                       onClick={() => setDifficultyFilter(filter)}
-                      className={`rounded-lg px-2.5 py-1 text-[10px] font-bold uppercase tracking-wide transition-all ${
+                      className={`rounded-full border-[2px] border-[#180d2b] px-3 py-1 text-[10px] font-black uppercase tracking-wide shadow-[2px_3px_0_#180d2b] transition-all hover:-translate-y-0.5 ${
                         difficultyFilter === filter
-                          ? "bg-[#8a5a2e] text-[#fff2dd]"
-                          : "bg-[#f4dfb6]/60 text-[#8a6a4c] hover:text-[#2a1a11]"
+                          ? "bg-[#7c3aed] text-white"
+                          : "bg-[#fff7ed] text-[#180d2b]"
                       }`}
                     >
                       {filter === "ALL"
@@ -425,15 +425,15 @@ export function WordSearchIndex({
 
             <div className="grid gap-5 sm:grid-cols-2">
               <div>
-                <p className="mb-2 text-[10px] font-bold uppercase tracking-widest text-[#8a6a4c]">{copy.status}</p>
+                <p className="mb-2 text-[10px] font-black uppercase tracking-widest text-[#8a6a9c]">{copy.status}</p>
                 <div className="flex flex-wrap gap-1.5">
                   {(["ALL", "PLAYED", "UNPLAYED"] as const).map((filter) => (
                     <button
                       key={filter}
                       type="button"
                       onClick={() => setStatusFilter(filter)}
-                      className={`rounded-lg px-2.5 py-1 text-[10px] font-bold uppercase tracking-wide transition-all ${
-                        statusFilter === filter ? "bg-[#8a5a2e] text-[#fff2dd]" : "bg-[#f4dfb6]/60 text-[#8a6a4c] hover:text-[#2a1a11]"
+                      className={`rounded-full border-[2px] border-[#180d2b] px-3 py-1 text-[10px] font-black uppercase tracking-wide shadow-[2px_3px_0_#180d2b] transition-all hover:-translate-y-0.5 ${
+                        statusFilter === filter ? "bg-[#7c3aed] text-white" : "bg-[#fff7ed] text-[#180d2b]"
                       }`}
                     >
                       {filter === "ALL" ? copy.all : filter === "PLAYED" ? copy.played : copy.unplayed}
@@ -443,16 +443,16 @@ export function WordSearchIndex({
               </div>
 
               <div>
-                <p className="mb-2 text-[10px] font-bold uppercase tracking-widest text-[#8a6a4c]">{copy.dateAdded}</p>
+                <p className="mb-2 text-[10px] font-black uppercase tracking-widest text-[#8a6a9c]">{copy.dateAdded}</p>
                 <div className="relative">
                   <Icon
                     name="calendar"
-                    className="pointer-events-none absolute left-3 top-1/2 h-3 w-3 -translate-y-1/2 text-[#8a6a4c]"
+                    className="pointer-events-none absolute left-3 top-1/2 h-3 w-3 -translate-y-1/2 text-[#8a6a9c]"
                   />
                   <select
                     value={dateFilter}
                     onChange={(event) => setDateFilter(event.target.value)}
-                    className="w-full cursor-pointer appearance-none rounded-lg border border-[rgba(185,121,63,0.22)] bg-[#fff7ea] py-1.5 pl-8 pr-7 text-[11px] text-[#654632] transition-colors focus:border-[#b9793f] focus:outline-none"
+                    className="w-full cursor-pointer appearance-none rounded-full border-[2px] border-[#180d2b] bg-[#fff7ed] py-2 pl-8 pr-7 text-[11px] font-black text-[#180d2b] outline-none"
                   >
                     <option value="ALL" className="bg-[#fff7ea]">
                       {copy.allDates}
@@ -465,15 +465,15 @@ export function WordSearchIndex({
                   </select>
                   <Icon
                     name="chevron-down"
-                    className="pointer-events-none absolute right-2.5 top-1/2 h-2.5 w-2.5 -translate-y-1/2 text-[#8a6a4c]"
+                    className="pointer-events-none absolute right-2.5 top-1/2 h-2.5 w-2.5 -translate-y-1/2 text-[#8a6a9c]"
                   />
                 </div>
               </div>
             </div>
 
-            <div className="flex flex-col gap-4 border-t border-[rgba(185,121,63,0.16)] pt-4 sm:flex-row sm:items-end sm:justify-between">
+            <div className="flex flex-col gap-4 border-t-[2px] border-[#180d2b] pt-4 sm:flex-row sm:items-end sm:justify-between">
               <div className="flex-1">
-                <p className="mb-2 text-[10px] font-bold uppercase tracking-widest text-[#8a6a4c]">{copy.sortBy}</p>
+                <p className="mb-2 text-[10px] font-black uppercase tracking-widest text-[#8a6a9c]">{copy.sortBy}</p>
                 <div className="flex flex-wrap gap-1.5">
                   {([
                     { value: "date_desc", label: copy.newest },
@@ -485,8 +485,8 @@ export function WordSearchIndex({
                       key={value}
                       type="button"
                       onClick={() => setSortBy(value)}
-                      className={`rounded-lg px-2.5 py-1 text-[10px] font-bold tracking-wide transition-all ${
-                        sortBy === value ? "bg-[#8a5a2e] text-[#fff2dd]" : "bg-[#f4dfb6]/60 text-[#8a6a4c] hover:text-[#2a1a11]"
+                      className={`rounded-full border-[2px] border-[#180d2b] px-3 py-1 text-[10px] font-black tracking-wide shadow-[2px_3px_0_#180d2b] transition-all hover:-translate-y-0.5 ${
+                        sortBy === value ? "bg-[#7c3aed] text-white" : "bg-[#fff7ed] text-[#180d2b]"
                       }`}
                     >
                       {label}
@@ -499,7 +499,7 @@ export function WordSearchIndex({
                 <button
                   type="button"
                   onClick={resetFilters}
-                  className="flex flex-shrink-0 items-center gap-1.5 text-[11px] font-semibold text-[#8a6a4c] transition-colors hover:text-[#9c3b2e]"
+                  className="flex flex-shrink-0 items-center gap-1.5 text-[11px] font-black text-[#ff3b6f] transition-colors hover:text-[#be123c]"
                 >
                   <Icon name="x" className="h-3 w-3" />
                   {copy.reset}
@@ -509,13 +509,13 @@ export function WordSearchIndex({
           </div>
         ) : null}
 
-        <p className="mb-5 text-[11px] uppercase tracking-widest text-[#8a6a4c]">
+        <p className="mb-5 text-[11px] font-black uppercase tracking-[0.22em] text-[#8a6a9c]">
           {filteredGrids.length} {filteredGrids.length === 1 ? copy.result : copy.results}
         </p>
 
-        <div className="space-y-2.5">
+        <div className="space-y-3.5">
           {filteredGrids.length === 0 ? (
-            <div className="py-24 text-center text-sm text-[#9b8267]">{copy.empty}</div>
+            <div className="py-24 text-center text-sm font-semibold text-[#8a6a9c]">{copy.empty}</div>
           ) : null}
 
           {filteredGrids.map((grid) => {
@@ -529,35 +529,35 @@ export function WordSearchIndex({
               <Link
                 key={grid.id}
                 href={`/${locale}/word-search/${grid.id}`}
-                className="group relative block overflow-hidden rounded-2xl border border-[rgba(185,121,63,0.22)] bg-[#fff8ec]/95 shadow-[0_18px_45px_-36px_rgba(74,51,36,0.34)] transition-all duration-200 hover:border-[#d3a238]"
+                className="group relative block overflow-hidden rounded-[1.15rem] border-[3px] border-[#180d2b] bg-white shadow-[6px_7px_0_#180d2b] transition-all duration-200 hover:-translate-y-0.5"
               >
                 <div className="flex items-center gap-5 px-5 py-4">
                   <div className="min-w-0 flex-1">
                     <div className="mb-2 flex items-center gap-2">
                       <span
-                        className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide ${levelMeta.badge}`}
+                        className={`inline-flex items-center gap-1 rounded-full border-[2px] px-2.5 py-0.5 text-[10px] font-black uppercase tracking-wide ${levelMeta.badge}`}
                       >
                         <span className="h-1.5 w-1.5 rounded-full" style={{ background: levelMeta.accent }} />
                         {levelMeta.label[locale]}
                       </span>
-                      <span className="text-[10px] font-semibold uppercase tracking-wide text-[#8a6a4c]">
+                      <span className="text-[10px] font-black uppercase tracking-wide text-[#8a6a9c]">
                         {tone === "EASY" ? copy.easy : tone === "MEDIUM" ? copy.medium : copy.hard}
                       </span>
                     </div>
 
-                    <h2 className="truncate text-[15px] font-bold leading-tight text-[var(--brand-ink)]">{grid.title}</h2>
-                    {grid.description ? <p className="mt-0.5 text-xs text-[#6f553d]">{grid.description}</p> : null}
+                    <h2 className="truncate text-[15px] font-black leading-tight text-[#180d2b]">{grid.title}</h2>
+                    {grid.description ? <p className="mt-0.5 text-xs font-semibold text-[#8a6a9c]">{grid.description}</p> : null}
 
                     <div className="mt-3 flex flex-wrap items-center gap-3">
-                      <span className="flex items-center gap-1 text-[11px] text-[#8a6a4c]">
+                      <span className="flex items-center gap-1 text-[11px] font-semibold text-[#8a6a9c]">
                         <Icon name="clock" className="h-2.5 w-2.5" />
                         {Math.ceil(grid.timeLimitSeconds / 60)} min
                       </span>
-                      <span className="flex items-center gap-1 text-[11px] text-[#8a6a4c]">
+                      <span className="flex items-center gap-1 text-[11px] font-semibold text-[#8a6a9c]">
                         <Icon name="layers" className="h-2.5 w-2.5" />
                         {grid.words.length} {copy.words}
                       </span>
-                      <span className="flex items-center gap-1 text-[11px] text-[#8a6a4c]">
+                      <span className="flex items-center gap-1 text-[11px] font-semibold text-[#8a6a9c]">
                         <Icon name="calendar" className="h-2.5 w-2.5" />
                         {formatDate(grid.createdAt, locale)}
                       </span>
@@ -567,17 +567,16 @@ export function WordSearchIndex({
                   <div className="flex flex-shrink-0 flex-col items-end gap-2.5">
                     {played ? (
                       <div className="flex items-center gap-1.5">
-                        <Icon name="trophy" className="h-3 w-3 text-amber-400" />
-                        <span className="text-xs font-bold text-amber-400">
+                        <Icon name="trophy" className="h-3 w-3 text-[#ffc43d]" />
+                        <span className="text-xs font-black text-[#ffc43d]">
                           + {score} {copy.points}
                         </span>
                       </div>
                     ) : (
-                      <span className="text-[10px] italic text-[#8a6a4c]">{copy.notPlayed}</span>
+                      <span className="text-[10px] font-semibold italic text-[#b49ac6]">{copy.notPlayed}</span>
                     )}
 
-                    <span className="relative inline-flex items-center gap-1.5 overflow-hidden rounded-xl bg-[linear-gradient(135deg,#b9793f,#8a5a2e)] px-4 py-1.5 text-xs font-bold uppercase tracking-wide text-[#fff2dd]">
-                      <span className="absolute inset-0 bg-white/10 opacity-0 transition-opacity group-hover:opacity-100" />
+                    <span className="relative inline-flex items-center gap-1.5 overflow-hidden rounded-full border-[2px] border-[#180d2b] bg-[#180d2b] px-4 py-2 text-xs font-black uppercase tracking-wide text-white shadow-[3px_4px_0_#ffc43d]">
                       <Icon name="grid" className="relative h-3 w-3" />
                       <span className="relative">{copy.open}</span>
                     </span>

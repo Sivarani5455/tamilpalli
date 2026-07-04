@@ -11,26 +11,37 @@ export function PricingCard({ locale, plan }: { locale: Locale; plan: Plan }) {
       : locale === "fr"
         ? `Choisir ${plan.name}`
         : `Choose ${plan.name}`;
+  const palette =
+    plan.slug === "elite"
+      ? { badge: "#ff3b6f", panel: "#ffe3ec" }
+      : plan.slug === "standard"
+        ? { badge: "#7c3aed", panel: "#eee5ff" }
+        : { badge: "#20bf73", panel: "#e2f8ed" };
 
   return (
     <article
       id={`plan-${plan.slug}`}
-      className="overflow-hidden rounded-[1.6rem] border border-[rgba(185,121,63,0.24)] bg-[#fff8ec]/95 shadow-[0_18px_45px_-34px_rgba(74,51,36,0.45)]"
+      className="group overflow-hidden rounded-[1.35rem] border-[3px] border-[#180d2b] bg-white shadow-[6px_7px_0_#180d2b] transition hover:-translate-y-1"
     >
-      <div className="h-1.5 bg-gradient-to-r from-[#b9793f] via-[#e8c876] to-[#9c3b2e]" />
+      <div className="h-3 border-b-[3px] border-[#180d2b]" style={{ backgroundColor: palette.badge }} />
       <div className="p-6">
-        <p className="text-xs font-semibold uppercase tracking-[0.28em] text-[#8a6a4c]">{plan.slug}</p>
-        <h3 className="mt-3 font-display text-3xl text-[var(--brand-ink)]">{plan.name}</h3>
-        <p className="mt-5 text-4xl font-semibold text-[var(--brand-ink)]">
-          {formatCurrency(plan.price, plan.currency)}
+        <p
+          className="inline-flex rounded-full border-2 border-[#180d2b] px-3 py-1 text-xs font-black uppercase tracking-[0.22em] text-[#180d2b] shadow-[2px_3px_0_#180d2b]"
+          style={{ backgroundColor: palette.panel }}
+        >
+          {plan.slug}
         </p>
-        <p className="mt-1 text-sm text-[#8a6a4c]">{monthLabel}</p>
+        <h3 className="mt-4 font-display text-3xl font-black tracking-[-0.02em] text-[#180d2b]">{plan.name}</h3>
+        <div className="mt-5 rounded-[1.1rem] border-[3px] border-[#180d2b] p-4 shadow-[3px_4px_0_#180d2b]" style={{ backgroundColor: palette.panel }}>
+          <p className="text-4xl font-black text-[#180d2b]">{formatCurrency(plan.price, plan.currency)}</p>
+          <p className="mt-1 text-sm font-bold text-[#6f587f]">{monthLabel}</p>
+        </div>
 
-        <p className="mt-6 text-sm leading-7 text-[#6f553d]">{plan.description}</p>
-        <ul className="mt-5 space-y-2 text-sm text-[#654632]">
+        <p className="mt-6 text-sm font-semibold leading-7 text-[#6f587f]">{plan.description}</p>
+        <ul className="mt-5 space-y-2 text-sm font-semibold text-[#180d2b]">
           {plan.features.map((feature) => (
             <li key={feature} className="flex items-start gap-2">
-              <span className="mt-1.5 h-2 w-2 rounded-full bg-[#d3a238]" />
+              <span className="mt-1.5 h-3 w-3 shrink-0 rounded-full border-2 border-[#180d2b]" style={{ backgroundColor: palette.badge }} />
               <span>{feature}</span>
             </li>
           ))}
@@ -38,7 +49,7 @@ export function PricingCard({ locale, plan }: { locale: Locale; plan: Plan }) {
 
         <Link
           href={`/${locale}/auth/register`}
-          className="mt-6 inline-flex rounded-xl bg-[#8a5a2e] px-5 py-3 text-sm font-semibold text-[#fff2dd] transition hover:translate-y-[-1px] hover:bg-[#654632]"
+          className="mt-6 inline-flex rounded-full border-[3px] border-[#180d2b] bg-[#ffc43d] px-5 py-3 text-sm font-black text-[#180d2b] shadow-[3px_4px_0_#180d2b] transition hover:-translate-y-0.5"
         >
           {buttonLabel}
         </Link>
