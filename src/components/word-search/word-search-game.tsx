@@ -521,6 +521,8 @@ export function WordSearchGame({
                   <img
                     src={dictionaryEntry.imageUrl}
                     alt={dictionaryPrimaryWord}
+                    loading="lazy"
+                    decoding="async"
                     className="h-14 w-14 shrink-0 rounded-[14px] border border-[rgba(212,164,55,0.22)] object-cover"
                   />
                 ) : (

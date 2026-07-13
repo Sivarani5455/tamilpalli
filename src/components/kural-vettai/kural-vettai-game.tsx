@@ -180,8 +180,8 @@ function GameProgress({
   results: Array<boolean | null>;
 }) {
   return (
-    <div className="flex flex-wrap items-center justify-between gap-4">
-      <div className="flex gap-1.5" aria-label={`${current + 1} / 10`}>
+    <div className="flex w-full flex-wrap items-center justify-between gap-3 sm:w-auto sm:gap-4">
+      <div className="flex min-w-0 flex-1 gap-1.5 sm:flex-none" aria-label={`${current + 1} / 10`}>
         {Array.from({ length: 10 }, (_, index) => {
           const result = results[index];
           const statusColor = result === true

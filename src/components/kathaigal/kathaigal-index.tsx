@@ -54,11 +54,11 @@ export function KathaigalIndex({ stories, locale }: { stories: KathaigalStory[];
               <Link
                 key={story.id}
                 href={`/${locale}/kathaigal/${story.id}`}
-                className="group overflow-hidden rounded-[1.25rem] border-[3px] border-[#180d2b] bg-white shadow-[6px_7px_0_#180d2b] transition hover:-translate-y-1"
+                className="render-lazy group overflow-hidden rounded-[1.25rem] border-[3px] border-[#180d2b] bg-white shadow-[6px_7px_0_#180d2b] transition hover:-translate-y-1"
               >
                 {normalizeImageUrl(story.coverImageUrl) ? (
                   // eslint-disable-next-line @next/next/no-img-element
-                  <img src={normalizeImageUrl(story.coverImageUrl)} alt={story.title} loading="lazy" className="h-48 w-full border-b-[3px] border-[#180d2b] object-cover" />
+                  <img src={normalizeImageUrl(story.coverImageUrl)} alt={story.title} loading="lazy" decoding="async" className="h-48 w-full border-b-[3px] border-[#180d2b] object-cover" />
                 ) : (
                   <div className="h-48 border-b-[3px] border-[#180d2b] bg-[linear-gradient(135deg,#7c3aed,#ff3b6f,#ffc43d)]" />
                 )}

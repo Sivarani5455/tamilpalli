@@ -356,7 +356,7 @@ function WordThumbnail({
     >
       {entry.imageUrl ? (
         // eslint-disable-next-line @next/next/no-img-element
-        <img src={entry.imageUrl} alt={label} className="h-full w-full object-cover" />
+        <img src={entry.imageUrl} alt={label} loading="lazy" decoding="async" className="h-full w-full object-cover" />
       ) : (
         <span className="text-4xl font-medium" style={{ color: accent.solid }}>
           {getLetter(entry, locale)}
@@ -1052,7 +1052,7 @@ export function DictionaryIndex({
               {currentEntry.imageUrl ? (
                 <div className="relative border-b-[3px] border-[#180d2b] bg-white">
                   {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img src={currentEntry.imageUrl} alt={primaryWord} className="h-[17rem] w-full object-cover" />
+                  <img src={currentEntry.imageUrl} alt={primaryWord} decoding="async" className="h-[17rem] w-full object-cover" />
                 </div>
               ) : null}
 
@@ -1419,7 +1419,7 @@ export function DictionaryIndex({
                             key={`compact-${entry.id}`}
                             type="button"
                             onClick={() => openEntry(entry.slug)}
-                            className="group grid w-full grid-cols-[2.75rem_minmax(0,1fr)_2.4rem] items-center gap-3 rounded-[1rem] border-[3px] border-[#180d2b] bg-[#fff8ec] px-3 py-2.5 text-left shadow-[3px_4px_0_#180d2b] transition hover:-translate-y-0.5 hover:bg-white"
+                            className="render-lazy group grid w-full grid-cols-[2.75rem_minmax(0,1fr)_2.4rem] items-center gap-3 rounded-[1rem] border-[3px] border-[#180d2b] bg-[#fff8ec] px-3 py-2.5 text-left shadow-[3px_4px_0_#180d2b] transition hover:-translate-y-0.5 hover:bg-white"
                           >
                             <WordThumbnail
                               entry={entry}
@@ -1494,7 +1494,7 @@ export function DictionaryIndex({
                       key={entry.id}
                       type="button"
                       onClick={() => openEntry(entry.slug)}
-                      className="group w-full overflow-hidden rounded-[1.25rem] border-[3px] border-[#180d2b] bg-white text-left shadow-[5px_6px_0_#180d2b] transition hover:-translate-y-0.5"
+                      className="render-lazy group w-full overflow-hidden rounded-[1.25rem] border-[3px] border-[#180d2b] bg-white text-left shadow-[5px_6px_0_#180d2b] transition hover:-translate-y-0.5"
                     >
                       <div className="border-b-[3px] border-[#180d2b] p-4" style={{ background: `linear-gradient(135deg, ${accent.soft} 0%, #ffffff 140%)` }}>
                         <div className="flex items-start gap-4">

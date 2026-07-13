@@ -853,7 +853,7 @@ export async function getImageHuntProgress(exerciseId: string): Promise<ImageHun
   };
 }
 
-export async function getDictionaryEntries() {
+export async function getDictionaryEntries(options: { limit?: number } = {}) {
   if (!hasSupabaseEnv()) {
     return [] as DictionaryEntry[];
   }
@@ -864,11 +864,17 @@ export async function getDictionaryEntries() {
     return [] as DictionaryEntry[];
   }
 
-  const { data } = await supabase
+  let query = supabase
     .from("dictionary_entries")
     .select("id, slug, image_url, type, example, created_at, updated_at, dictionary_translations(locale, word, description, is_primary)")
     .eq("is_active", true)
     .order("created_at", { ascending: false });
+
+  if (options.limit) {
+    query = query.limit(options.limit);
+  }
+
+  const { data } = await query;
 
   if (data && data.length > 0) {
     return mapDictionaryRows(data as DictionaryEntryRow[]);
@@ -880,11 +886,17 @@ export async function getDictionaryEntries() {
     return [] as DictionaryEntry[];
   }
 
-  const { data: adminData } = await adminClient
+  let adminQuery = adminClient
     .from("dictionary_entries")
     .select("id, slug, image_url, type, example, created_at, updated_at, dictionary_translations(locale, word, description, is_primary)")
     .eq("is_active", true)
     .order("created_at", { ascending: false });
+
+  if (options.limit) {
+    adminQuery = adminQuery.limit(options.limit);
+  }
+
+  const { data: adminData } = await adminQuery;
 
   if (!adminData || adminData.length === 0) {
     return [] as DictionaryEntry[];

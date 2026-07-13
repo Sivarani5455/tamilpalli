@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import dynamic from "next/dynamic";
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 
@@ -9,9 +10,13 @@ import { cn } from "@/lib/utils";
 import type { DictionaryEntry, Locale } from "@/types";
 
 import { LogoutButton } from "../auth/logout-button";
-import { AgarathiGateModal } from "../dictionary/agarathi-gate-modal";
 import { LanguageSwitcher } from "../navigation/language-switcher";
 import { BrandMark } from "./brand-mark";
+
+const AgarathiGateModal = dynamic(
+  () => import("../dictionary/agarathi-gate-modal").then((module) => module.AgarathiGateModal),
+  { ssr: false },
+);
 
 const navItems = [
   { href: "", key: "home" },
@@ -255,10 +260,10 @@ export function HeaderClient({
   }, []);
 
   return (
-    <header className="sticky top-0 z-50 border-b-[3px] border-[#180d2b] bg-[#fbf1e2]/95 backdrop-blur-xl">
+    <header className="sticky top-0 z-50 border-b-[3px] border-[#180d2b] bg-[#fbf1e2] xl:bg-[#fbf1e2]/95 xl:backdrop-blur-xl">
       <div
         ref={rootRef}
-        className="relative mx-auto flex min-h-[88px] w-full max-w-[120rem] items-center gap-5 px-4 sm:px-6 xl:px-8"
+        className="relative mx-auto flex min-h-[72px] w-full max-w-[120rem] items-center gap-3 px-4 sm:min-h-[88px] sm:gap-5 sm:px-6 xl:px-8"
       >
         <Link href={`/${locale}`} className="shrink-0">
           <BrandMark compact />
@@ -525,7 +530,7 @@ export function HeaderClient({
         <button
           type="button"
           className={cn(
-            "ml-auto rounded-full border-[3px] border-[#180d2b] bg-white px-4 py-2 text-[#180d2b] shadow-[3px_4px_0_#180d2b] transition hover:-translate-y-0.5 hover:bg-[#ffc43d] lg:hidden",
+            "ml-auto rounded-full border-[3px] border-[#180d2b] bg-white px-4 py-2 text-[#180d2b] shadow-[3px_4px_0_#180d2b] transition hover:-translate-y-0.5 hover:bg-[#ffc43d] xl:hidden",
             isTamil ? "text-[0.98rem] font-black tracking-[0.01em]" : "text-sm font-black",
           )}
           onClick={() => setOpen((value) => !value)}
@@ -534,7 +539,7 @@ export function HeaderClient({
         </button>
       </div>
 
-      <div className={cn("border-t-[3px] border-[#180d2b] bg-[#fbf1e2] lg:hidden", open ? "block" : "hidden")}>
+      <div className={cn("max-h-[calc(100dvh-72px)] overflow-y-auto overscroll-contain border-t-[3px] border-[#180d2b] bg-[#fbf1e2] sm:max-h-[calc(100dvh-88px)] xl:hidden", open ? "block" : "hidden")}>
         <div className="mx-auto flex max-w-[120rem] flex-col gap-1 px-4 py-4 sm:px-6">
           <Link
             href={`/${locale}`}
@@ -644,12 +649,14 @@ export function HeaderClient({
           </div>
         </div>
       </div>
-      <AgarathiGateModal
-        entries={dictionaryEntries}
-        locale={locale}
-        open={agarathiModalOpen}
-        onClose={() => setAgarathiModalOpen(false)}
-      />
+      {agarathiModalOpen ? (
+        <AgarathiGateModal
+          entries={dictionaryEntries}
+          locale={locale}
+          open
+          onClose={() => setAgarathiModalOpen(false)}
+        />
+      ) : null}
     </header>
   );
 }

@@ -30,7 +30,7 @@ export function KathaigalStoryPage({ story, locale }: { story: KathaigalStory; l
             <div className="relative h-[84px] w-[84px] shrink-0 overflow-hidden rounded-xl bg-[linear-gradient(150deg,#f5b12e,#ff6a5c)]">
               {firstImageUrl ? (
                 // eslint-disable-next-line @next/next/no-img-element
-                <img src={firstImageUrl} alt={story.title} className="h-full w-full object-cover" />
+                <img src={firstImageUrl} alt={story.title} decoding="async" className="h-full w-full object-cover" />
               ) : (
                 <div className="grid h-full w-full place-items-center font-tamil text-4xl font-black text-white">க</div>
               )}
@@ -101,6 +101,7 @@ export function KathaigalStoryPage({ story, locale }: { story: KathaigalStory; l
                       src={imageUrl}
                       alt={paragraph.imageAlt[locale] || paragraph.imageAlt.ta || story.title}
                       loading="lazy"
+                      decoding="async"
                       className="h-full w-full object-cover"
                     />
                   ) : (

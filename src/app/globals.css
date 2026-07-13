@@ -53,6 +53,23 @@ body {
   -moz-osx-font-smoothing: grayscale;
 }
 
+button,
+[role="button"],
+a {
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+}
+
+img,
+svg {
+  max-width: 100%;
+}
+
+.render-lazy {
+  content-visibility: auto;
+  contain-intrinsic-size: auto 150px;
+}
+
 .font-display {
   font-family: var(--font-sans-modern), "Inter", "Segoe UI", sans-serif;
 }
@@ -186,6 +203,19 @@ body {
 }
 
 @media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    scroll-behavior: auto !important;
+    transition-duration: 0.01ms !important;
+  }
+
   .image-hunt-mobile-progress-enter {
     animation: none;
   }

@@ -529,7 +529,7 @@ export function WordSearchIndex({
               <Link
                 key={grid.id}
                 href={`/${locale}/word-search/${grid.id}`}
-                className="group relative block overflow-hidden rounded-[1.15rem] border-[3px] border-[#180d2b] bg-white shadow-[6px_7px_0_#180d2b] transition-all duration-200 hover:-translate-y-0.5"
+                className="render-lazy group relative block overflow-hidden rounded-[1.15rem] border-[3px] border-[#180d2b] bg-white shadow-[6px_7px_0_#180d2b] transition-all duration-200 hover:-translate-y-0.5"
               >
                 <div className="flex items-center gap-5 px-5 py-4">
                   <div className="min-w-0 flex-1">

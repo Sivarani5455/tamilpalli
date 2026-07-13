@@ -208,7 +208,7 @@ export function ThirukkuralIndex({
                       key={lesson.id}
                       href={createIndexHref(locale, filters, { kural: String(lesson.number), mode: "read" })}
                       aria-current={isActive ? "true" : undefined}
-                      className={`group grid grid-cols-[2.25rem_minmax(0,1fr)] items-start gap-3 rounded-2xl border-[2.5px] border-[#1A0B2E] px-4 py-3.5 shadow-[3px_3px_0_#1A0B2E] transition duration-150 hover:-translate-x-0.5 hover:-translate-y-0.5 hover:shadow-[5px_5px_0_#1A0B2E] lg:grid-cols-[2rem_minmax(0,1fr)] lg:gap-2 lg:px-3 lg:py-2 ${
+                      className={`render-lazy group grid grid-cols-[2.25rem_minmax(0,1fr)] items-start gap-3 rounded-2xl border-[2.5px] border-[#1A0B2E] px-4 py-3.5 shadow-[3px_3px_0_#1A0B2E] transition duration-150 hover:-translate-x-0.5 hover:-translate-y-0.5 hover:shadow-[5px_5px_0_#1A0B2E] lg:grid-cols-[2rem_minmax(0,1fr)] lg:gap-2 lg:px-3 lg:py-2 ${
                         isActive
                           ? "-translate-x-0.5 -translate-y-0.5 bg-[#FFF3D6] shadow-[5px_5px_0_#1A0B2E]"
                           : "bg-white"

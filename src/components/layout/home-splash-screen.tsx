@@ -106,8 +106,8 @@ export function HomeSplashScreen({
                     alt="திருவள்ளுவர்"
                     width={1123}
                     height={1684}
-                    priority
-                    unoptimized
+                    preload={screenIndex === 0}
+                    sizes="(max-width: 640px) calc(100vw - 32px), 470px"
                     className="relative z-10 mx-auto h-full w-full object-contain p-7 [filter:saturate(1.08)_contrast(1.03)] sm:p-9"
                     onError={() => setImageReady(false)}
                   />
@@ -162,8 +162,7 @@ export function HomeSplashScreen({
                 src={currentSlide.imageUrl}
                 alt={`Splash screen ${screenIndex}`}
                 fill
-                priority
-                unoptimized
+                sizes="(max-width: 640px) calc(100vw - 32px), 640px"
                 className="object-cover"
                 onError={() => setImageReady(false)}
               />

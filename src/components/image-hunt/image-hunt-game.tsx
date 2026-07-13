@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import { type MouseEvent, useActionState, useEffect, useState } from "react";
 
 import { saveImageHuntScoreAction } from "@/app/[locale]/game-actions";
@@ -425,7 +426,13 @@ export function ImageHuntGame({
             className="relative block aspect-[16/11] w-full overflow-hidden rounded-[1.25rem] border border-[#ead5b8] bg-[#f7ead7] shadow-inner transition duration-150 active:scale-[0.992] disabled:cursor-default disabled:opacity-75 sm:aspect-[16/9]"
           >
             {exercise.imageUrl ? (
-              <img src={exercise.imageUrl} alt="" className="absolute inset-0 h-full w-full object-cover" />
+              <Image
+                src={exercise.imageUrl}
+                alt=""
+                fill
+                sizes="(max-width: 1280px) calc(100vw - 48px), 70vw"
+                className="object-cover"
+              />
             ) : (
               <div className="absolute inset-0 bg-[linear-gradient(0deg,rgba(255,255,255,0.09)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.09)_1px,transparent_1px)] bg-[size:44px_44px]" />
             )}
