@@ -29,17 +29,17 @@ const levelConfig: Record<
 > = {
   BEGINNER: {
     accent: "#20bf73",
-    badge: "border-[#20bf73] bg-[#dcfce7] text-[#047857]",
+    badge: "bg-[#eaf7d6] text-[#397013]",
     label: { en: "Beginner", fr: "Débutant", ta: "தொடக்கநிலை" },
   },
   INTERMEDIATE: {
     accent: "#7c3aed",
-    badge: "border-[#7c3aed] bg-[#f6f0ff] text-[#7c3aed]",
+    badge: "bg-[#eee8ff] text-[#5f42b5]",
     label: { en: "Intermediate", fr: "Intermédiaire", ta: "இடைநிலை" },
   },
   ADVANCED: {
     accent: "#ff3b6f",
-    badge: "border-[#ff3b6f] bg-[#ffe4ee] text-[#be123c]",
+    badge: "bg-[#fde4eb] text-[#a43d5b]",
     label: { en: "Advanced", fr: "Avancé", ta: "மேம்பட்டது" },
   },
 };
@@ -277,7 +277,7 @@ export function WordSearchIndex({
     const seen = new Set<string>();
 
     grids.forEach((grid) => {
-      const date = parseCreatedAt(grid.createdAt);
+      const date = parseCreatedAt(grid.publishDate ?? grid.createdAt);
 
       if (date) {
         seen.add(monthKey(date));
@@ -312,7 +312,7 @@ export function WordSearchIndex({
         const tone = difficultyToTone[grid.difficulty];
         const score = userScores[grid.id];
         const played = typeof score === "number";
-        const date = parseCreatedAt(grid.createdAt);
+        const date = parseCreatedAt(grid.publishDate ?? grid.createdAt);
         const matchesQuery = `${grid.title} ${grid.description}`.toLowerCase().includes(normalizedQuery);
         const matchesLevel = levelFilter === "ALL" || levelFilter === level;
         const matchesDifficulty = difficultyFilter === "ALL" || difficultyFilter === tone;
@@ -333,42 +333,42 @@ export function WordSearchIndex({
           return (userScores[b.id] ?? -1) - (userScores[a.id] ?? -1);
         }
 
-        const timeA = parseCreatedAt(a.createdAt)?.getTime() ?? 0;
-        const timeB = parseCreatedAt(b.createdAt)?.getTime() ?? 0;
+        const timeA = parseCreatedAt(a.publishDate ?? a.createdAt)?.getTime() ?? 0;
+        const timeB = parseCreatedAt(b.publishDate ?? b.createdAt)?.getTime() ?? 0;
 
         return sortBy === "date_asc" ? timeA - timeB : timeB - timeA;
       });
   }, [dateFilter, difficultyFilter, grids, levelFilter, query, sortBy, statusFilter, userScores]);
 
   return (
-    <div className="min-h-screen px-5 py-6 text-[#180d2b]">
-      <main className="mx-auto max-w-[46rem]">
-        <div className="mb-3 flex gap-3">
+    <div className="min-h-screen bg-[#fbefd8] px-2 py-2 text-[#211b14] sm:px-5 sm:py-5 lg:px-8 lg:py-7">
+      <main className="mx-auto max-w-[90rem]">
+        <div className="mb-2 flex gap-2">
           <div className="relative flex-1">
             <Icon
               name="search"
-              className="pointer-events-none absolute left-4 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-[#8a6a9c]"
+              className="pointer-events-none absolute left-3 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-[#9a8b73]"
             />
             <input
               value={query}
               onChange={(event) => setQuery(event.target.value)}
               placeholder={copy.search}
-              className="w-full rounded-full border-[3px] border-[#180d2b] bg-white py-3 pl-10 pr-4 text-sm font-semibold text-[#180d2b] shadow-[4px_5px_0_#180d2b] outline-none transition placeholder:text-[#b49ac6] focus:-translate-y-0.5"
+              className="h-10 w-full rounded-lg border border-[#d8c7a9] bg-white pl-9 pr-3 text-xs font-medium text-[#211b14] outline-none transition placeholder:text-[#9a8b73] focus:border-[#5b3fa3] focus:ring-2 focus:ring-[#5b3fa3]/10 sm:text-sm"
             />
           </div>
           <button
             type="button"
             onClick={() => setShowFilters((value) => !value)}
-            className={`relative flex flex-shrink-0 items-center gap-2 rounded-full border-[3px] px-4 py-2.5 text-sm font-black shadow-[4px_5px_0_#180d2b] transition-all hover:-translate-y-0.5 ${
+            className={`relative flex h-10 flex-shrink-0 items-center gap-1.5 rounded-lg px-3 text-xs font-bold transition-colors ${
               showFilters || activeFilterCount > 0
-                ? "border-[#180d2b] bg-[#7c3aed] text-white"
-                : "border-[#180d2b] bg-[#7c3aed] text-white"
+                ? "bg-[#55409a] text-white"
+                : "bg-[#55409a] text-white hover:bg-[#493584]"
             }`}
           >
             <Icon name="sliders" className="h-3.5 w-3.5" />
             {copy.filters}
             {activeFilterCount > 0 ? (
-              <span className="absolute -right-1.5 -top-1.5 flex h-5 w-5 items-center justify-center rounded-full border-[2px] border-[#180d2b] bg-[#c6ff2e] text-[10px] font-black text-[#180d2b]">
+              <span className="absolute -right-1.5 -top-1.5 flex h-5 w-5 items-center justify-center rounded-full bg-[#ffc43d] text-[10px] font-black text-[#211b14] ring-2 ring-[#fbefd8]">
                 {activeFilterCount}
               </span>
             ) : null}
@@ -376,7 +376,7 @@ export function WordSearchIndex({
         </div>
 
         {showFilters ? (
-          <div className="mb-6 space-y-5 rounded-[1.25rem] border-[3px] border-[#180d2b] bg-white p-5 shadow-[5px_6px_0_#180d2b]">
+          <div className="mb-3 space-y-4 rounded-xl border border-[#e0d4bf] bg-white p-3 sm:p-4">
             <div className="grid gap-5 sm:grid-cols-2">
               <div>
                 <p className="mb-2 text-[10px] font-black uppercase tracking-widest text-[#8a6a9c]">{copy.level}</p>
@@ -386,8 +386,8 @@ export function WordSearchIndex({
                       key={filter}
                       type="button"
                       onClick={() => setLevelFilter(filter)}
-                      className={`rounded-full border-[2px] border-[#180d2b] px-3 py-1 text-[10px] font-black uppercase tracking-wide shadow-[2px_3px_0_#180d2b] transition-all hover:-translate-y-0.5 ${
-                        levelFilter === filter ? "bg-[#7c3aed] text-white" : "bg-[#fff7ed] text-[#180d2b]"
+                      className={`rounded-full border px-3 py-1 text-[10px] font-bold transition-colors ${
+                        levelFilter === filter ? "border-[#55409a] bg-[#55409a] text-white" : "border-[#e0d4bf] bg-[#fffaf0] text-[#544936]"
                       }`}
                     >
                       {filter === "ALL" ? copy.all : levelConfig[filter].label[locale]}
@@ -404,10 +404,10 @@ export function WordSearchIndex({
                       key={filter}
                       type="button"
                       onClick={() => setDifficultyFilter(filter)}
-                      className={`rounded-full border-[2px] border-[#180d2b] px-3 py-1 text-[10px] font-black uppercase tracking-wide shadow-[2px_3px_0_#180d2b] transition-all hover:-translate-y-0.5 ${
+                      className={`rounded-full border px-3 py-1 text-[10px] font-bold transition-colors ${
                         difficultyFilter === filter
-                          ? "bg-[#7c3aed] text-white"
-                          : "bg-[#fff7ed] text-[#180d2b]"
+                          ? "border-[#55409a] bg-[#55409a] text-white"
+                          : "border-[#e0d4bf] bg-[#fffaf0] text-[#544936]"
                       }`}
                     >
                       {filter === "ALL"
@@ -432,8 +432,8 @@ export function WordSearchIndex({
                       key={filter}
                       type="button"
                       onClick={() => setStatusFilter(filter)}
-                      className={`rounded-full border-[2px] border-[#180d2b] px-3 py-1 text-[10px] font-black uppercase tracking-wide shadow-[2px_3px_0_#180d2b] transition-all hover:-translate-y-0.5 ${
-                        statusFilter === filter ? "bg-[#7c3aed] text-white" : "bg-[#fff7ed] text-[#180d2b]"
+                      className={`rounded-full border px-3 py-1 text-[10px] font-bold transition-colors ${
+                        statusFilter === filter ? "border-[#55409a] bg-[#55409a] text-white" : "border-[#e0d4bf] bg-[#fffaf0] text-[#544936]"
                       }`}
                     >
                       {filter === "ALL" ? copy.all : filter === "PLAYED" ? copy.played : copy.unplayed}
@@ -452,7 +452,7 @@ export function WordSearchIndex({
                   <select
                     value={dateFilter}
                     onChange={(event) => setDateFilter(event.target.value)}
-                    className="w-full cursor-pointer appearance-none rounded-full border-[2px] border-[#180d2b] bg-[#fff7ed] py-2 pl-8 pr-7 text-[11px] font-black text-[#180d2b] outline-none"
+                    className="w-full cursor-pointer appearance-none rounded-lg border border-[#e0d4bf] bg-[#fffaf0] py-2 pl-8 pr-7 text-[11px] font-bold text-[#544936] outline-none"
                   >
                     <option value="ALL" className="bg-[#fff7ea]">
                       {copy.allDates}
@@ -471,7 +471,7 @@ export function WordSearchIndex({
               </div>
             </div>
 
-            <div className="flex flex-col gap-4 border-t-[2px] border-[#180d2b] pt-4 sm:flex-row sm:items-end sm:justify-between">
+            <div className="flex flex-col gap-4 border-t border-[#e0d4bf] pt-4 sm:flex-row sm:items-end sm:justify-between">
               <div className="flex-1">
                 <p className="mb-2 text-[10px] font-black uppercase tracking-widest text-[#8a6a9c]">{copy.sortBy}</p>
                 <div className="flex flex-wrap gap-1.5">
@@ -485,8 +485,8 @@ export function WordSearchIndex({
                       key={value}
                       type="button"
                       onClick={() => setSortBy(value)}
-                      className={`rounded-full border-[2px] border-[#180d2b] px-3 py-1 text-[10px] font-black tracking-wide shadow-[2px_3px_0_#180d2b] transition-all hover:-translate-y-0.5 ${
-                        sortBy === value ? "bg-[#7c3aed] text-white" : "bg-[#fff7ed] text-[#180d2b]"
+                      className={`rounded-full border px-3 py-1 text-[10px] font-bold transition-colors ${
+                        sortBy === value ? "border-[#55409a] bg-[#55409a] text-white" : "border-[#e0d4bf] bg-[#fffaf0] text-[#544936]"
                       }`}
                     >
                       {label}
@@ -509,11 +509,11 @@ export function WordSearchIndex({
           </div>
         ) : null}
 
-        <p className="mb-5 text-[11px] font-black uppercase tracking-[0.22em] text-[#8a6a9c]">
+        <p className="mb-2 px-0.5 text-[9px] font-bold uppercase tracking-[0.12em] text-[#9a8b73]">
           {filteredGrids.length} {filteredGrids.length === 1 ? copy.result : copy.results}
         </p>
 
-        <div className="space-y-3.5">
+        <div className="space-y-2 lg:grid lg:grid-cols-3 lg:gap-3 lg:space-y-0">
           {filteredGrids.length === 0 ? (
             <div className="py-24 text-center text-sm font-semibold text-[#8a6a9c]">{copy.empty}</div>
           ) : null}
@@ -529,58 +529,53 @@ export function WordSearchIndex({
               <Link
                 key={grid.id}
                 href={`/${locale}/word-search/${grid.id}`}
-                className="render-lazy group relative block overflow-hidden rounded-[1.15rem] border-[3px] border-[#180d2b] bg-white shadow-[6px_7px_0_#180d2b] transition-all duration-200 hover:-translate-y-0.5"
+                className="render-lazy group relative block rounded-xl border border-[#e0d4bf] bg-white px-3 py-2.5 transition duration-200 hover:border-[#c7b694] hover:shadow-[0_8px_22px_-18px_rgba(55,42,23,0.65)] sm:px-4 sm:py-3 lg:flex lg:min-h-[160px] lg:flex-col"
               >
-                <div className="flex items-center gap-5 px-5 py-4">
-                  <div className="min-w-0 flex-1">
-                    <div className="mb-2 flex items-center gap-2">
+                <div className="flex items-start justify-between gap-3">
+                  <div className="flex min-w-0 items-center gap-2">
                       <span
-                        className={`inline-flex items-center gap-1 rounded-full border-[2px] px-2.5 py-0.5 text-[10px] font-black uppercase tracking-wide ${levelMeta.badge}`}
+                        className={`inline-flex rounded-full px-2 py-0.5 text-[9px] font-bold ${levelMeta.badge}`}
                       >
-                        <span className="h-1.5 w-1.5 rounded-full" style={{ background: levelMeta.accent }} />
                         {levelMeta.label[locale]}
                       </span>
-                      <span className="text-[10px] font-black uppercase tracking-wide text-[#8a6a9c]">
+                      <span className="truncate text-[9px] font-medium text-[#9a8b73]">
                         {tone === "EASY" ? copy.easy : tone === "MEDIUM" ? copy.medium : copy.hard}
                       </span>
+                  </div>
+
+                  {played ? (
+                    <div className="flex shrink-0 items-center gap-1 text-[#a86600]">
+                      <Icon name="trophy" className="h-3 w-3" />
+                      <span className="text-[9px] font-bold">+ {score} {copy.points}</span>
                     </div>
+                  ) : (
+                    <span className="shrink-0 text-[9px] font-medium italic text-[#aa9679]">{copy.notPlayed}</span>
+                  )}
+                </div>
 
-                    <h2 className="truncate text-[15px] font-black leading-tight text-[#180d2b]">{grid.title}</h2>
-                    {grid.description ? <p className="mt-0.5 text-xs font-semibold text-[#8a6a9c]">{grid.description}</p> : null}
+                <h2 className="mt-1.5 truncate text-[13px] font-bold leading-tight text-[#211b14] sm:text-sm">{grid.title}</h2>
+                {grid.description ? <p className="mt-0.5 truncate text-[10px] font-medium text-[#76664f] sm:text-xs">{grid.description}</p> : null}
 
-                    <div className="mt-3 flex flex-wrap items-center gap-3">
-                      <span className="flex items-center gap-1 text-[11px] font-semibold text-[#8a6a9c]">
-                        <Icon name="clock" className="h-2.5 w-2.5" />
+                <div className="mt-2 flex items-end justify-between gap-2 lg:mt-auto lg:pt-3">
+                  <div className="flex min-w-0 flex-wrap items-center gap-x-2 gap-y-1">
+                      <span className="flex items-center gap-1 text-[9px] font-medium text-[#9a8b73]">
+                        <Icon name="clock" className="h-2.5 w-2.5 text-[#b3893f]" />
                         {Math.ceil(grid.timeLimitSeconds / 60)} min
                       </span>
-                      <span className="flex items-center gap-1 text-[11px] font-semibold text-[#8a6a9c]">
-                        <Icon name="layers" className="h-2.5 w-2.5" />
+                      <span className="flex items-center gap-1 text-[9px] font-medium text-[#9a8b73]">
+                        <Icon name="layers" className="h-2.5 w-2.5 text-[#b3893f]" />
                         {grid.words.length} {copy.words}
                       </span>
-                      <span className="flex items-center gap-1 text-[11px] font-semibold text-[#8a6a9c]">
-                        <Icon name="calendar" className="h-2.5 w-2.5" />
-                        {formatDate(grid.createdAt, locale)}
+                      <span className="flex items-center gap-1 text-[9px] font-medium text-[#9a8b73]">
+                        <Icon name="calendar" className="h-2.5 w-2.5 text-[#b3893f]" />
+                        {formatDate(grid.publishDate ?? grid.createdAt, locale)}
                       </span>
-                    </div>
                   </div>
 
-                  <div className="flex flex-shrink-0 flex-col items-end gap-2.5">
-                    {played ? (
-                      <div className="flex items-center gap-1.5">
-                        <Icon name="trophy" className="h-3 w-3 text-[#ffc43d]" />
-                        <span className="text-xs font-black text-[#ffc43d]">
-                          + {score} {copy.points}
-                        </span>
-                      </div>
-                    ) : (
-                      <span className="text-[10px] font-semibold italic text-[#b49ac6]">{copy.notPlayed}</span>
-                    )}
-
-                    <span className="relative inline-flex items-center gap-1.5 overflow-hidden rounded-full border-[2px] border-[#180d2b] bg-[#180d2b] px-4 py-2 text-xs font-black uppercase tracking-wide text-white shadow-[3px_4px_0_#ffc43d]">
-                      <Icon name="grid" className="relative h-3 w-3" />
-                      <span className="relative">{copy.open}</span>
-                    </span>
-                  </div>
+                  <span className="inline-flex h-6 shrink-0 items-center gap-1.5 rounded-full bg-[#282418] px-3 text-[9px] font-bold text-white transition group-hover:bg-[#55409a]">
+                    <Icon name="grid" className="h-2.5 w-2.5" />
+                    {copy.open}
+                  </span>
                 </div>
               </Link>
             );

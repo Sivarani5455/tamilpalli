@@ -75,17 +75,17 @@ const difficultyCopy: Record<Difficulty, { label: Record<Locale, string>; tone: 
   beginner: {
     label: { en: "Beginner", fr: "Débutant", ta: "தொடக்கநிலை" },
     level: { en: "Easy", fr: "Facile", ta: "எளிது" },
-    tone: "border-[#20bf73] bg-[#dcfce7] text-[#047857]",
+    tone: "bg-[#eaf7d6] text-[#397013]",
   },
   intermediate: {
     label: { en: "Intermediate", fr: "Intermédiaire", ta: "இடைநிலை" },
     level: { en: "Medium", fr: "Moyen", ta: "நடுத்தரம்" },
-    tone: "border-[#7c3aed] bg-[#f6f0ff] text-[#7c3aed]",
+    tone: "bg-[#eee8ff] text-[#5f42b5]",
   },
   advanced: {
     label: { en: "Advanced", fr: "Avancé", ta: "மேம்பட்டது" },
     level: { en: "Hard", fr: "Difficile", ta: "கடினம்" },
-    tone: "border-[#ff3b6f] bg-[#ffe4ee] text-[#be123c]",
+    tone: "bg-[#fde4eb] text-[#a43d5b]",
   },
 };
 
@@ -152,22 +152,22 @@ export function WordHuntIndex({
   }, [difficultyFilter, exercises, locale, query]);
 
   return (
-    <div className="min-h-screen px-5 py-6 text-[#180d2b]">
-      <main className="mx-auto max-w-[46rem]">
-        <div className="mb-3 flex gap-3">
+    <div className="min-h-screen bg-[#fbefd8] px-2 py-2 text-[#211b14] sm:px-5 sm:py-5 lg:px-8 lg:py-7">
+      <main className="mx-auto max-w-[90rem]">
+        <div className="mb-2 flex gap-2">
           <div className="relative flex-1">
-            <Icon name="search" className="pointer-events-none absolute left-4 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-[#8a6a9c]" />
+            <Icon name="search" className="pointer-events-none absolute left-3 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-[#9a8b73]" />
             <input
               value={query}
               onChange={(event) => setQuery(event.target.value)}
               placeholder={copy.search}
-              className="w-full rounded-full border-[3px] border-[#180d2b] bg-white py-3 pl-10 pr-4 text-sm font-semibold text-[#180d2b] shadow-[4px_5px_0_#180d2b] outline-none transition placeholder:text-[#b49ac6] focus:-translate-y-0.5"
+              className="h-10 w-full rounded-lg border border-[#d8c7a9] bg-white pl-9 pr-3 text-xs font-medium text-[#211b14] outline-none transition placeholder:text-[#9a8b73] focus:border-[#55409a] focus:ring-2 focus:ring-[#55409a]/10 sm:text-sm"
             />
           </div>
           <button
             type="button"
             onClick={() => setShowFilters((value) => !value)}
-            className="relative flex flex-shrink-0 items-center gap-2 rounded-full border-[3px] border-[#180d2b] bg-[#7c3aed] px-4 py-2.5 text-sm font-black text-white shadow-[4px_5px_0_#180d2b] transition hover:-translate-y-0.5"
+            className="relative flex h-10 flex-shrink-0 items-center gap-1.5 rounded-lg bg-[#55409a] px-3 text-xs font-bold text-white transition-colors hover:bg-[#493584]"
           >
             <Icon name="sliders" className="h-3.5 w-3.5" />
             {copy.filters}
@@ -175,15 +175,15 @@ export function WordHuntIndex({
         </div>
 
         {showFilters ? (
-          <div className="mb-6 rounded-[1.25rem] border-[3px] border-[#180d2b] bg-white p-5 shadow-[5px_6px_0_#180d2b]">
+          <div className="mb-3 rounded-xl border border-[#e0d4bf] bg-white p-3 sm:p-4">
             <div className="flex flex-wrap gap-2">
               {(["ALL", "beginner", "intermediate", "advanced"] as const).map((filter) => (
                 <button
                   key={filter}
                   type="button"
                   onClick={() => setDifficultyFilter(filter)}
-                  className={`rounded-full border-[2px] border-[#180d2b] px-3 py-1 text-[10px] font-black uppercase tracking-wide shadow-[2px_3px_0_#180d2b] transition-all hover:-translate-y-0.5 ${
-                    difficultyFilter === filter ? "bg-[#7c3aed] text-white" : "bg-[#fff7ed] text-[#180d2b]"
+                  className={`rounded-full border px-3 py-1 text-[10px] font-bold transition-colors ${
+                    difficultyFilter === filter ? "border-[#55409a] bg-[#55409a] text-white" : "border-[#e0d4bf] bg-[#fffaf0] text-[#544936]"
                   }`}
                 >
                   {filter === "ALL" ? copy.all : difficultyCopy[filter].label[locale]}
@@ -193,11 +193,11 @@ export function WordHuntIndex({
           </div>
         ) : null}
 
-        <p className="mb-5 text-[11px] font-black uppercase tracking-[0.22em] text-[#8a6a9c]">
+        <p className="mb-2 px-0.5 text-[9px] font-bold uppercase tracking-[0.12em] text-[#9a8b73]">
           {filteredExercises.length} {filteredExercises.length === 1 ? copy.result : copy.results}
         </p>
 
-        <div className="space-y-3.5">
+        <div className="space-y-2 lg:grid lg:grid-cols-3 lg:gap-3 lg:space-y-0">
           {filteredExercises.length === 0 ? (
             <div className="py-24 text-center text-sm font-semibold text-[#8a6a9c]">{copy.empty}</div>
           ) : null}
@@ -211,46 +211,46 @@ export function WordHuntIndex({
               <Link
                 key={exercise.id}
                 href={`/${locale}/word-hunt/${exercise.id}`}
-                className="render-lazy group relative block overflow-hidden rounded-[1.15rem] border-[3px] border-[#180d2b] bg-white shadow-[6px_7px_0_#180d2b] transition-all duration-200 hover:-translate-y-0.5"
+                className="render-lazy group relative block rounded-xl border border-[#e0d4bf] bg-white px-3 py-2.5 transition duration-200 hover:border-[#c7b694] hover:shadow-[0_8px_22px_-18px_rgba(55,42,23,0.65)] sm:px-4 sm:py-3 lg:min-h-[160px]"
               >
-                <div className="flex items-center gap-5 px-5 py-4">
+                <div className="flex h-full flex-col">
                   <div className="min-w-0 flex-1">
-                    <div className="mb-2 flex items-center gap-2">
-                      <span className={`inline-flex items-center gap-1 rounded-full border-[2px] px-2.5 py-0.5 text-[10px] font-black uppercase tracking-wide ${meta.tone}`}>
-                        <span className="h-1.5 w-1.5 rounded-full bg-current" />
-                        {meta.label[locale]}
-                      </span>
-                      <span className="text-[10px] font-black uppercase tracking-wide text-[#8a6a9c]">{meta.level[locale]}</span>
+                    <div className="mb-1.5 flex items-start justify-between gap-2">
+                      <div className="flex min-w-0 items-center gap-2">
+                        <span className={`inline-flex shrink-0 rounded-full px-2 py-0.5 text-[9px] font-bold ${meta.tone}`}>
+                          {meta.label[locale]}
+                        </span>
+                        <span className="truncate text-[9px] font-medium text-[#9a8b73]">{meta.level[locale]}</span>
+                      </div>
+                      <div className="flex shrink-0 items-center gap-1 text-[#a86600]">
+                        <Icon name="trophy" className="h-3 w-3" />
+                        <span className="whitespace-nowrap text-[9px] font-bold">+ {estimatedPoints} {copy.points}</span>
+                      </div>
                     </div>
 
-                    <h2 className="truncate text-[15px] font-black leading-tight text-[#180d2b]">{exercise.title}</h2>
-                    <p className="mt-0.5 truncate text-xs font-semibold text-[#8a6a9c]">{exercise.description}</p>
+                    <h2 className="truncate text-[13px] font-bold leading-tight text-[#211b14] sm:text-sm">{exercise.title}</h2>
+                    <p className="mt-0.5 truncate text-[10px] font-medium text-[#76664f] sm:text-xs">{exercise.description}</p>
 
-                    <div className="mt-3 flex flex-wrap items-center gap-3">
-                      <span className="flex items-center gap-1 text-[11px] font-semibold text-[#8a6a9c]">
-                        <Icon name="clock" className="h-2.5 w-2.5" />
+                    <div className="mt-2 flex flex-wrap items-center gap-2">
+                      <span className="flex items-center gap-1 text-[9px] font-medium text-[#9a8b73]">
+                        <Icon name="clock" className="h-2.5 w-2.5 text-[#b3893f]" />
                         {Math.ceil(exercise.timeLimitSeconds / 60)} min
                       </span>
-                      <span className="flex items-center gap-1 text-[11px] font-semibold text-[#8a6a9c]">
-                        <Icon name="layers" className="h-2.5 w-2.5" />
+                      <span className="flex items-center gap-1 text-[9px] font-medium text-[#9a8b73]">
+                        <Icon name="layers" className="h-2.5 w-2.5 text-[#b3893f]" />
                         {exercise.words.length} {copy.words}
                       </span>
-                      <span className="flex items-center gap-1 text-[11px] font-semibold text-[#8a6a9c]">
-                        <Icon name="grid" className="h-2.5 w-2.5" />
+                      <span className="flex items-center gap-1 text-[9px] font-medium text-[#9a8b73]">
+                        <Icon name="grid" className="h-2.5 w-2.5 text-[#b3893f]" />
                         {targetCount} {copy.targets}
                       </span>
                     </div>
                   </div>
 
-                  <div className="flex flex-shrink-0 flex-col items-end gap-2.5">
-                    <div className="flex items-center gap-1.5">
-                      <Icon name="trophy" className="h-3 w-3 text-[#ffc43d]" />
-                      <span className="text-xs font-black text-[#ffc43d]">+ {estimatedPoints} {copy.points}</span>
-                    </div>
-
-                    <span className="relative inline-flex items-center gap-1.5 overflow-hidden rounded-full border-[2px] border-[#180d2b] bg-[#180d2b] px-4 py-2 text-xs font-black uppercase tracking-wide text-white shadow-[3px_4px_0_#ffc43d]">
-                      <Icon name="grid" className="relative h-3 w-3" />
-                      <span className="relative">{copy.open}</span>
+                  <div className="mt-auto flex items-end pt-3">
+                    <span className="inline-flex h-6 items-center gap-1.5 rounded-full bg-[#282418] px-3 text-[9px] font-bold text-white transition group-hover:bg-[#55409a]">
+                      <Icon name="grid" className="h-2.5 w-2.5" />
+                      <span>{copy.open}</span>
                     </span>
                   </div>
                 </div>
