@@ -6,13 +6,12 @@ import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 
 import { isAgarathiDailyQuizComplete } from "@/lib/agarathi-daily";
-import { appName } from "@/lib/constants";
+import { appName, localeLabels, locales } from "@/lib/constants";
 import { cn } from "@/lib/utils";
 import type { DictionaryEntry, Locale } from "@/types";
 
 import { LogoutButton } from "../auth/logout-button";
 import { LanguageSwitcher } from "../navigation/language-switcher";
-import { BrandMark } from "./brand-mark";
 
 const AgarathiGateModal = dynamic(
   () => import("../dictionary/agarathi-gate-modal").then((module) => module.AgarathiGateModal),
@@ -33,6 +32,14 @@ const gameItems = [
   { href: "/word-hunt", key: "wordHunt" },
   { href: "/kural-vettai", key: "kuralVettai" },
 ] as const;
+
+const gameItemIcons: Record<(typeof gameItems)[number]["key"], MobileNavIconKind> = {
+  wordSearch: "search",
+  fillBlanks: "fill",
+  imageHunt: "image",
+  wordHunt: "letters",
+  kuralVettai: "target",
+};
 
 const literatureItems = [
   { href: "/kathaigal", key: "kathaigal" },
@@ -267,6 +274,50 @@ function MobileMenuIcon({ open }: { open: boolean }) {
   );
 }
 
+type MobileNavIconKind = "home" | "target" | "search" | "fill" | "image" | "letters" | "books" | "book" | "tag" | "grid" | "shield";
+
+function MobileNavIcon({ kind }: { kind: MobileNavIconKind }) {
+  const common = "h-4 w-4 shrink-0";
+
+  if (kind === "home") {
+    return <svg aria-hidden="true" viewBox="0 0 24 24" className={common} fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="m4 11 8-7 8 7" /><path d="M6.5 10v10h11V10" /><path d="M10 20v-6h4v6" /></svg>;
+  }
+
+  if (kind === "target") {
+    return <svg aria-hidden="true" viewBox="0 0 24 24" className={common} fill="none" stroke="currentColor" strokeWidth="1.8"><circle cx="12" cy="12" r="8" /><circle cx="12" cy="12" r="4" /><circle cx="12" cy="12" r="1" /></svg>;
+  }
+
+  if (kind === "search") {
+    return <MobileSearchIcon />;
+  }
+
+  if (kind === "fill") {
+    return <svg aria-hidden="true" viewBox="0 0 24 24" className={common} fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round"><path d="M7 5H4v14h3" /><path d="M17 5h3v14h-3" /><path d="M9 9h6" /><path d="M9 15h6" /></svg>;
+  }
+
+  if (kind === "image") {
+    return <svg aria-hidden="true" viewBox="0 0 24 24" className={common} fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="4" width="18" height="16" rx="2" /><circle cx="9" cy="9" r="1.5" /><path d="m5 18 5-5 3 3 2-2 4 4" /></svg>;
+  }
+
+  if (kind === "letters") {
+    return <span aria-hidden="true" className="w-4 shrink-0 text-center font-mono text-[9px] font-black">Abc</span>;
+  }
+
+  if (kind === "books" || kind === "book") {
+    return <svg aria-hidden="true" viewBox="0 0 24 24" className={common} fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M4 5h6a2 2 0 0 1 2 2v12a2 2 0 0 0-2-2H4Z" /><path d="M20 5h-6a2 2 0 0 0-2 2v12a2 2 0 0 1 2-2h6Z" /></svg>;
+  }
+
+  if (kind === "tag") {
+    return <svg aria-hidden="true" viewBox="0 0 24 24" className={common} fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M20 13 13 20 4 11V4h7Z" /><circle cx="8.5" cy="8.5" r="1" /></svg>;
+  }
+
+  if (kind === "grid") {
+    return <svg aria-hidden="true" viewBox="0 0 24 24" className={common} fill="none" stroke="currentColor" strokeWidth="1.8"><rect x="4" y="4" width="6" height="6" rx="1" /><rect x="14" y="4" width="6" height="6" rx="1" /><rect x="4" y="14" width="6" height="6" rx="1" /><rect x="14" y="14" width="6" height="6" rx="1" /></svg>;
+  }
+
+  return <svg aria-hidden="true" viewBox="0 0 24 24" className={common} fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M12 3 5 6v5c0 4.6 2.8 8 7 10 4.2-2 7-5.4 7-10V6Z" /><path d="m9 12 2 2 4-4" /></svg>;
+}
+
 export function HeaderClient({
   locale,
   isLoggedIn,
@@ -280,6 +331,7 @@ export function HeaderClient({
   const router = useRouter();
   const rootRef = useRef<HTMLDivElement | null>(null);
   const [open, setOpen] = useState(false);
+  const [mobileMenuSection, setMobileMenuSection] = useState<"games" | "literature" | null>("games");
   const [mobileSearchOpen, setMobileSearchOpen] = useState(false);
   const [mobileSearchQuery, setMobileSearchQuery] = useState("");
   const [streakDays, setStreakDays] = useState(1);
@@ -293,6 +345,12 @@ export function HeaderClient({
       : locale === "ta"
         ? { streak: "தொடர்ச்சியான நாட்கள்", notifications: "அறிவிப்புகள்", search: "தேடல்", placeholder: "உள்ளடக்கத்தைத் தேடுங்கள்…", noResults: "உள்ளடக்கம் இல்லை" }
         : { streak: "day streak", notifications: "Notifications", search: "Search", placeholder: "Search content…", noResults: "No content found" };
+  const mobileMenuLabels =
+    locale === "fr"
+      ? { heading: "Apprendre le tamoul", learning: "Parcours d’apprentissage", soon: "Bientôt disponibles ici.", games: "Mini-jeux", literature: "Littérature", quick: "Accès rapide" }
+      : locale === "ta"
+        ? { heading: "தமிழ்க் கற்றல்", learning: "கற்றல் பாதைகள்", soon: "விரைவில் இங்கே கிடைக்கும்.", games: "சிறு விளையாட்டுகள்", literature: "இலக்கியம்", quick: "விரைவு அணுகல்" }
+        : { heading: "Learn Tamil", learning: "Learning paths", soon: "Available here soon.", games: "Mini-games", literature: "Literature", quick: "Quick access" };
   const mobileSearchItems = [
     { href: "", label: copy.nav.home },
     ...gameItems.map((item) => ({ href: item.href, label: copy.games[item.key] })),
@@ -319,6 +377,7 @@ export function HeaderClient({
     const handlePointerDown = (event: MouseEvent) => {
       if (!rootRef.current?.contains(event.target as Node)) {
         setDesktopDropdown(null);
+        setMobileSearchOpen(false);
       }
     };
 
@@ -351,10 +410,10 @@ export function HeaderClient({
   }, []);
 
   return (
-    <header className="sticky top-0 z-50 border-b border-[#180d2b]/15 bg-[#fbf1e2]/95 backdrop-blur-xl xl:border-b-[3px] xl:border-[#180d2b]">
+    <header className="sticky top-0 z-50 border-b border-[#180d2b]/15 bg-[#fbf1e2]/95 backdrop-blur-xl">
       <div
         ref={rootRef}
-        className="relative mx-auto flex min-h-[64px] w-full max-w-[120rem] items-center gap-3 px-2 sm:min-h-[72px] sm:px-6 xl:min-h-[88px] xl:gap-5 xl:px-8"
+        className="relative mx-auto flex min-h-[64px] w-full max-w-[120rem] items-center gap-3 px-2 sm:min-h-[72px] sm:px-6 xl:min-h-[62px] xl:gap-2 xl:px-8"
       >
         <div className="mx-auto flex w-full max-w-[48rem] items-center gap-1 rounded-[1.1rem] border border-white/80 bg-white/70 p-1.5 shadow-[0_8px_24px_-18px_rgba(24,13,43,0.7)] backdrop-blur-xl sm:gap-2 sm:p-2 xl:hidden">
           <Link href={`/${locale}`} className="flex min-w-0 flex-1 items-center gap-1.5">
@@ -412,15 +471,19 @@ export function HeaderClient({
           </button>
         </div>
 
-        <Link href={`/${locale}`} className="hidden shrink-0 xl:block">
-          <BrandMark compact />
+        <Link href={`/${locale}`} className="hidden shrink-0 items-center gap-2 xl:flex" onClick={() => setDesktopDropdown(null)}>
+          <span className="flex h-8 w-8 items-center justify-center rounded-full border-2 border-[#180d2b] bg-[#ffc43d] font-tamil text-base font-black leading-none text-[#180d2b]">
+            அ
+          </span>
+          <span className="font-display text-sm font-black leading-none text-[#180d2b]">{appName}</span>
         </Link>
 
-        <nav className="hidden min-w-0 flex-1 items-center justify-center gap-1 xl:flex">
+        <nav className="hidden min-w-0 flex-1 items-center justify-start gap-1 xl:flex">
           <Link
             href={`/${locale}`}
             className={cn(
-              "rounded-full border-2 border-transparent px-4 py-2 text-[0.98rem] text-[#180d2b] transition hover:-translate-y-0.5 hover:border-[#180d2b] hover:bg-[#ffc43d] hover:shadow-[2px_3px_0_#180d2b]",
+              "rounded-lg px-3 py-2 text-sm text-[#180d2b] transition hover:bg-white/75",
+              pathname === `/${locale}` && "bg-white/75",
               navTextClass(isTamil),
             )}
           >
@@ -436,26 +499,26 @@ export function HeaderClient({
               type="button"
               onClick={() => setDesktopDropdown((current) => (current === "learning" ? null : "learning"))}
               className={cn(
-                "flex items-center gap-2 rounded-full border-2 border-transparent px-4 py-2 text-[0.98rem] text-[#180d2b] transition hover:-translate-y-0.5 hover:border-[#180d2b] hover:bg-[#c6ff2e] hover:shadow-[2px_3px_0_#180d2b]",
-                desktopDropdown === "learning" && "border-[#180d2b] bg-[#c6ff2e] shadow-[2px_3px_0_#180d2b]",
+                "flex items-center gap-1.5 rounded-lg px-3 py-2 text-sm text-[#180d2b] transition hover:bg-white/75",
+                desktopDropdown === "learning" && "bg-white/75",
                 navTextClass(isTamil),
               )}
             >
               <span>{copy.dropdown.learning}</span>
-              <span className={cn("text-xs transition", desktopDropdown === "learning" && "rotate-180")}>⌃</span>
+              <span className={cn("text-[10px] transition", desktopDropdown === "learning" && "rotate-180")}>⌄</span>
             </button>
 
             {desktopDropdown === "learning" ? (
-              <div className="absolute left-1/2 top-full z-50 w-[40rem] max-w-[calc(100vw-4rem)] -translate-x-1/2 pt-4">
-                <div className="overflow-hidden rounded-[1.35rem] border-[3px] border-[#180d2b] bg-white shadow-[7px_8px_0_#180d2b]">
-                  <div className="bg-[#eee5ff] px-7 py-7">
-                    <p className="text-xs font-black uppercase tracking-[0.24em] text-[#7c3aed]">
+              <div className="absolute left-0 top-full z-50 w-80 pt-2">
+                <div className="overflow-hidden rounded-xl border border-[#180d2b]/15 bg-[#fffaf0]/98 shadow-[0_18px_45px_-24px_rgba(24,13,43,0.65)] backdrop-blur-xl">
+                  <div className="px-4 py-4">
+                    <p className="text-[10px] font-black uppercase tracking-[0.18em] text-[#8a6a9c]">
                       {copy.dropdown.learningEyebrow}
                     </p>
-                    <p className="mt-5 max-w-sm text-[1.55rem] font-black leading-tight tracking-[-0.02em] text-[#180d2b]">
+                    <p className="mt-2 text-sm font-black leading-5 text-[#180d2b]">
                       {copy.dropdown.learningEmpty}
                     </p>
-                    <p className="mt-4 max-w-sm text-sm font-semibold leading-7 text-[#6f587f]">{copy.dropdown.learningHint}</p>
+                    <p className="mt-1.5 text-xs font-medium leading-5 text-[#6f587f]">{copy.dropdown.learningHint}</p>
                   </div>
                 </div>
               </div>
@@ -471,40 +534,40 @@ export function HeaderClient({
               type="button"
               onClick={() => setDesktopDropdown((current) => (current === "games" ? null : "games"))}
               className={cn(
-                "flex items-center gap-2 rounded-full border-2 border-transparent px-4 py-2 text-[0.98rem] text-[#180d2b] transition hover:-translate-y-0.5 hover:border-[#180d2b] hover:bg-[#ffc43d] hover:shadow-[2px_3px_0_#180d2b]",
-                desktopDropdown === "games" && "border-[#180d2b] bg-[#ffc43d] shadow-[2px_3px_0_#180d2b]",
+                "flex items-center gap-1.5 rounded-lg px-3 py-2 text-sm text-[#180d2b] transition hover:bg-white/75",
+                desktopDropdown === "games" && "bg-white/75",
                 navTextClass(isTamil),
               )}
             >
               <span>{copy.dropdown.games}</span>
-              <span className={cn("text-xs transition", desktopDropdown === "games" && "rotate-180")}>⌃</span>
+              <span className={cn("text-[10px] transition", desktopDropdown === "games" && "rotate-180")}>⌄</span>
             </button>
 
             {desktopDropdown === "games" ? (
-              <div className="absolute left-1/2 top-full z-50 w-[56rem] max-w-[calc(100vw-4rem)] -translate-x-1/2 pt-4">
-                <div className="overflow-hidden rounded-[1.35rem] border-[3px] border-[#180d2b] bg-white shadow-[7px_8px_0_#180d2b]">
-                  <div className="grid gap-0 md:grid-cols-[0.78fr_1.22fr]">
-                    <div className="border-r-[3px] border-[#180d2b] bg-[#fff2cf] px-7 py-7">
-                      <p className="text-xs font-black uppercase tracking-[0.24em] text-[#ff9f1c]">
+              <div className="absolute left-0 top-full z-50 w-[42rem] max-w-[calc(100vw-4rem)] pt-2">
+                <div className="overflow-hidden rounded-xl border border-[#180d2b]/15 bg-[#fffaf0]/98 shadow-[0_18px_45px_-24px_rgba(24,13,43,0.65)] backdrop-blur-xl">
+                  <div className="grid gap-0 md:grid-cols-[0.72fr_1.28fr]">
+                    <div className="border-r border-[#180d2b]/10 bg-[#fff2cf]/70 px-5 py-5">
+                      <p className="text-[10px] font-black uppercase tracking-[0.18em] text-[#c97800]">
                         {copy.dropdown.gamesEyebrow}
                       </p>
-                      <p className="mt-5 max-w-sm text-[1.55rem] font-black leading-tight tracking-[-0.02em] text-[#180d2b]">
+                      <p className="mt-2 text-lg font-black leading-tight text-[#180d2b]">
                         {copy.dropdown.games}
                       </p>
-                      <p className="mt-4 max-w-sm text-sm font-semibold leading-7 text-[#6f587f]">{copy.dropdown.gamesHint}</p>
+                      <p className="mt-2 text-xs font-medium leading-5 text-[#6f587f]">{copy.dropdown.gamesHint}</p>
                     </div>
 
-                    <div className="px-7 py-7">
-                      <div className="mb-4 flex items-center justify-between gap-4">
-                        <p className="text-xs font-black uppercase tracking-[0.24em] text-[#8a6a9c]">
+                    <div className="px-3 py-3">
+                      <div className="mb-1 flex items-center justify-between gap-4 px-2 py-1">
+                        <p className="text-[10px] font-black uppercase tracking-[0.18em] text-[#8a6a9c]">
                           {copy.dropdown.gamesListTitle}
                         </p>
-                        <span className="rounded-full border-2 border-[#180d2b] bg-[#c6ff2e] px-3 py-1 text-[10px] font-black uppercase tracking-[0.18em] text-[#180d2b] shadow-[2px_3px_0_#180d2b]">
+                        <span className="rounded-full bg-[#ffc43d] px-2 py-1 text-[9px] font-black uppercase tracking-[0.12em] text-[#180d2b]">
                           {copy.dropdown.newBadge}
                         </span>
                       </div>
 
-                      <div className="grid gap-3">
+                      <div className="grid gap-1">
                         {gameItems.map((gameItem, index) => {
                           const targetHref = `/${locale}${gameItem.href}`;
                           const isCurrentPage = pathname === targetHref;
@@ -515,31 +578,31 @@ export function HeaderClient({
                               href={targetHref}
                               onClick={() => setDesktopDropdown(null)}
                               className={cn(
-                                "group flex items-start justify-between gap-4 rounded-[1rem] border-[3px] px-5 py-4 shadow-[3px_4px_0_#180d2b] transition hover:-translate-y-0.5",
+                                "group flex items-start justify-between gap-3 rounded-lg border px-3 py-2 transition",
                                 isCurrentPage
-                                  ? "border-[#180d2b] bg-[#eee5ff]"
-                                  : "border-[#180d2b] bg-[#fff8ec] hover:bg-white",
+                                  ? "border-[#7c3aed]/25 bg-[#eee5ff]"
+                                  : "border-transparent bg-transparent hover:bg-white",
                               )}
                             >
                               <div>
                                 <div className="flex items-center gap-3">
-                                  <span className="flex h-9 w-9 items-center justify-center rounded-full border-2 border-[#180d2b] bg-[#20bf73] text-sm font-black text-white">
+                                  <span className="flex h-6 w-6 items-center justify-center rounded-full bg-[#20bf73] text-[10px] font-black text-white">
                                     {index + 1}
                                   </span>
-                                  <h3 className="text-lg font-black text-[#180d2b] transition group-hover:text-[#7c3aed]">
+                                  <h3 className="text-sm font-black text-[#180d2b] transition group-hover:text-[#7c3aed]">
                                     {copy.games[gameItem.key]}
                                   </h3>
                                   {isCurrentPage ? (
-                                    <span className="rounded-full bg-[#ffc43d] px-3 py-1 text-[10px] font-black uppercase tracking-[0.18em] text-[#180d2b]">
+                                    <span className="rounded-full bg-[#ffc43d] px-2 py-0.5 text-[8px] font-black uppercase tracking-[0.1em] text-[#180d2b]">
                                       {copy.dropdown.currentPage}
                                     </span>
                                   ) : null}
                                 </div>
-                                <p className="mt-3 pl-12 text-sm font-semibold leading-6 text-[#6f587f]">
+                                <p className="mt-0.5 pl-9 text-[10px] font-medium leading-4 text-[#6f587f]">
                                   {copy.dropdown.gameDescriptions[gameItem.key]}
                                 </p>
                               </div>
-                              <span className="pt-2 text-[#7c3aed] transition group-hover:translate-x-1">→</span>
+                              <span className="pt-1 text-sm text-[#7c3aed] transition group-hover:translate-x-0.5">→</span>
                             </Link>
                           );
                         })}
@@ -560,33 +623,33 @@ export function HeaderClient({
               type="button"
               onClick={() => setDesktopDropdown((current) => (current === "literature" ? null : "literature"))}
               className={cn(
-                "flex items-center gap-2 rounded-full border-2 border-transparent px-4 py-2 text-[0.98rem] text-[#180d2b] transition hover:-translate-y-0.5 hover:border-[#180d2b] hover:bg-[#eee5ff] hover:shadow-[2px_3px_0_#180d2b]",
-                desktopDropdown === "literature" && "border-[#180d2b] bg-[#eee5ff] shadow-[2px_3px_0_#180d2b]",
+                "flex items-center gap-1.5 rounded-lg px-3 py-2 text-sm text-[#180d2b] transition hover:bg-white/75",
+                desktopDropdown === "literature" && "bg-white/75",
                 navTextClass(isTamil),
               )}
             >
               <span>{copy.dropdown.literature}</span>
-              <span className={cn("text-xs transition", desktopDropdown === "literature" && "rotate-180")}>⌃</span>
+              <span className={cn("text-[10px] transition", desktopDropdown === "literature" && "rotate-180")}>⌄</span>
             </button>
 
             {desktopDropdown === "literature" ? (
-              <div className="absolute left-1/2 top-full z-50 w-[44rem] max-w-[calc(100vw-4rem)] -translate-x-1/2 pt-4">
-                <div className="overflow-hidden rounded-[1.35rem] border-[3px] border-[#180d2b] bg-white shadow-[7px_8px_0_#180d2b]">
+              <div className="absolute left-0 top-full z-50 w-[36rem] max-w-[calc(100vw-4rem)] pt-2">
+                <div className="overflow-hidden rounded-xl border border-[#180d2b]/15 bg-[#fffaf0]/98 shadow-[0_18px_45px_-24px_rgba(24,13,43,0.65)] backdrop-blur-xl">
                   <div className="grid gap-0 md:grid-cols-[0.82fr_1.18fr]">
-                    <div className="border-r-[3px] border-[#180d2b] bg-[#eee5ff] px-7 py-7">
-                      <p className="text-xs font-black uppercase tracking-[0.24em] text-[#7c3aed]">
+                    <div className="border-r border-[#180d2b]/10 bg-[#eee5ff]/70 px-5 py-5">
+                      <p className="text-[10px] font-black uppercase tracking-[0.18em] text-[#7c3aed]">
                         {copy.dropdown.literatureEyebrow}
                       </p>
-                      <p className="mt-5 max-w-sm text-[1.55rem] font-black leading-tight tracking-[-0.02em] text-[#180d2b]">
+                      <p className="mt-2 text-lg font-black leading-tight text-[#180d2b]">
                         {copy.dropdown.literature}
                       </p>
-                      <p className="mt-4 max-w-sm text-sm font-semibold leading-7 text-[#6f587f]">{copy.dropdown.literatureHint}</p>
+                      <p className="mt-2 text-xs font-medium leading-5 text-[#6f587f]">{copy.dropdown.literatureHint}</p>
                     </div>
-                    <div className="px-7 py-7">
-                      <p className="mb-4 text-xs font-black uppercase tracking-[0.24em] text-[#8a6a9c]">
+                    <div className="px-3 py-3">
+                      <p className="mb-1 px-2 py-1 text-[10px] font-black uppercase tracking-[0.18em] text-[#8a6a9c]">
                         {copy.dropdown.literatureListTitle}
                       </p>
-                      <div className="grid gap-3">
+                      <div className="grid gap-1">
                         {literatureItems.map((item, index) => {
                           const targetHref = `/${locale}${item.href}`;
                           const isCurrentPage = pathname === targetHref;
@@ -597,24 +660,24 @@ export function HeaderClient({
                               href={targetHref}
                               onClick={() => setDesktopDropdown(null)}
                               className={cn(
-                                "group flex items-start justify-between gap-4 rounded-[1rem] border-[3px] border-[#180d2b] px-5 py-4 shadow-[3px_4px_0_#180d2b] transition hover:-translate-y-0.5",
-                                isCurrentPage ? "bg-[#eee5ff]" : "bg-[#fff8ec] hover:bg-white",
+                                "group flex items-start justify-between gap-3 rounded-lg border px-3 py-2 transition",
+                                isCurrentPage ? "border-[#7c3aed]/25 bg-[#eee5ff]" : "border-transparent bg-transparent hover:bg-white",
                               )}
                             >
                               <div>
                                 <div className="flex items-center gap-3">
-                                  <span className="flex h-9 w-9 items-center justify-center rounded-full border-2 border-[#180d2b] bg-[#7c3aed] text-sm font-black text-white">
+                                  <span className="flex h-6 w-6 items-center justify-center rounded-full bg-[#7c3aed] text-[10px] font-black text-white">
                                     {index + 1}
                                   </span>
-                                  <h3 className="text-lg font-black text-[#180d2b] transition group-hover:text-[#7c3aed]">
+                                  <h3 className="text-sm font-black text-[#180d2b] transition group-hover:text-[#7c3aed]">
                                     {copy.literature[item.key]}
                                   </h3>
                                 </div>
-                                <p className="mt-3 pl-12 text-sm font-semibold leading-6 text-[#6f587f]">
+                                <p className="mt-0.5 pl-9 text-[10px] font-medium leading-4 text-[#6f587f]">
                                   {copy.dropdown.literatureDescriptions[item.key]}
                                 </p>
                               </div>
-                              <span className="pt-2 text-[#7c3aed] transition group-hover:translate-x-1">→</span>
+                              <span className="pt-1 text-sm text-[#7c3aed] transition group-hover:translate-x-0.5">→</span>
                             </Link>
                           );
                         })}
@@ -633,8 +696,8 @@ export function HeaderClient({
               openAgarathiGate();
             }}
             className={cn(
-              "rounded-full border-2 border-transparent px-4 py-2 text-[0.98rem] text-[#180d2b] transition hover:-translate-y-0.5 hover:border-[#180d2b] hover:bg-[#20bf73] hover:text-white hover:shadow-[2px_3px_0_#180d2b]",
-              pathname === `/${locale}/agarathi` && "border-[#180d2b] bg-[#20bf73] text-white shadow-[2px_3px_0_#180d2b]",
+              "rounded-lg px-3 py-2 text-sm text-[#180d2b] transition hover:bg-white/75",
+              pathname === `/${locale}/agarathi` && "bg-white/75",
               navTextClass(isTamil),
             )}
           >
@@ -646,8 +709,8 @@ export function HeaderClient({
               key={item.href}
               href={`/${locale}${item.href}`}
               className={cn(
-                "rounded-full border-2 border-transparent px-4 py-2 text-[0.98rem] text-[#180d2b] transition hover:-translate-y-0.5 hover:border-[#180d2b] hover:bg-[#ffc43d] hover:shadow-[2px_3px_0_#180d2b]",
-                pathname === `/${locale}${item.href}` && "border-[#180d2b] bg-[#ffc43d] shadow-[2px_3px_0_#180d2b]",
+                "rounded-lg px-3 py-2 text-sm text-[#180d2b] transition hover:bg-white/75",
+                pathname === `/${locale}${item.href}` && "bg-white/75",
                 navTextClass(isTamil),
               )}
             >
@@ -656,22 +719,99 @@ export function HeaderClient({
           ))}
         </nav>
 
-        <div className="ml-auto hidden items-center gap-3 xl:flex">
+        <div className="ml-auto hidden shrink-0 items-center gap-2 xl:flex">
+          <span
+            className="inline-flex h-8 items-center gap-1 rounded-full bg-[#241a13] px-2.5 text-[0.72rem] font-black tabular-nums text-[#ffc43d]"
+            aria-label={`${streakDays} ${mobileLabels.streak}`}
+            title={`${streakDays} ${mobileLabels.streak}`}
+          >
+            <MobileFlameIcon />
+            {streakDays}
+          </span>
+
+          <Link
+            href={`/${locale}/dashboard`}
+            className="relative inline-flex h-8 w-8 items-center justify-center rounded-full border border-[#180d2b]/15 bg-white/75 text-[#180d2b] transition hover:bg-white"
+            aria-label={mobileLabels.notifications}
+            onClick={() => {
+              setDesktopDropdown(null);
+              setMobileSearchOpen(false);
+            }}
+          >
+            <MobileBellIcon />
+            <span className="absolute right-1 top-1 h-1.5 w-1.5 rounded-full bg-[#ef4444] ring-1 ring-white" />
+          </Link>
+
+          <div className="relative">
+            <button
+              type="button"
+              className="inline-flex h-8 w-8 items-center justify-center rounded-full border border-[#180d2b]/15 bg-white/75 text-[#180d2b] transition hover:bg-white"
+              aria-label={mobileLabels.search}
+              aria-expanded={mobileSearchOpen}
+              onClick={() => {
+                setDesktopDropdown(null);
+                setMobileSearchOpen((current) => !current);
+              }}
+            >
+              <MobileSearchIcon />
+            </button>
+
+            {mobileSearchOpen ? (
+              <div className="absolute right-0 top-full z-50 w-80 pt-3">
+                <div className="rounded-xl border border-[#180d2b]/15 bg-[#fffaf0]/98 p-2 shadow-[0_18px_45px_-24px_rgba(24,13,43,0.65)] backdrop-blur-xl">
+                  <div className="flex items-center gap-2 rounded-lg bg-white px-3 py-2 text-[#180d2b]">
+                    <MobileSearchIcon />
+                    <input
+                      autoFocus
+                      type="search"
+                      value={mobileSearchQuery}
+                      onChange={(event) => setMobileSearchQuery(event.target.value)}
+                      placeholder={mobileLabels.placeholder}
+                      className="min-w-0 flex-1 bg-transparent text-sm font-semibold outline-none placeholder:text-[#8a7d70]"
+                    />
+                  </div>
+
+                  {normalizedMobileSearch ? (
+                    <div className="mt-2 grid max-h-64 gap-1 overflow-y-auto">
+                      {mobileSearchResults.length > 0 ? (
+                        mobileSearchResults.map((item) => (
+                          <Link
+                            key={item.href || "home"}
+                            href={`/${locale}${item.href}`}
+                            className="rounded-lg px-3 py-2 text-sm font-black text-[#180d2b] transition hover:bg-white"
+                            onClick={() => {
+                              setMobileSearchOpen(false);
+                              setMobileSearchQuery("");
+                            }}
+                          >
+                            {item.label}
+                          </Link>
+                        ))
+                      ) : (
+                        <p className="px-3 py-2 text-sm font-semibold text-[#8a7d70]">{mobileLabels.noResults}</p>
+                      )}
+                    </div>
+                  ) : null}
+                </div>
+              </div>
+            ) : null}
+          </div>
+
           {!isLoggedIn ? (
             <Link
               href={`/${locale}/auth/login`}
               className={cn(
-                "rounded-full border-2 border-[#180d2b] bg-white px-4 py-2 text-[#180d2b] shadow-[2px_3px_0_#180d2b] transition hover:-translate-y-0.5 hover:bg-[#c6ff2e]",
-                isTamil ? "text-[0.98rem] font-black tracking-[0.01em]" : "text-[0.98rem] font-black",
+                "rounded-full border-2 border-[#180d2b] bg-white px-4 py-2 text-[#180d2b] shadow-[2px_2px_0_#180d2b] transition hover:bg-[#ffc43d]",
+                isTamil ? "text-xs font-black tracking-[0.01em]" : "text-xs font-black",
               )}
             >
               {copy.login}
             </Link>
           ) : null}
 
-          <LanguageSwitcher locale={locale} />
+          <LanguageSwitcher locale={locale} variant="header" />
 
-          {isLoggedIn ? <LogoutButton locale={locale} /> : null}
+          {isLoggedIn ? <LogoutButton locale={locale} variant="header" /> : null}
         </div>
 
         <button
@@ -727,112 +867,114 @@ export function HeaderClient({
       ) : null}
 
       <div className={cn("max-h-[calc(100dvh-64px)] overflow-y-auto overscroll-contain border-t border-[#180d2b]/15 bg-[#fbf1e2] sm:max-h-[calc(100dvh-72px)] xl:hidden", open ? "block" : "hidden")}>
-        <div className="mx-auto flex max-w-[48rem] flex-col gap-1 px-4 py-4 sm:px-6">
-          <Link
-            href={`/${locale}`}
-            className={cn(
-              "rounded-[1rem] border-2 border-[#180d2b] bg-white px-4 py-3 text-[#180d2b] shadow-[2px_3px_0_#180d2b] transition hover:-translate-y-0.5 hover:bg-[#ffc43d]",
-              isTamil ? "text-[1rem] font-black tracking-[0.01em]" : "text-sm font-black",
-            )}
-            onClick={() => setOpen(false)}
-          >
-            {copy.nav.home}
-          </Link>
-
-          <div className="mt-2 rounded-[1rem] border-[3px] border-[#180d2b] bg-[#eee5ff] px-4 py-3 shadow-[3px_4px_0_#180d2b]">
-            <p className="text-xs font-black uppercase tracking-[0.24em] text-[#7c3aed]">
-              {copy.dropdown.learningEyebrow}
-            </p>
-            <p className="mt-2 text-sm font-semibold leading-6 text-[#6f587f]">{copy.dropdown.learningEmpty}</p>
-          </div>
-
-          <div className="mt-2 rounded-[1rem] border-[3px] border-[#180d2b] bg-[#fff2cf] px-4 py-3 shadow-[3px_4px_0_#180d2b]">
-            <p className="text-xs font-black uppercase tracking-[0.24em] text-[#ff9f1c]">
-              {copy.dropdown.games}
-            </p>
-            <div className="mt-2 flex flex-col gap-1">
-              {gameItems.map((item) => (
-                <Link
-                  key={item.href}
-                  href={`/${locale}${item.href}`}
-                  className={cn(
-                    "rounded-lg px-3 py-2 text-[#180d2b] transition hover:bg-white",
-                    isTamil ? "text-[0.98rem] font-black tracking-[0.01em]" : "text-sm font-black",
-                  )}
-                  onClick={() => setOpen(false)}
-                >
-                  {copy.games[item.key]}
-                </Link>
-              ))}
+        <div className="mx-auto max-w-[48rem] px-2 py-2 sm:px-6 sm:py-3">
+          <div className="rounded-[1rem] bg-[#f8e8c4] p-3 text-[#29231c] shadow-[0_16px_36px_-30px_rgba(41,35,28,0.9)] sm:p-4">
+            <div className="flex items-center justify-between gap-3 px-1">
+              <p className={`text-sm font-medium text-[#725a28] ${isTamil ? "font-tamil" : ""}`}>{mobileMenuLabels.heading}</p>
+              <div className="flex items-center rounded-[0.55rem] bg-white p-0.5">
+                {locales.map((option) => {
+                  const withoutLocale = pathname.replace(new RegExp(`^/${locale}`), "") || "/";
+                  return (
+                    <Link
+                      key={option}
+                      href={`/${option}${withoutLocale === "/" ? "" : withoutLocale}`}
+                      className={`rounded-[0.45rem] px-2.5 py-2 text-[10px] font-bold transition ${
+                        option === locale ? "bg-[#2f7fdf] text-white" : "text-[#8a7561] hover:bg-[#fff8ec]"
+                      }`}
+                      onClick={() => setOpen(false)}
+                    >
+                      {option === "en" ? "EN" : option === "fr" ? "FR" : localeLabels[option]}
+                    </Link>
+                  );
+                })}
+              </div>
             </div>
-          </div>
 
-          <div className="mt-2 rounded-[1rem] border-[3px] border-[#180d2b] bg-[#eee5ff] px-4 py-3 shadow-[3px_4px_0_#180d2b]">
-            <p className="text-xs font-black uppercase tracking-[0.24em] text-[#7c3aed]">
-              {copy.dropdown.literature}
-            </p>
-            <div className="mt-2 flex flex-col gap-1">
-              {literatureItems.map((item) => (
-                <Link
-                  key={item.href}
-                  href={`/${locale}${item.href}`}
-                  className={cn(
-                    "rounded-lg px-3 py-2 text-[#180d2b] transition hover:bg-white",
-                    isTamil ? "text-[0.98rem] font-black tracking-[0.01em]" : "text-sm font-black",
-                  )}
-                  onClick={() => setOpen(false)}
-                >
-                  {copy.literature[item.key]}
-                </Link>
-              ))}
-            </div>
-          </div>
-
-          <button
-            type="button"
-            className={cn(
-              "mt-2 rounded-[1rem] border-2 border-[#180d2b] bg-white px-4 py-3 text-left text-[#180d2b] shadow-[2px_3px_0_#180d2b] transition hover:-translate-y-0.5 hover:bg-[#20bf73] hover:text-white",
-              isTamil ? "text-[1rem] font-black tracking-[0.01em]" : "text-sm font-black",
-            )}
-            onClick={() => {
-              setOpen(false);
-              openAgarathiGate();
-            }}
-          >
-            {copy.agarathi}
-          </button>
-
-          {navItems.slice(1).map((item) => (
-            <Link
-              key={item.href}
-              href={`/${locale}${item.href}`}
-              className={cn(
-                "rounded-[1rem] border-2 border-[#180d2b] bg-white px-4 py-3 text-[#180d2b] shadow-[2px_3px_0_#180d2b] transition hover:-translate-y-0.5 hover:bg-[#ffc43d]",
-                isTamil ? "text-[1rem] font-black tracking-[0.01em]" : "text-sm font-black",
-              )}
-              onClick={() => setOpen(false)}
-            >
-              {copy.nav[item.key]}
+            <Link href={`/${locale}`} className="mt-3 flex items-center gap-2 rounded-[0.7rem] border border-[#dfd5c2] bg-white px-3 py-2.5 text-sm font-medium" onClick={() => setOpen(false)}>
+              <span className="text-[#4f9bd8]"><MobileNavIcon kind="home" /></span>
+              {copy.nav.home}
             </Link>
-          ))}
 
-          <div className="mt-2 flex flex-wrap items-center gap-3 border-t-[3px] border-[#180d2b] pt-4">
-            {!isLoggedIn ? (
-              <Link
-                href={`/${locale}/auth/login`}
-                className={cn(
-                  "rounded-full border-2 border-[#180d2b] bg-white px-4 py-2 text-[#180d2b] shadow-[2px_3px_0_#180d2b] transition hover:-translate-y-0.5 hover:bg-[#c6ff2e]",
-                  isTamil ? "text-[0.98rem] font-black tracking-[0.01em]" : "text-sm font-black",
-                )}
-                onClick={() => setOpen(false)}
+            <div className="mt-2 rounded-[0.7rem] border border-[#dfd5c2] bg-white px-3 py-2.5">
+              <p className="text-xs font-medium">{mobileMenuLabels.learning}</p>
+              <p className="mt-0.5 text-[10px] text-[#8a7561]">{mobileMenuLabels.soon}</p>
+            </div>
+
+            <div className="mt-3 overflow-hidden rounded-[0.7rem] border border-[#dfd5c2] bg-white">
+              <button
+                type="button"
+                className="flex w-full items-center gap-2 px-3 py-2.5 text-left text-xs font-medium"
+                aria-expanded={mobileMenuSection === "games"}
+                onClick={() => setMobileMenuSection((current) => (current === "games" ? null : "games"))}
               >
-                {copy.login}
+                <MobileNavIcon kind="target" />
+                <span className={isTamil ? "font-tamil" : ""}>{copy.dropdown.games}</span>
+                <span className="text-[9px] text-[#a38f74]">{mobileMenuLabels.games}</span>
+                <span className={`ml-auto transition ${mobileMenuSection === "games" ? "rotate-180" : ""}`}>⌄</span>
+              </button>
+
+              {mobileMenuSection === "games" ? (
+                <div className="border-t border-[#eadfcb] bg-[#fff9ed] px-2 py-1.5">
+                  {gameItems.map((item) => (
+                    <Link key={item.href} href={`/${locale}${item.href}`} className="flex items-center gap-2 rounded-[0.55rem] px-2 py-2 text-xs font-medium transition hover:bg-white" onClick={() => setOpen(false)}>
+                      <MobileNavIcon kind={gameItemIcons[item.key]} />
+                      {copy.games[item.key]}
+                    </Link>
+                  ))}
+                </div>
+              ) : null}
+            </div>
+
+            <div className="mt-2 overflow-hidden rounded-[0.7rem] border border-[#dfd5c2] bg-white">
+              <button
+                type="button"
+                className="flex w-full items-center gap-2 px-3 py-2.5 text-left text-xs font-medium"
+                aria-expanded={mobileMenuSection === "literature"}
+                onClick={() => setMobileMenuSection((current) => (current === "literature" ? null : "literature"))}
+              >
+                <MobileNavIcon kind="books" />
+                <span className={isTamil ? "font-tamil" : ""}>{copy.dropdown.literature}</span>
+                <span className="text-[9px] text-[#a38f74]">{mobileMenuLabels.literature}</span>
+                <span className={`ml-auto transition ${mobileMenuSection === "literature" ? "rotate-180" : ""}`}>⌄</span>
+              </button>
+
+              {mobileMenuSection === "literature" ? (
+                <div className="border-t border-[#eadfcb] bg-[#fff9ed] px-2 py-1.5">
+                  {literatureItems.map((item) => (
+                    <Link key={item.href} href={`/${locale}${item.href}`} className="flex items-center gap-2 rounded-[0.55rem] px-2 py-2 text-xs font-medium transition hover:bg-white" onClick={() => setOpen(false)}>
+                      <MobileNavIcon kind="book" />
+                      {copy.literature[item.key]}
+                    </Link>
+                  ))}
+                </div>
+              ) : null}
+            </div>
+
+            <p className="mb-1.5 mt-3 text-[10px] font-medium uppercase tracking-wide text-[#a38f74]">{mobileMenuLabels.quick}</p>
+            <div className="grid grid-cols-2 gap-2">
+              <button type="button" className="flex items-center gap-2 rounded-[0.6rem] border border-[#dfd5c2] bg-white px-3 py-2 text-left text-xs font-medium" onClick={() => { setOpen(false); openAgarathiGate(); }}>
+                <MobileNavIcon kind="book" /> {copy.agarathi}
+              </button>
+              <Link href={`/${locale}/pricing`} className="flex items-center gap-2 rounded-[0.6rem] border border-[#dfd5c2] bg-white px-3 py-2 text-xs font-medium" onClick={() => setOpen(false)}>
+                <MobileNavIcon kind="tag" /> {copy.nav.pricing}
               </Link>
-            ) : null}
+              <Link href={`/${locale}/dashboard`} className="flex items-center gap-2 rounded-[0.6rem] border border-[#dfd5c2] bg-white px-3 py-2 text-xs font-medium" onClick={() => setOpen(false)}>
+                <MobileNavIcon kind="grid" /> {copy.nav.dashboard}
+              </Link>
+              <Link href={`/${locale}/admin`} className="flex items-center gap-2 rounded-[0.6rem] border border-[#dfd5c2] bg-white px-3 py-2 text-xs font-medium" onClick={() => setOpen(false)}>
+                <MobileNavIcon kind="shield" /> {copy.nav.admin}
+              </Link>
+            </div>
 
-            <LanguageSwitcher locale={locale} />
-
-            {isLoggedIn ? <LogoutButton locale={locale} /> : null}
+            <div className="mt-3">
+              {isLoggedIn ? (
+                <LogoutButton locale={locale} variant="menu" />
+              ) : (
+                <Link href={`/${locale}/auth/login`} className="block rounded-[0.65rem] border border-white/55 px-3 py-2.5 text-center text-xs font-medium text-[#e65b59]" onClick={() => setOpen(false)}>
+                  {copy.login}
+                </Link>
+              )}
+            </div>
           </div>
         </div>
       </div>
