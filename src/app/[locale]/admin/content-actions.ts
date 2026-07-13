@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { z } from "zod";
 
+import { normalizeImageUrl } from "@/lib/image-urls";
 import { createSupabaseAdminClient } from "@/lib/supabase/admin";
 import { hasSupabaseEnv } from "@/lib/supabase/config";
 import type { AuthState } from "@/types";
@@ -72,7 +73,7 @@ const imageHuntSchema = z.object({
   targets: z.string().min(2),
 });
 
-const nimishamSchema = z.object({
+const wordHuntSchema = z.object({
   id: z.string().optional(),
   locale: z.string(),
   title: z.string().min(2),
@@ -86,7 +87,7 @@ const nimishamSchema = z.object({
   words: z.string().min(2),
 });
 
-const nimishamWordSchema = z.object({
+const wordHuntWordSchema = z.object({
   id: z.string().min(1),
   word: z.string().min(1),
   translation: z
@@ -98,6 +99,90 @@ const nimishamWordSchema = z.object({
     .optional()
     .default({}),
   isCorrect: z.boolean(),
+});
+
+const kathaigalSchema = z.object({
+  id: z.string().optional(),
+  locale: z.string(),
+  title: z.string().min(2),
+  slug: z.string().min(2),
+  description: z.string().min(2),
+  difficulty: z.enum(["beginner", "intermediate", "advanced"]),
+  coverImageUrl: z.string().optional().default(""),
+  paragraphs: z.string().min(2),
+  questions: z.string().optional().default("[]"),
+});
+
+const kathaigalParagraphSchema = z.object({
+  id: z.string().min(1),
+  textTa: z.string().min(2),
+  imageUrl: z.string().min(1),
+  imageAlt: z
+    .object({
+      en: z.string().optional(),
+      fr: z.string().optional(),
+      ta: z.string().optional(),
+    })
+    .optional()
+    .default({}),
+});
+
+const kathaigalQuestionSchema = z.object({
+  id: z.string().min(1),
+  questionTa: z.string().min(2),
+  choices: z.array(z.string().min(1)).length(4),
+  correctChoiceIndex: z.coerce.number().int().min(0).max(3),
+});
+
+const thirukkuralSchema = z.object({
+  id: z.string().optional(),
+  locale: z.string(),
+  number: z.coerce.number().int().positive(),
+  title: z.string().min(2),
+  slug: z.string().min(2),
+  section: z.string().optional().default(""),
+  chapter: z.string().optional().default(""),
+  difficulty: z.enum(["beginner", "intermediate", "advanced"]),
+  kuralLines: z.string().min(2),
+  porul: z.string().min(2),
+  quiz: z.string().optional().default("[]"),
+  fillBlanks: z.string().optional().default("[]"),
+});
+
+const thirukkuralQuizSchema = z.object({
+  id: z.string().min(1),
+  question: z.string().min(2),
+  choices: z.array(z.string().min(1)).length(4),
+  correctChoiceIndex: z.coerce.number().int().min(0).max(3),
+});
+
+const thirukkuralFillBlankSchema = z.object({
+  id: z.string().min(1),
+  template: z.string().min(2),
+  answer: z.string().min(1),
+  options: z.array(z.string().min(1)).min(2),
+});
+
+const thirukkuralCsvHeaders = [
+  "number",
+  "title",
+  "section",
+  "chapter",
+  "difficulty",
+  "line_1",
+  "line_2",
+  "porul",
+] as const;
+
+const thirukkuralCsvRowSchema = z.object({
+  number: z.coerce.number().int().min(1).max(1330),
+  title: z.string().optional().default(""),
+  section: z.string().optional().default(""),
+  chapter: z.string().optional().default(""),
+  difficulty: z.union([z.enum(["beginner", "intermediate", "advanced"]), z.literal("")]),
+  line_1: z.string().min(1),
+  line_2: z.string().min(1),
+  porul: z.string().min(2),
 });
 
 const dictionarySchema = z.object({
@@ -234,6 +319,53 @@ function parseDictionaryCsv(text: string) {
     }
 
     return parsed.data;
+  });
+}
+
+function parseThirukkuralCsv(text: string) {
+  const normalizedText = text.replace(/^\uFEFF/, "").replace(/\r\n/g, "\n").replace(/\r/g, "\n");
+  const lines = normalizedText
+    .split("\n")
+    .map((line) => line.trim())
+    .filter(Boolean);
+
+  if (lines.length < 2) {
+    throw new Error("Le CSV doit contenir une ligne d'en-tete et au moins un kural.");
+  }
+
+  const headers = parseCsvLine(lines[0]);
+  const expectedHeaders = [...thirukkuralCsvHeaders];
+
+  if (headers.length !== expectedHeaders.length || headers.some((header, index) => header !== expectedHeaders[index])) {
+    throw new Error(`Format CSV invalide. En-tete attendu: ${expectedHeaders.join(", ")}`);
+  }
+
+  return lines.slice(1).map((line, index) => {
+    const lineNumber = index + 2;
+    const values = parseCsvLine(line);
+
+    if (values.length !== expectedHeaders.length) {
+      throw new Error(`Ligne ${lineNumber}: ${expectedHeaders.length} colonnes attendues, ${values.length} recues.`);
+    }
+
+    const rawRow = Object.fromEntries(expectedHeaders.map((header, valueIndex) => [header, values[valueIndex]]));
+    const parsed = thirukkuralCsvRowSchema.safeParse(rawRow);
+
+    if (!parsed.success) {
+      throw new Error(`Ligne ${lineNumber}: ${parsed.error.issues[0]?.message ?? "donnees invalides"}.`);
+    }
+
+    return {
+      number: parsed.data.number,
+      title: parsed.data.title.trim() || `குறள் ${parsed.data.number}`,
+      slug: `thirukkural-${parsed.data.number}`,
+      section: parsed.data.section.trim(),
+      chapter: parsed.data.chapter.trim(),
+      difficulty: parsed.data.difficulty || "beginner",
+      kural_lines: [parsed.data.line_1.trim(), parsed.data.line_2.trim()],
+      porul: parsed.data.porul.trim(),
+      is_active: true,
+    };
   });
 }
 
@@ -630,21 +762,21 @@ export async function deleteImageHuntAction(formData: FormData) {
   revalidatePath(`/${locale}/admin/image-hunt`);
 }
 
-export async function upsertNimishamAction(
+export async function upsertWordHuntAction(
   _prev: AuthState,
   formData: FormData,
 ): Promise<AuthState> {
-  const parsed = nimishamSchema.safeParse(Object.fromEntries(formData));
+  const parsed = wordHuntSchema.safeParse(Object.fromEntries(formData));
 
   if (!parsed.success) {
     return stateError(parsed.error.issues[0]?.message);
   }
 
-  let words: Array<z.infer<typeof nimishamWordSchema>>;
+  let words: Array<z.infer<typeof wordHuntWordSchema>>;
 
   try {
     const rawWords = JSON.parse(parsed.data.words) as unknown;
-    const wordList = z.array(nimishamWordSchema).min(1).safeParse(rawWords);
+    const wordList = z.array(wordHuntWordSchema).min(1).safeParse(rawWords);
 
     if (!wordList.success) {
       return stateError(wordList.error.issues[0]?.message ?? "Invalid words.");
@@ -668,7 +800,7 @@ export async function upsertNimishamAction(
   }
 
   if (!hasSupabaseEnv()) {
-    return missingSupabaseState("Nimisham exercise");
+    return missingSupabaseState("Word Hunt exercise");
   }
 
   try {
@@ -690,7 +822,7 @@ export async function upsertNimishamAction(
 
     if (parsed.data.id) {
       const { error } = await supabase
-        .from("nimisham_exercises")
+        .from("word_hunt_exercises")
         .update(payload)
         .eq("id", parsed.data.id);
 
@@ -698,16 +830,16 @@ export async function upsertNimishamAction(
         throw new Error(error.message);
       }
     } else {
-      const { error } = await supabase.from("nimisham_exercises").insert(payload);
+      const { error } = await supabase.from("word_hunt_exercises").insert(payload);
 
       if (error) {
         throw new Error(error.message);
       }
     }
 
-    revalidatePath(`/${parsed.data.locale}/admin/nimisham`);
-    revalidatePath(`/${parsed.data.locale}/nimisham`);
-    redirect(`/${parsed.data.locale}/admin/nimisham`);
+    revalidatePath(`/${parsed.data.locale}/admin/word-hunt`);
+    revalidatePath(`/${parsed.data.locale}/word-hunt`);
+    redirect(`/${parsed.data.locale}/admin/word-hunt`);
   } catch (error) {
     if (isRedirectLikeError(error)) {
       throw error;
@@ -717,16 +849,301 @@ export async function upsertNimishamAction(
   }
 }
 
-export async function deleteNimishamAction(formData: FormData) {
+export async function deleteWordHuntAction(formData: FormData) {
   const id = String(formData.get("id") ?? "");
   const locale = String(formData.get("locale") ?? "en");
 
   if (hasSupabaseEnv()) {
     const supabase = requireAdminClient();
-    await supabase.from("nimisham_exercises").delete().eq("id", id);
+    await supabase.from("word_hunt_exercises").delete().eq("id", id);
   }
 
-  revalidatePath(`/${locale}/admin/nimisham`);
+  revalidatePath(`/${locale}/admin/word-hunt`);
+}
+
+export async function upsertKathaigalAction(
+  _prev: AuthState,
+  formData: FormData,
+): Promise<AuthState> {
+  const parsed = kathaigalSchema.safeParse(Object.fromEntries(formData));
+
+  if (!parsed.success) {
+    return stateError(parsed.error.issues[0]?.message);
+  }
+
+  let paragraphs: Array<z.infer<typeof kathaigalParagraphSchema>>;
+
+  try {
+    const rawParagraphs = JSON.parse(parsed.data.paragraphs) as unknown;
+    const paragraphList = z.array(kathaigalParagraphSchema).min(1).safeParse(rawParagraphs);
+
+    if (!paragraphList.success) {
+      return stateError(paragraphList.error.issues[0]?.message ?? "Invalid paragraphs.");
+    }
+
+    paragraphs = paragraphList.data.map((paragraph, index) => ({
+      ...paragraph,
+      id: paragraph.id || `paragraph-${index + 1}`,
+      imageUrl: normalizeImageUrl(paragraph.imageUrl),
+      imageAlt: {
+        en: paragraph.imageAlt.en || parsed.data.title,
+        fr: paragraph.imageAlt.fr || paragraph.imageAlt.en || parsed.data.title,
+        ta: paragraph.imageAlt.ta || parsed.data.title,
+      },
+    }));
+  } catch {
+    return stateError("Invalid paragraphs JSON.");
+  }
+
+  let questions: Array<z.infer<typeof kathaigalQuestionSchema>>;
+
+  try {
+    const rawQuestions = JSON.parse(parsed.data.questions) as unknown;
+    const questionList = z.array(kathaigalQuestionSchema).safeParse(rawQuestions);
+
+    if (!questionList.success) {
+      return stateError(questionList.error.issues[0]?.message ?? "Invalid questions.");
+    }
+
+    questions = questionList.data.map((question, index) => ({
+      ...question,
+      id: question.id || `question-${index + 1}`,
+      choices: question.choices.map((choice) => choice.trim()),
+    }));
+  } catch {
+    return stateError("Invalid questions JSON.");
+  }
+
+  if (!hasSupabaseEnv()) {
+    return missingSupabaseState("Kathaigal story");
+  }
+
+  try {
+    const supabase = requireAdminClient();
+    const payload = {
+      title: parsed.data.title,
+      slug: parsed.data.slug,
+      description: parsed.data.description,
+      difficulty: parsed.data.difficulty,
+      cover_image_url: normalizeImageUrl(parsed.data.coverImageUrl) || null,
+      paragraphs,
+      questions,
+      is_active: true,
+    };
+
+    if (parsed.data.id) {
+      const { error } = await supabase
+        .from("kathaigal_stories")
+        .update(payload)
+        .eq("id", parsed.data.id);
+
+      if (error) {
+        throw new Error(error.message);
+      }
+    } else {
+      const { error } = await supabase.from("kathaigal_stories").insert(payload);
+
+      if (error) {
+        throw new Error(error.message);
+      }
+    }
+
+    revalidatePath(`/${parsed.data.locale}/admin/kathaigal`);
+    revalidatePath(`/${parsed.data.locale}/kathaigal`);
+    redirect(`/${parsed.data.locale}/admin/kathaigal`);
+  } catch (error) {
+    if (isRedirectLikeError(error)) {
+      throw error;
+    }
+
+    return stateError(error);
+  }
+}
+
+export async function deleteKathaigalAction(formData: FormData) {
+  const id = String(formData.get("id") ?? "");
+  const locale = String(formData.get("locale") ?? "en");
+
+  if (hasSupabaseEnv()) {
+    const supabase = requireAdminClient();
+    await supabase.from("kathaigal_stories").delete().eq("id", id);
+  }
+
+  revalidatePath(`/${locale}/admin/kathaigal`);
+}
+
+export async function upsertThirukkuralAction(
+  _prev: AuthState,
+  formData: FormData,
+): Promise<AuthState> {
+  const parsed = thirukkuralSchema.safeParse(Object.fromEntries(formData));
+
+  if (!parsed.success) {
+    return stateError(parsed.error.issues[0]?.message);
+  }
+
+  let quiz: Array<z.infer<typeof thirukkuralQuizSchema>>;
+  let fillBlanks: Array<z.infer<typeof thirukkuralFillBlankSchema>>;
+
+  try {
+    const quizList = z.array(thirukkuralQuizSchema).safeParse(JSON.parse(parsed.data.quiz) as unknown);
+
+    if (!quizList.success) {
+      return stateError(quizList.error.issues[0]?.message ?? "Invalid quiz.");
+    }
+
+    quiz = quizList.data.map((question, index) => ({
+      ...question,
+      id: question.id || `quiz-${index + 1}`,
+      choices: question.choices.map((choice) => choice.trim()),
+    }));
+  } catch {
+    return stateError("Invalid quiz JSON.");
+  }
+
+  try {
+    const fillBlankList = z.array(thirukkuralFillBlankSchema).safeParse(JSON.parse(parsed.data.fillBlanks) as unknown);
+
+    if (!fillBlankList.success) {
+      return stateError(fillBlankList.error.issues[0]?.message ?? "Invalid fill blank exercises.");
+    }
+
+    fillBlanks = fillBlankList.data.map((exercise, index) => ({
+      ...exercise,
+      id: exercise.id || `blank-${index + 1}`,
+      options: exercise.options.map((option) => option.trim()),
+    }));
+  } catch {
+    return stateError("Invalid fill blanks JSON.");
+  }
+
+  if (!hasSupabaseEnv()) {
+    return missingSupabaseState("Thirukkural lesson");
+  }
+
+  try {
+    const supabase = requireAdminClient();
+    const payload = {
+      number: parsed.data.number,
+      title: parsed.data.title,
+      slug: parsed.data.slug,
+      section: parsed.data.section,
+      chapter: parsed.data.chapter,
+      difficulty: parsed.data.difficulty,
+      kural_lines: parsed.data.kuralLines
+        .split(/\r?\n/)
+        .map((line) => line.trim())
+        .filter(Boolean),
+      porul: parsed.data.porul,
+      quiz,
+      fill_blanks: fillBlanks,
+      is_active: true,
+    };
+
+    if (parsed.data.id) {
+      const { error } = await supabase
+        .from("thirukkural_lessons")
+        .update(payload)
+        .eq("id", parsed.data.id);
+
+      if (error) {
+        throw new Error(error.message);
+      }
+    } else {
+      const { error } = await supabase.from("thirukkural_lessons").insert(payload);
+
+      if (error) {
+        throw new Error(error.message);
+      }
+    }
+
+    revalidatePath(`/${parsed.data.locale}/admin/thirukkural`);
+    revalidatePath(`/${parsed.data.locale}/thirukkural`);
+    redirect(`/${parsed.data.locale}/admin/thirukkural`);
+  } catch (error) {
+    if (isRedirectLikeError(error)) {
+      throw error;
+    }
+
+    return stateError(error);
+  }
+}
+
+export async function deleteThirukkuralAction(formData: FormData) {
+  const id = String(formData.get("id") ?? "");
+  const locale = String(formData.get("locale") ?? "en");
+
+  if (hasSupabaseEnv()) {
+    const supabase = requireAdminClient();
+    await supabase.from("thirukkural_lessons").delete().eq("id", id);
+  }
+
+  revalidatePath(`/${locale}/admin/thirukkural`);
+}
+
+export async function importThirukkuralCsvAction(
+  _prev: AuthState,
+  formData: FormData,
+): Promise<AuthState> {
+  const file = formData.get("csvFile");
+
+  if (!(file instanceof File) || file.size === 0) {
+    return stateError("Ajoutez un fichier CSV a importer.");
+  }
+
+  if (!file.name.toLowerCase().endsWith(".csv")) {
+    return stateError("Le fichier doit etre un CSV.");
+  }
+
+  if (file.size > 10 * 1024 * 1024) {
+    return stateError("Le fichier CSV ne doit pas depasser 10 Mo.");
+  }
+
+  if (!hasSupabaseEnv()) {
+    return missingSupabaseState("Thirukkural CSV import");
+  }
+
+  try {
+    const rows = parseThirukkuralCsv(await file.text());
+    const seenNumbers = new Set<number>();
+    const duplicate = rows.find((row) => {
+      if (seenNumbers.has(row.number)) {
+        return true;
+      }
+
+      seenNumbers.add(row.number);
+      return false;
+    });
+
+    if (duplicate) {
+      return stateError(`Le kural numero ${duplicate.number} apparait plusieurs fois dans le CSV.`);
+    }
+
+    const supabase = requireAdminClient();
+    const batchSize = 100;
+
+    for (let index = 0; index < rows.length; index += batchSize) {
+      const { error } = await supabase
+        .from("thirukkural_lessons")
+        .upsert(rows.slice(index, index + batchSize), { onConflict: "number" });
+
+      if (error) {
+        throw new Error(error.message);
+      }
+    }
+
+    for (const locale of ["en", "ta", "fr"] as const) {
+      revalidatePath(`/${locale}/admin/thirukkural`);
+      revalidatePath(`/${locale}/thirukkural`);
+    }
+
+    return {
+      ok: true,
+      message: `${rows.length} kural${rows.length > 1 ? "s" : ""} importe${rows.length > 1 ? "s" : ""} ou mis a jour.`,
+    };
+  } catch (error) {
+    return stateError(error);
+  }
 }
 
 export async function upsertDictionaryAction(

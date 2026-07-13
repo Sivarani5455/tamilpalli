@@ -1,4 +1,6 @@
-import { categories, fillBlankExercises, homeSplashSlides, imageHuntExercises, nimishamExercises, wordSearchGrids } from "@/lib/mock-data";
+import type { SupabaseClient } from "@supabase/supabase-js";
+
+import { categories, fillBlankExercises, homeSplashSlides, imageHuntExercises, kathaigalStories, thirukkuralLessons, wordHuntExercises, wordSearchGrids } from "@/lib/mock-data";
 import { createSupabaseAdminClient } from "@/lib/supabase/admin";
 import { hasSupabaseEnv } from "@/lib/supabase/config";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
@@ -9,8 +11,10 @@ import type {
   FillBlankExercise,
   ImageHuntExercise,
   ImageHuntProgress,
+  KathaigalStory,
   Locale,
-  NimishamExercise,
+  ThirukkuralLesson,
+  WordHuntExercise,
   SplashSlide,
   WordSearchGrid,
 } from "@/types";
@@ -96,15 +100,46 @@ type ImageHuntExerciseRow = {
   }>;
 };
 
-type NimishamExerciseRow = {
+type WordHuntExerciseRow = {
   id: string;
   slug: string;
   title: string;
   description: string;
-  difficulty: NimishamExercise["difficulty"];
+  difficulty: WordHuntExercise["difficulty"];
   time_limit_seconds: number;
   prompt_translation: Record<string, string>;
-  words: NimishamExercise["words"];
+  words: WordHuntExercise["words"];
+  is_active?: boolean;
+  created_at?: string;
+  allowed_plans?: Array<"discovery" | "standard" | "elite">;
+};
+
+type KathaigalStoryRow = {
+  id: string;
+  slug: string;
+  title: string;
+  description: string;
+  difficulty: KathaigalStory["difficulty"];
+  cover_image_url: string | null;
+  paragraphs: KathaigalStory["paragraphs"];
+  questions?: KathaigalStory["questions"] | null;
+  is_active?: boolean;
+  created_at?: string;
+  allowed_plans?: Array<"discovery" | "standard" | "elite">;
+};
+
+type ThirukkuralLessonRow = {
+  id: string;
+  slug: string;
+  number: number;
+  title: string;
+  section: string;
+  chapter: string;
+  difficulty: ThirukkuralLesson["difficulty"];
+  kural_lines: string[];
+  porul: string;
+  quiz?: ThirukkuralLesson["quiz"] | null;
+  fill_blanks?: ThirukkuralLesson["fillBlanks"] | null;
   is_active?: boolean;
   created_at?: string;
   allowed_plans?: Array<"discovery" | "standard" | "elite">;
@@ -289,7 +324,7 @@ function mapImageHuntRows(rows: ImageHuntExerciseRow[]) {
   }));
 }
 
-function mapNimishamRows(rows: NimishamExerciseRow[]) {
+function mapWordHuntRows(rows: WordHuntExerciseRow[]) {
   return rows.map((row) => ({
     id: row.id,
     slug: row.slug,
@@ -297,8 +332,41 @@ function mapNimishamRows(rows: NimishamExerciseRow[]) {
     description: row.description,
     difficulty: row.difficulty,
     timeLimitSeconds: row.time_limit_seconds,
-    prompt: row.prompt_translation as NimishamExercise["prompt"],
+    prompt: row.prompt_translation as WordHuntExercise["prompt"],
     words: row.words,
+    isActive: row.is_active,
+    createdAt: row.created_at,
+  }));
+}
+
+function mapKathaigalRows(rows: KathaigalStoryRow[]) {
+  return rows.map((row) => ({
+    id: row.id,
+    slug: row.slug,
+    title: row.title,
+    description: row.description,
+    difficulty: row.difficulty,
+    coverImageUrl: row.cover_image_url,
+    paragraphs: row.paragraphs,
+    questions: row.questions ?? [],
+    isActive: row.is_active,
+    createdAt: row.created_at,
+  }));
+}
+
+function mapThirukkuralRows(rows: ThirukkuralLessonRow[]): ThirukkuralLesson[] {
+  return rows.map((row) => ({
+    id: row.id,
+    slug: row.slug,
+    number: row.number,
+    title: row.title,
+    section: row.section,
+    chapter: row.chapter,
+    difficulty: row.difficulty,
+    kuralLines: row.kural_lines,
+    porul: row.porul,
+    quiz: row.quiz ?? [],
+    fillBlanks: row.fill_blanks ?? [],
     isActive: row.is_active,
     createdAt: row.created_at,
   }));
@@ -577,49 +645,160 @@ export async function getImageHuntExercise(id: string) {
   return exercises.find((entry) => entry.id === id) ?? null;
 }
 
-export async function getNimishamExercises() {
+export async function getWordHuntExercises() {
   if (!hasSupabaseEnv()) {
-    return nimishamExercises;
+    return wordHuntExercises;
   }
 
   const supabase = await createSupabaseServerClient();
 
   if (!supabase) {
-    return nimishamExercises;
+    return wordHuntExercises;
   }
 
   const { data } = await supabase
-    .from("nimisham_exercises")
+    .from("word_hunt_exercises")
     .select("id, slug, title, description, difficulty, time_limit_seconds, prompt_translation, words, is_active, created_at, allowed_plans")
     .eq("is_active", true)
     .order("created_at", { ascending: false });
 
   if (data && data.length > 0) {
-    return mapNimishamRows(data as NimishamExerciseRow[]);
+    return mapWordHuntRows(data as WordHuntExerciseRow[]);
   }
 
   const adminClient = createSupabaseAdminClient();
 
   if (!adminClient) {
-    return nimishamExercises;
+    return wordHuntExercises;
   }
 
   const { data: adminData } = await adminClient
-    .from("nimisham_exercises")
+    .from("word_hunt_exercises")
     .select("id, slug, title, description, difficulty, time_limit_seconds, prompt_translation, words, is_active, created_at, allowed_plans")
     .eq("is_active", true)
     .order("created_at", { ascending: false });
 
   if (!adminData) {
-    return nimishamExercises;
+    return wordHuntExercises;
   }
 
-  return mapNimishamRows(adminData as NimishamExerciseRow[]);
+  return mapWordHuntRows(adminData as WordHuntExerciseRow[]);
 }
 
-export async function getNimishamExercise(id: string) {
-  const exercises = await getNimishamExercises();
+export async function getWordHuntExercise(id: string) {
+  const exercises = await getWordHuntExercises();
   return exercises.find((entry) => entry.id === id) ?? null;
+}
+
+export async function getKathaigalStories() {
+  if (!hasSupabaseEnv()) {
+    return kathaigalStories;
+  }
+
+  const supabase = await createSupabaseServerClient();
+
+  if (!supabase) {
+    return kathaigalStories;
+  }
+
+  const { data } = await supabase
+    .from("kathaigal_stories")
+    .select("id, slug, title, description, difficulty, cover_image_url, paragraphs, questions, is_active, created_at, allowed_plans")
+    .eq("is_active", true)
+    .order("created_at", { ascending: false });
+
+  if (data && data.length > 0) {
+    return mapKathaigalRows(data as KathaigalStoryRow[]);
+  }
+
+  const adminClient = createSupabaseAdminClient();
+
+  if (!adminClient) {
+    return kathaigalStories;
+  }
+
+  const { data: adminData } = await adminClient
+    .from("kathaigal_stories")
+    .select("id, slug, title, description, difficulty, cover_image_url, paragraphs, questions, is_active, created_at, allowed_plans")
+    .eq("is_active", true)
+    .order("created_at", { ascending: false });
+
+  if (!adminData) {
+    return kathaigalStories;
+  }
+
+  return mapKathaigalRows(adminData as KathaigalStoryRow[]);
+}
+
+export async function getKathaigalStory(id: string) {
+  const stories = await getKathaigalStories();
+  return stories.find((entry) => entry.id === id || entry.slug === id) ?? null;
+}
+
+const thirukkuralSelect =
+  "id, slug, number, title, section, chapter, difficulty, kural_lines, porul, quiz, fill_blanks, is_active, created_at, allowed_plans";
+
+async function fetchThirukkuralRows(client: SupabaseClient, activeOnly: boolean) {
+  const pageSize = 500;
+  const rows: ThirukkuralLessonRow[] = [];
+
+  for (let start = 0; start < 1500; start += pageSize) {
+    const baseQuery = client.from("thirukkural_lessons").select(thirukkuralSelect);
+    const filteredQuery = activeOnly ? baseQuery.eq("is_active", true) : baseQuery;
+    const { data, error } = await filteredQuery
+      .order("number", { ascending: true })
+      .range(start, start + pageSize - 1);
+
+    if (error) {
+      return null;
+    }
+
+    const pageRows = (data ?? []) as ThirukkuralLessonRow[];
+    rows.push(...pageRows);
+
+    if (pageRows.length < pageSize) {
+      break;
+    }
+  }
+
+  return rows;
+}
+
+export async function getThirukkuralLessons() {
+  if (!hasSupabaseEnv()) {
+    return thirukkuralLessons;
+  }
+
+  const supabase = await createSupabaseServerClient();
+
+  if (!supabase) {
+    return thirukkuralLessons;
+  }
+
+  const data = await fetchThirukkuralRows(supabase, true);
+
+  if (data && data.length > 0) {
+    return mapThirukkuralRows(data);
+  }
+
+  const adminClient = createSupabaseAdminClient();
+
+  if (!adminClient) {
+    return thirukkuralLessons;
+  }
+
+  const adminData = await fetchThirukkuralRows(adminClient, true);
+
+  if (!adminData) {
+    return thirukkuralLessons;
+  }
+
+  return mapThirukkuralRows(adminData);
+}
+
+export async function getThirukkuralLesson(id: string) {
+  const lessons = await getThirukkuralLessons();
+  return lessons.find((entry) => entry.id === id || entry.slug === id) ?? null;
 }
 
 export async function getImageHuntProgress(exerciseId: string): Promise<ImageHuntProgress | null> {

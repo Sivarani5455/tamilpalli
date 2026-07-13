@@ -2,7 +2,9 @@ import {
   deleteDictionaryAction,
   deleteFillBlankAction,
   deleteImageHuntAction,
-  deleteNimishamAction,
+  deleteKathaigalAction,
+  deleteThirukkuralAction,
+  deleteWordHuntAction,
   deleteWordSearchAction,
 } from "@/app/[locale]/admin/content-actions";
 import type { Locale } from "@/types";
@@ -15,7 +17,7 @@ export function DeleteContentButton({
 }: {
   locale: Locale;
   id: string;
-  kind: "word-search" | "fill-in-the-blanks" | "image-hunt" | "nimisham" | "dictionary";
+  kind: "word-search" | "fill-in-the-blanks" | "image-hunt" | "word_hunt" | "kathaigal" | "thirukkural" | "dictionary";
   className?: string;
 }) {
   const action =
@@ -25,9 +27,13 @@ export function DeleteContentButton({
         ? deleteFillBlankAction
         : kind === "image-hunt"
           ? deleteImageHuntAction
-          : kind === "nimisham"
-            ? deleteNimishamAction
-            : deleteDictionaryAction;
+          : kind === "word_hunt"
+            ? deleteWordHuntAction
+            : kind === "kathaigal"
+              ? deleteKathaigalAction
+              : kind === "thirukkural"
+                ? deleteThirukkuralAction
+                : deleteDictionaryAction;
 
   return (
     <form action={action}>

@@ -4,7 +4,9 @@ import type {
   SplashSlide,
   FillBlankExercise,
   ImageHuntExercise,
-  NimishamExercise,
+  KathaigalStory,
+  ThirukkuralLesson,
+  WordHuntExercise,
   Plan,
   Subscription,
   WordSearchGrid,
@@ -91,11 +93,29 @@ export const categories: ContentCategory[] = [
     isActive: true,
   },
   {
-    id: "category-nimisham",
-    slug: "nimisham",
-    title: "Nimisham",
+    id: "category-word-hunt",
+    slug: "word-hunt",
+    title: "Word Hunt",
     description: "Race the clock and tap every Tamil word matching the prompt.",
-    type: "nimisham",
+    type: "word_hunt",
+    requiredPlan: "standard",
+    isActive: true,
+  },
+  {
+    id: "category-kathaigal",
+    slug: "kathaigal",
+    title: "Kathaigal",
+    description: "Read illustrated Tamil stories, paragraph by paragraph.",
+    type: "kathaigal",
+    requiredPlan: "standard",
+    isActive: true,
+  },
+  {
+    id: "category-thirukkural",
+    slug: "thirukkural",
+    title: "Thirukkural",
+    description: "Learn Thirukkural with porul, quiz and fill-in-the-blank practice.",
+    type: "thirukkural",
     requiredPlan: "standard",
     isActive: true,
   },
@@ -247,9 +267,9 @@ export const imageHuntExercises: ImageHuntExercise[] = [
   },
 ];
 
-export const nimishamExercises: NimishamExercise[] = [
+export const wordHuntExercises: WordHuntExercise[] = [
   {
-    id: "nimisham-animals",
+    id: "word-hunt-animals",
     slug: "animal-words",
     title: "Animal Words",
     description: "Tap every animal word before the timer ends.",
@@ -270,6 +290,81 @@ export const nimishamExercises: NimishamExercise[] = [
       { id: "rice", word: "சாதம்", translation: { en: "rice", fr: "riz", ta: "சாதம்" }, isCorrect: false },
       { id: "house", word: "வீடு", translation: { en: "house", fr: "maison", ta: "வீடு" }, isCorrect: false },
     ],
+  },
+];
+
+export const kathaigalStories: KathaigalStory[] = [
+  {
+    id: "kathaigal-brave-sparrow",
+    slug: "brave-sparrow",
+    title: "சிறிய குருவியின் துணிவு",
+    description: "ஒரு சிறிய குருவி தன் நண்பர்களைக் காப்பாற்ற கற்ற துணிவான கதை.",
+    difficulty: "beginner",
+    coverImageUrl: "/thiruvalluvar-splash-2.png",
+    paragraphs: [
+      {
+        id: "para-1",
+        textTa: "ஒரு அழகான கிராமத்தில் சிறிய குருவி ஒன்று வாழ்ந்தது. அது தினமும் மரங்களின் மீது பறந்து நண்பர்களுடன் மகிழ்ச்சியாக விளையாடியது.",
+        imageUrl: "/thiruvalluvar-splash-2.png",
+        imageAlt: {
+          en: "A peaceful village morning",
+          fr: "Un matin paisible au village",
+          ta: "அமைதியான கிராம காலை",
+        },
+      },
+      {
+        id: "para-2",
+        textTa: "ஒரு நாள் பெரிய காற்று வீசியது. குருவியின் நண்பர்கள் பயந்தனர். ஆனால் சிறிய குருவி அமைதியாக இருந்து எல்லோரையும் பாதுகாப்பான இடத்துக்கு அழைத்துச் சென்றது.",
+        imageUrl: "/thiruvalluvar-splash-3.png",
+        imageAlt: {
+          en: "Wind moving through trees",
+          fr: "Le vent dans les arbres",
+          ta: "மரங்களில் வீசும் காற்று",
+        },
+      },
+    ],
+    questions: [
+      {
+        id: "question-1",
+        questionTa: "சிறிய குருவி தன் நண்பர்களை எங்கு அழைத்துச் சென்றது?",
+        choices: ["பள்ளிக்கூடத்துக்கு", "பாதுகாப்பான இடத்துக்கு", "கடற்கரைக்கு", "சந்தைக்கு"],
+        correctChoiceIndex: 1,
+      },
+    ],
+    isActive: true,
+    createdAt: "2026-07-08",
+  },
+];
+
+export const thirukkuralLessons: ThirukkuralLesson[] = [
+  {
+    id: "thirukkural-1",
+    slug: "thirukkural-20260713-demo",
+    number: 1,
+    title: "அகர முதல எழுத்தெல்லாம்",
+    section: "அறத்துப்பால்",
+    chapter: "கடவுள் வாழ்த்து",
+    difficulty: "beginner",
+    kuralLines: ["அகர முதல எழுத்தெல்லாம் ஆதி", "பகவன் முதற்றே உலகு."],
+    porul: "எழுத்துகளுக்கெல்லாம் அகரம் முதலானதுபோல், உலகத்திற்கெல்லாம் இறைவன் முதன்மையானவன்.",
+    quiz: [
+      {
+        id: "quiz-1",
+        question: "எழுத்துகளுக்கெல்லாம் எது முதல் என்று குறள் கூறுகிறது?",
+        choices: ["ஆதி", "அகரம்", "உலகு", "பகவன்"],
+        correctChoiceIndex: 1,
+      },
+    ],
+    fillBlanks: [
+      {
+        id: "blank-1",
+        template: "அகர முதல எழுத்தெல்லாம் ____",
+        answer: "ஆதி",
+        options: ["ஆதி", "உலகு", "அறம்", "இன்பம்"],
+      },
+    ],
+    isActive: true,
+    createdAt: "2026-07-13",
   },
 ];
 

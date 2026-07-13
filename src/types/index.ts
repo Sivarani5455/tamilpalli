@@ -7,7 +7,9 @@ export type ContentType =
   | "word_search"
   | "fill_in_the_blanks"
   | "image_hunt"
-  | "nimisham"
+  | "word_hunt"
+  | "kathaigal"
+  | "thirukkural"
   | "quiz"
   | "lesson"
   | "exercise";
@@ -143,14 +145,14 @@ export type ImageHuntProgress = {
   timeUsedSeconds: number;
 };
 
-export type NimishamWord = {
+export type WordHuntWord = {
   id: string;
   word: string;
   translation: Partial<Record<Locale, string>>;
   isCorrect: boolean;
 };
 
-export type NimishamExercise = {
+export type WordHuntExercise = {
   id: string;
   slug: string;
   title: string;
@@ -158,7 +160,64 @@ export type NimishamExercise = {
   difficulty: Difficulty;
   timeLimitSeconds: number;
   prompt: Record<Locale, string>;
-  words: NimishamWord[];
+  words: WordHuntWord[];
+  isActive?: boolean;
+  createdAt?: string;
+};
+
+export type KathaigalParagraph = {
+  id: string;
+  textTa: string;
+  imageUrl: string;
+  imageAlt: Partial<Record<Locale, string>>;
+};
+
+export type KathaigalQuestion = {
+  id: string;
+  questionTa: string;
+  choices: string[];
+  correctChoiceIndex: number;
+};
+
+export type KathaigalStory = {
+  id: string;
+  slug: string;
+  title: string;
+  description: string;
+  difficulty: Difficulty;
+  coverImageUrl: string | null;
+  paragraphs: KathaigalParagraph[];
+  questions: KathaigalQuestion[];
+  isActive?: boolean;
+  createdAt?: string;
+};
+
+export type ThirukkuralQuizQuestion = {
+  id: string;
+  question: string;
+  choices: string[];
+  correctChoiceIndex: number;
+};
+
+export type ThirukkuralFillBlankExercise = {
+  id: string;
+  template: string;
+  answer: string;
+  options: string[];
+};
+
+export type ThirukkuralLesson = {
+  id: string;
+  slug: string;
+  number: number;
+  title: string;
+  section: string;
+  chapter: string;
+  difficulty: Difficulty;
+  kuralLines: string[];
+  porul: string;
+  quiz: ThirukkuralQuizQuestion[];
+  fillBlanks: ThirukkuralFillBlankExercise[];
   isActive?: boolean;
   createdAt?: string;
 };

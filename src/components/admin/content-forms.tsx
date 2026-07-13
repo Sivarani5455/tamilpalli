@@ -1,20 +1,24 @@
 "use client";
 
-import { type ChangeEvent, type MouseEvent, type PointerEvent, useActionState, useRef, useState } from "react";
+import { type ChangeEvent, type MouseEvent, type PointerEvent, useActionState, useEffect, useRef, useState } from "react";
 
 import {
   upsertFillBlankAction,
   upsertImageHuntAction,
-  upsertNimishamAction,
+  upsertKathaigalAction,
+  upsertWordHuntAction,
   upsertWordSearchAction,
 } from "@/app/[locale]/admin/content-actions";
 import { initialCrudState } from "@/lib/action-states";
 import type {
   FillBlankExercise,
   ImageHuntExercise,
+  KathaigalParagraph,
+  KathaigalQuestion,
+  KathaigalStory,
   Locale,
-  NimishamExercise,
-  NimishamWord,
+  WordHuntExercise,
+  WordHuntWord,
   WordSearchGrid,
   WordSearchWord,
 } from "@/types";
@@ -44,6 +48,38 @@ function slugify(value: string) {
     .toLowerCase()
     .replace(/[^a-z0-9]+/g, "-")
     .replace(/^-+|-+$/g, "");
+}
+
+function createAdminSlug(prefix: string) {
+  const date = new Date();
+  const yyyymmdd = [
+    date.getFullYear(),
+    String(date.getMonth() + 1).padStart(2, "0"),
+    String(date.getDate()).padStart(2, "0"),
+  ].join("");
+  const suffix =
+    typeof crypto !== "undefined" && "randomUUID" in crypto
+      ? crypto.randomUUID().replace(/-/g, "").slice(0, 5)
+      : Math.random().toString(36).slice(2, 7);
+
+  return `${prefix}-${yyyymmdd}-${suffix.toLowerCase()}`;
+}
+
+function useGeneratedAdminSlug(initialSlug: string | undefined, prefix: string) {
+  const [slug, setSlug] = useState(initialSlug ?? "");
+  const [slugTouched, setSlugTouched] = useState(Boolean(initialSlug));
+
+  useEffect(() => {
+    if (!initialSlug && !slugTouched && slug.trim().length === 0) {
+      const timeoutId = window.setTimeout(() => {
+        setSlug((current) => current.trim().length > 0 ? current : createAdminSlug(prefix));
+      }, 0);
+
+      return () => window.clearTimeout(timeoutId);
+    }
+  }, [initialSlug, prefix, slug, slugTouched]);
+
+  return { slug, setSlug, slugTouched, setSlugTouched };
 }
 
 const GRID_SIZE_OPTIONS = [4, 8, 12, 16, 20] as const;
@@ -535,8 +571,7 @@ export function WordSearchAdminForm({
 
   const [state, action, pending] = useActionState(upsertWordSearchAction, initialCrudState);
   const [title, setTitle] = useState(initial?.title ?? "");
-  const [slug, setSlug] = useState(initial?.slug ?? "");
-  const [slugTouched, setSlugTouched] = useState(Boolean(initial?.slug));
+  const { slug, setSlug, setSlugTouched } = useGeneratedAdminSlug(initial?.slug, "word-search");
   const [description, setDescription] = useState(initial?.description ?? "");
   const [gridSize, setGridSize] = useState<number | null>(initialGridSize ?? normalizedInitialGridSize);
   const [rawTamilWords, setRawTamilWords] = useState(
@@ -661,12 +696,7 @@ export function WordSearchAdminForm({
                 placeholder="Flowers grid"
                 value={title}
                 onChange={(event) => {
-                  const nextTitle = event.target.value;
-                  setTitle(nextTitle);
-
-                  if (!slugTouched) {
-                    setSlug(slugify(nextTitle));
-                  }
+                  setTitle(event.target.value);
                 }}
                 className={inputClass}
               />
@@ -945,7 +975,7 @@ export function FillBlankAdminForm({
 }) {
   const [state, action, pending] = useActionState(upsertFillBlankAction, initialCrudState);
   const [title, setTitle] = useState(initial?.title ?? "");
-  const [slug, setSlug] = useState(initial?.slug ?? "");
+  const { slug, setSlug, setSlugTouched } = useGeneratedAdminSlug(initial?.slug, "fill-in-the-blanks");
   const [difficulty, setDifficulty] = useState(initial?.difficulty ?? "beginner");
   const [timeLimitSeconds, setTimeLimitSeconds] = useState(initial?.timeLimitSeconds ?? 180);
   const [activeQuestionIndex, setActiveQuestionIndex] = useState(0);
@@ -1142,11 +1172,7 @@ export function FillBlankAdminForm({
               name="title"
               value={title}
               onChange={(event) => {
-                const nextTitle = event.target.value;
-                setTitle(nextTitle);
-                if (!initial && slug.trim().length === 0) {
-                  setSlug(slugify(nextTitle));
-                }
+                setTitle(event.target.value);
               }}
               placeholder="Tamil basics: daily actions"
               className={flushInputClass}
@@ -1157,7 +1183,10 @@ export function FillBlankAdminForm({
             <input
               name="slug"
               value={slug}
-              onChange={(event) => setSlug(slugify(event.target.value))}
+              onChange={(event) => {
+                setSlugTouched(true);
+                setSlug(slugify(event.target.value));
+              }}
               placeholder="tamil-basics-daily-actions"
               className={`${flushInputClass} font-mono`}
             />
@@ -1441,11 +1470,11 @@ export function FillBlankAdminForm({
   );
 }
 
-type NimishamEditableWord = NimishamWord & {
+type WordHuntEditableWord = WordHuntWord & {
   translation: Partial<Record<Locale, string>>;
 };
 
-function createEmptyNimishamWord(index: number): NimishamEditableWord {
+function createEmptyWordHuntWord(index: number): WordHuntEditableWord {
   return {
     id: `word-${index + 1}`,
     word: "",
@@ -1454,19 +1483,18 @@ function createEmptyNimishamWord(index: number): NimishamEditableWord {
   };
 }
 
-export function NimishamAdminForm({
+export function WordHuntAdminForm({
   locale,
   initial,
 }: {
   locale: Locale;
-  initial?: NimishamExercise | null;
+  initial?: WordHuntExercise | null;
 }) {
-  const [state, action, pending] = useActionState(upsertNimishamAction, initialCrudState);
+  const [state, action, pending] = useActionState(upsertWordHuntAction, initialCrudState);
   const [title, setTitle] = useState(initial?.title ?? "");
-  const [slug, setSlug] = useState(initial?.slug ?? "");
-  const [slugTouched, setSlugTouched] = useState(Boolean(initial?.slug));
-  const [words, setWords] = useState<NimishamEditableWord[]>(
-    initial?.words.length ? initial.words : Array.from({ length: 12 }, (_, index) => createEmptyNimishamWord(index)),
+  const { slug, setSlug, setSlugTouched } = useGeneratedAdminSlug(initial?.slug, "word-hunt");
+  const [words, setWords] = useState<WordHuntEditableWord[]>(
+    initial?.words.length ? initial.words : Array.from({ length: 12 }, (_, index) => createEmptyWordHuntWord(index)),
   );
   const serializedWords = JSON.stringify(
     words
@@ -1484,12 +1512,12 @@ export function NimishamAdminForm({
   );
   const correctCount = words.filter((word) => word.word.trim() && word.isCorrect).length;
   const totalCount = words.filter((word) => word.word.trim()).length;
-  const nimishamPanelClass = "rounded-[1.5rem] border-[3px] border-[#180d2b] bg-white shadow-[6px_7px_0_#180d2b]";
-  const nimishamFieldClass = "block rounded-[1rem] border-[2px] border-[#180d2b] bg-white px-4 py-3 shadow-[3px_4px_0_#180d2b]";
-  const nimishamLabelClass = "block text-xs font-black uppercase tracking-[0.18em] text-[#8a6a9c]";
-  const nimishamInputClass = "mt-2 w-full bg-transparent text-sm font-semibold text-[#180d2b] outline-none placeholder:text-[#b49ac6]";
+  const wordHuntPanelClass = "rounded-[1.5rem] border-[3px] border-[#180d2b] bg-white shadow-[6px_7px_0_#180d2b]";
+  const wordHuntFieldClass = "block rounded-[1rem] border-[2px] border-[#180d2b] bg-white px-4 py-3 shadow-[3px_4px_0_#180d2b]";
+  const wordHuntLabelClass = "block text-xs font-black uppercase tracking-[0.18em] text-[#8a6a9c]";
+  const wordHuntInputClass = "mt-2 w-full bg-transparent text-sm font-semibold text-[#180d2b] outline-none placeholder:text-[#b49ac6]";
 
-  function updateWord(index: number, patch: Partial<NimishamEditableWord>) {
+  function updateWord(index: number, patch: Partial<WordHuntEditableWord>) {
     setWords((current) => current.map((word, wordIndex) => (wordIndex === index ? { ...word, ...patch } : word)));
   }
 
@@ -1510,30 +1538,26 @@ export function NimishamAdminForm({
   }
 
   return (
-    <form action={action} className={`mt-6 overflow-hidden ${nimishamPanelClass}`}>
+    <form action={action} className={`mt-6 overflow-hidden ${wordHuntPanelClass}`}>
       <input type="hidden" name="locale" value={locale} />
       <input type="hidden" name="id" defaultValue={initial?.id} />
       <input type="hidden" name="words" value={serializedWords} readOnly />
 
       <section className="grid gap-4 p-5 sm:p-6 md:grid-cols-2 xl:grid-cols-4">
-        <label className={nimishamFieldClass}>
-          <span className={nimishamLabelClass}>Title</span>
+        <label className={wordHuntFieldClass}>
+          <span className={wordHuntLabelClass}>Title</span>
           <input
             name="title"
             value={title}
             onChange={(event) => {
-              const nextTitle = event.target.value;
-              setTitle(nextTitle);
-              if (!slugTouched) {
-                setSlug(slugify(nextTitle));
-              }
+              setTitle(event.target.value);
             }}
             placeholder="Animal Sprint"
-            className={`${nimishamInputClass} text-base font-black`}
+            className={`${wordHuntInputClass} text-base font-black`}
           />
         </label>
-        <label className={nimishamFieldClass}>
-          <span className={nimishamLabelClass}>Slug</span>
+        <label className={wordHuntFieldClass}>
+          <span className={wordHuntLabelClass}>Slug</span>
           <input
             name="slug"
             value={slug}
@@ -1542,46 +1566,46 @@ export function NimishamAdminForm({
               setSlug(slugify(event.target.value));
             }}
             placeholder="animal-sprint"
-            className={`${nimishamInputClass} font-mono`}
+            className={`${wordHuntInputClass} font-mono`}
           />
         </label>
-        <label className={nimishamFieldClass}>
-          <span className={nimishamLabelClass}>Difficulty</span>
-          <select name="difficulty" defaultValue={initial?.difficulty ?? "beginner"} className={`${nimishamInputClass} text-base font-black`}>
+        <label className={wordHuntFieldClass}>
+          <span className={wordHuntLabelClass}>Difficulty</span>
+          <select name="difficulty" defaultValue={initial?.difficulty ?? "beginner"} className={`${wordHuntInputClass} text-base font-black`}>
             <option value="beginner">beginner</option>
             <option value="intermediate">intermediate</option>
             <option value="advanced">advanced</option>
           </select>
         </label>
-        <label className={nimishamFieldClass}>
-          <span className={nimishamLabelClass}>Time limit</span>
+        <label className={wordHuntFieldClass}>
+          <span className={wordHuntLabelClass}>Time limit</span>
           <input
             name="timeLimitSeconds"
             type="number"
             defaultValue={initial?.timeLimitSeconds ?? 60}
-            className={`${nimishamInputClass} font-mono text-base font-black`}
+            className={`${wordHuntInputClass} font-mono text-base font-black`}
           />
         </label>
-        <label className={`${nimishamFieldClass} md:col-span-2 xl:col-span-4`}>
-          <span className={nimishamLabelClass}>Description</span>
+        <label className={`${wordHuntFieldClass} md:col-span-2 xl:col-span-4`}>
+          <span className={wordHuntLabelClass}>Description</span>
           <input
             name="description"
             defaultValue={initial?.description ?? ""}
             placeholder="Tap all matching Tamil words before time runs out."
-            className={nimishamInputClass}
+            className={wordHuntInputClass}
           />
         </label>
-        <label className={`${nimishamFieldClass} md:col-span-2 xl:col-span-4`}>
-          <span className={nimishamLabelClass}>Question English</span>
-          <input name="promptEn" defaultValue={initial?.prompt.en ?? ""} placeholder="Tap every word that describes an animal." className={nimishamInputClass} />
+        <label className={`${wordHuntFieldClass} md:col-span-2 xl:col-span-4`}>
+          <span className={wordHuntLabelClass}>Question English</span>
+          <input name="promptEn" defaultValue={initial?.prompt.en ?? ""} placeholder="Tap every word that describes an animal." className={wordHuntInputClass} />
         </label>
-        <label className={`${nimishamFieldClass} md:col-span-2`}>
-          <span className={nimishamLabelClass}>Question French</span>
-          <input name="promptFr" defaultValue={initial?.prompt.fr ?? ""} placeholder="Clique sur tous les mots qui décrivent des animaux." className={nimishamInputClass} />
+        <label className={`${wordHuntFieldClass} md:col-span-2`}>
+          <span className={wordHuntLabelClass}>Question French</span>
+          <input name="promptFr" defaultValue={initial?.prompt.fr ?? ""} placeholder="Clique sur tous les mots qui décrivent des animaux." className={wordHuntInputClass} />
         </label>
-        <label className={`${nimishamFieldClass} md:col-span-2`}>
-          <span className={nimishamLabelClass}>Question Tamil</span>
-          <input name="promptTa" defaultValue={initial?.prompt.ta ?? ""} placeholder="விலங்குகளை குறிக்கும் சொற்களைத் தொடுங்கள்." className={`${nimishamInputClass} font-tamil`} />
+        <label className={`${wordHuntFieldClass} md:col-span-2`}>
+          <span className={wordHuntLabelClass}>Question Tamil</span>
+          <input name="promptTa" defaultValue={initial?.prompt.ta ?? ""} placeholder="விலங்குகளை குறிக்கும் சொற்களைத் தொடுங்கள்." className={`${wordHuntInputClass} font-tamil`} />
         </label>
       </section>
 
@@ -1593,7 +1617,7 @@ export function NimishamAdminForm({
           </div>
           <button
             type="button"
-            onClick={() => setWords((current) => [...current, createEmptyNimishamWord(current.length)])}
+            onClick={() => setWords((current) => [...current, createEmptyWordHuntWord(current.length)])}
             className="rounded-full border-[3px] border-[#180d2b] bg-[#180d2b] px-4 py-2 text-sm font-black text-white shadow-[3px_4px_0_#ffc43d] transition hover:-translate-y-0.5"
           >
             Add word
@@ -1624,8 +1648,311 @@ export function NimishamAdminForm({
 
       <div className="flex flex-col gap-4 border-t-[3px] border-[#180d2b] p-5 sm:flex-row sm:items-center sm:p-6">
         <button disabled={pending || correctCount === 0 || totalCount === 0} className="rounded-full border-[3px] border-[#180d2b] bg-[#20bf73] px-6 py-3 text-sm font-black text-white shadow-[4px_5px_0_#180d2b] transition hover:-translate-y-0.5 disabled:opacity-60">
-          Save Nimisham
+          Save Word Hunt
         </button>
+        <StatusMessage message={state.message} ok={state.ok} />
+      </div>
+    </form>
+  );
+}
+
+function createEmptyKathaigalParagraph(index: number): KathaigalParagraph {
+  return {
+    id: `paragraph-${index + 1}`,
+    textTa: "",
+    imageUrl: "",
+    imageAlt: { en: "", fr: "", ta: "" },
+  };
+}
+
+function createEmptyKathaigalQuestion(index: number): KathaigalQuestion {
+  return {
+    id: `question-${index + 1}`,
+    questionTa: "",
+    choices: ["", "", "", ""],
+    correctChoiceIndex: 0,
+  };
+}
+
+export function KathaigalAdminForm({
+  locale,
+  initial,
+}: {
+  locale: Locale;
+  initial?: KathaigalStory | null;
+}) {
+  const [state, action, pending] = useActionState(upsertKathaigalAction, initialCrudState);
+  const [title, setTitle] = useState(initial?.title ?? "");
+  const { slug, setSlug, setSlugTouched } = useGeneratedAdminSlug(initial?.slug, "kathaigal");
+  const [paragraphs, setParagraphs] = useState<KathaigalParagraph[]>(
+    initial?.paragraphs.length ? initial.paragraphs : [createEmptyKathaigalParagraph(0)],
+  );
+  const [questions, setQuestions] = useState<KathaigalQuestion[]>(
+    initial?.questions?.length ? initial.questions : [createEmptyKathaigalQuestion(0)],
+  );
+  const panelClass = "rounded-[1.5rem] border-[3px] border-[#180d2b] bg-white shadow-[6px_7px_0_#180d2b]";
+  const fieldClass = "block rounded-[1rem] border-[2px] border-[#180d2b] bg-white px-4 py-3 shadow-[3px_4px_0_#180d2b]";
+  const labelClass = "block text-xs font-black uppercase tracking-[0.18em] text-[#8a6a9c]";
+  const inputClass = "mt-2 w-full bg-transparent text-sm font-semibold text-[#180d2b] outline-none placeholder:text-[#b49ac6]";
+
+  function updateParagraph(index: number, patch: Partial<KathaigalParagraph>) {
+    setParagraphs((current) =>
+      current.map((paragraph, paragraphIndex) =>
+        paragraphIndex === index ? { ...paragraph, ...patch } : paragraph,
+      ),
+    );
+  }
+
+  function updateParagraphAlt(index: number, lang: Locale, value: string) {
+    setParagraphs((current) =>
+      current.map((paragraph, paragraphIndex) =>
+        paragraphIndex === index
+          ? {
+              ...paragraph,
+              imageAlt: {
+                ...paragraph.imageAlt,
+                [lang]: value,
+              },
+            }
+          : paragraph,
+      ),
+    );
+  }
+
+  function updateQuestion(index: number, patch: Partial<KathaigalQuestion>) {
+    setQuestions((current) =>
+      current.map((question, questionIndex) => (questionIndex === index ? { ...question, ...patch } : question)),
+    );
+  }
+
+  function updateQuestionChoice(questionIndex: number, choiceIndex: number, value: string) {
+    setQuestions((current) =>
+      current.map((question, currentQuestionIndex) =>
+        currentQuestionIndex === questionIndex
+          ? {
+              ...question,
+              choices: question.choices.map((choice, currentChoiceIndex) =>
+                currentChoiceIndex === choiceIndex ? value : choice,
+              ),
+            }
+          : question,
+      ),
+    );
+  }
+
+  const serializedQuestions = JSON.stringify(
+    questions
+      .map((question, index) => ({
+        id: question.id || `question-${index + 1}`,
+        questionTa: question.questionTa.trim(),
+        choices: Array.from({ length: 4 }, (_, choiceIndex) => question.choices[choiceIndex]?.trim() ?? ""),
+        correctChoiceIndex: question.correctChoiceIndex,
+      }))
+      .filter((question) => question.questionTa || question.choices.some(Boolean)),
+  );
+  const hasIncompleteQuestion = questions.some(
+    (question) => question.questionTa.trim() || question.choices.some((choice) => choice.trim()),
+  )
+    ? questions.some(
+        (question) =>
+          !question.questionTa.trim() ||
+          question.choices.length !== 4 ||
+          question.choices.some((choice) => !choice.trim()) ||
+          question.correctChoiceIndex < 0 ||
+          question.correctChoiceIndex > 3,
+      )
+    : false;
+
+  return (
+    <form action={action} className={`mt-6 overflow-hidden ${panelClass}`}>
+      <input type="hidden" name="id" value={initial?.id ?? ""} />
+      <input type="hidden" name="locale" value={locale} />
+      <input type="hidden" name="paragraphs" value={JSON.stringify(paragraphs)} />
+      <input type="hidden" name="questions" value={serializedQuestions} />
+
+      <section className="grid gap-4 border-b-[3px] border-[#180d2b] p-5 md:grid-cols-2 xl:grid-cols-4 sm:p-6">
+        <label className={fieldClass}>
+          <span className={labelClass}>Title</span>
+          <input
+            name="title"
+            value={title}
+            onChange={(event) => {
+              setTitle(event.target.value);
+            }}
+            className={`${inputClass} text-base font-black`}
+            placeholder="சிறிய கதை"
+            required
+          />
+        </label>
+        <label className={fieldClass}>
+          <span className={labelClass}>Slug</span>
+          <input
+            name="slug"
+            value={slug}
+            onChange={(event) => {
+              setSlugTouched(true);
+              setSlug(slugify(event.target.value));
+            }}
+            className={`${inputClass} font-mono`}
+            placeholder="short-story"
+            required
+          />
+        </label>
+        <label className={fieldClass}>
+          <span className={labelClass}>Difficulty</span>
+          <select name="difficulty" defaultValue={initial?.difficulty ?? "beginner"} className={`${inputClass} text-base font-black`}>
+            <option value="beginner">beginner</option>
+            <option value="intermediate">intermediate</option>
+            <option value="advanced">advanced</option>
+          </select>
+        </label>
+        <label className={fieldClass}>
+          <span className={labelClass}>Cover image</span>
+          <input name="coverImageUrl" defaultValue={initial?.coverImageUrl ?? ""} className={inputClass} placeholder="https://..." />
+          <span className="mt-2 block text-xs font-semibold leading-5 text-[#8a6a9c]">
+            Use a direct image URL. Wikimedia media links are converted automatically.
+          </span>
+        </label>
+        <label className={`${fieldClass} md:col-span-2 xl:col-span-4`}>
+          <span className={labelClass}>Description</span>
+          <textarea name="description" defaultValue={initial?.description ?? ""} rows={3} className={inputClass} placeholder="Short story description" required />
+        </label>
+      </section>
+
+      <section className="p-5 sm:p-6">
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <div>
+            <p className="text-xs font-black uppercase tracking-[0.22em] text-[#7c3aed]">Paragraphs</p>
+            <h2 className="mt-1 font-display text-2xl font-black text-[#180d2b]">Tamil story blocks</h2>
+          </div>
+          <button
+            type="button"
+            onClick={() => setParagraphs((current) => [...current, createEmptyKathaigalParagraph(current.length)])}
+            className="rounded-full border-[3px] border-[#180d2b] bg-[#ffc43d] px-5 py-2.5 text-sm font-black text-[#180d2b] shadow-[3px_4px_0_#180d2b] transition hover:-translate-y-0.5"
+          >
+            + Add paragraph
+          </button>
+        </div>
+
+        <div className="mt-5 grid gap-4">
+          {paragraphs.map((paragraph, index) => (
+            <article key={`${paragraph.id}-${index}`} className="rounded-[1rem] border-[2px] border-[#180d2b] bg-[#fff8ec] p-4 shadow-[3px_4px_0_#180d2b]">
+              <div className="flex items-center justify-between gap-3">
+                <p className="font-display text-lg font-black text-[#180d2b]">Paragraph {index + 1}</p>
+                <button
+                  type="button"
+                  onClick={() => setParagraphs((current) => current.filter((_, paragraphIndex) => paragraphIndex !== index))}
+                  className="rounded-full border-2 border-[#ff3b6f] bg-white px-3 py-1.5 text-xs font-black text-[#ff3b6f]"
+                  disabled={paragraphs.length <= 1}
+                >
+                  Remove
+                </button>
+              </div>
+              <div className="mt-4 grid gap-3 md:grid-cols-2">
+                <label className="md:col-span-2">
+                  <span className={labelClass}>Tamil paragraph</span>
+                  <textarea value={paragraph.textTa} onChange={(event) => updateParagraph(index, { textTa: event.target.value })} rows={4} className={`${inputClass} rounded-[0.8rem] border-[2px] border-[#180d2b] bg-white px-3 py-2 font-tamil text-base`} required />
+                </label>
+                <label>
+                  <span className={labelClass}>Image URL</span>
+                  <input value={paragraph.imageUrl} onChange={(event) => updateParagraph(index, { imageUrl: event.target.value })} className={`${inputClass} rounded-[0.8rem] border-[2px] border-[#180d2b] bg-white px-3 py-2`} placeholder="https://..." required />
+                  <span className="mt-2 block text-xs font-semibold leading-5 text-[#8a6a9c]">
+                    Paste the real image file URL, or a Wikimedia media link.
+                  </span>
+                </label>
+                <label>
+                  <span className={labelClass}>Tamil alt</span>
+                  <input value={paragraph.imageAlt.ta ?? ""} onChange={(event) => updateParagraphAlt(index, "ta", event.target.value)} className={`${inputClass} rounded-[0.8rem] border-[2px] border-[#180d2b] bg-white px-3 py-2 font-tamil`} />
+                </label>
+                <label>
+                  <span className={labelClass}>English alt</span>
+                  <input value={paragraph.imageAlt.en ?? ""} onChange={(event) => updateParagraphAlt(index, "en", event.target.value)} className={`${inputClass} rounded-[0.8rem] border-[2px] border-[#180d2b] bg-white px-3 py-2`} />
+                </label>
+                <label>
+                  <span className={labelClass}>French alt</span>
+                  <input value={paragraph.imageAlt.fr ?? ""} onChange={(event) => updateParagraphAlt(index, "fr", event.target.value)} className={`${inputClass} rounded-[0.8rem] border-[2px] border-[#180d2b] bg-white px-3 py-2`} />
+                </label>
+              </div>
+            </article>
+          ))}
+        </div>
+      </section>
+
+      <section className="border-t-[3px] border-[#180d2b] p-5 sm:p-6">
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <div>
+            <p className="text-xs font-black uppercase tracking-[0.22em] text-[#7c3aed]">Questions</p>
+            <h2 className="mt-1 font-display text-2xl font-black text-[#180d2b]">Reading quiz</h2>
+          </div>
+          <button
+            type="button"
+            onClick={() => setQuestions((current) => [...current, createEmptyKathaigalQuestion(current.length)])}
+            className="rounded-full border-[3px] border-[#180d2b] bg-[#c6ff2e] px-5 py-2.5 text-sm font-black text-[#180d2b] shadow-[3px_4px_0_#180d2b] transition hover:-translate-y-0.5"
+          >
+            + Add question
+          </button>
+        </div>
+
+        <div className="mt-5 grid gap-4">
+          {questions.map((question, questionIndex) => (
+            <article key={`${question.id}-${questionIndex}`} className="rounded-[1rem] border-[2px] border-[#180d2b] bg-[#f6f0ff] p-4 shadow-[3px_4px_0_#180d2b]">
+              <div className="flex items-center justify-between gap-3">
+                <p className="font-display text-lg font-black text-[#180d2b]">Question {questionIndex + 1}</p>
+                <button
+                  type="button"
+                  onClick={() => setQuestions((current) => current.filter((_, currentQuestionIndex) => currentQuestionIndex !== questionIndex))}
+                  className="rounded-full border-2 border-[#ff3b6f] bg-white px-3 py-1.5 text-xs font-black text-[#ff3b6f]"
+                  disabled={questions.length <= 1}
+                >
+                  Remove
+                </button>
+              </div>
+
+              <label className="mt-4 block">
+                <span className={labelClass}>Tamil question</span>
+                <textarea
+                  value={question.questionTa}
+                  onChange={(event) => updateQuestion(questionIndex, { questionTa: event.target.value })}
+                  rows={2}
+                  className={`${inputClass} rounded-[0.8rem] border-[2px] border-[#180d2b] bg-white px-3 py-2 font-tamil text-base`}
+                  placeholder="கதையில் குருவி என்ன செய்தது?"
+                />
+              </label>
+
+              <div className="mt-4 grid gap-3 md:grid-cols-2">
+                {Array.from({ length: 4 }, (_, choiceIndex) => (
+                  <label key={choiceIndex} className="rounded-[0.8rem] border-[2px] border-[#180d2b] bg-white px-3 py-2">
+                    <span className={labelClass}>Choice {choiceIndex + 1}</span>
+                    <div className="mt-2 flex items-center gap-3">
+                      <input
+                        type="radio"
+                        name={`kathaigal-correct-${questionIndex}`}
+                        checked={question.correctChoiceIndex === choiceIndex}
+                        onChange={() => updateQuestion(questionIndex, { correctChoiceIndex: choiceIndex })}
+                        className="h-5 w-5 accent-[#20bf73]"
+                      />
+                      <input
+                        value={question.choices[choiceIndex] ?? ""}
+                        onChange={(event) => updateQuestionChoice(questionIndex, choiceIndex, event.target.value)}
+                        className={`${inputClass} mt-0 font-tamil text-base`}
+                        placeholder={`பதில் ${choiceIndex + 1}`}
+                      />
+                    </div>
+                  </label>
+                ))}
+              </div>
+            </article>
+          ))}
+        </div>
+      </section>
+
+      <div className="flex flex-col gap-4 border-t-[3px] border-[#180d2b] p-5 sm:flex-row sm:items-center sm:p-6">
+        <button disabled={pending || paragraphs.length === 0 || hasIncompleteQuestion} className="rounded-full border-[3px] border-[#180d2b] bg-[#20bf73] px-6 py-3 text-sm font-black text-white shadow-[4px_5px_0_#180d2b] transition hover:-translate-y-0.5 disabled:opacity-60">
+          Save Kathaigal
+        </button>
+        {hasIncompleteQuestion ? (
+          <p className="text-sm font-black text-[#be123c]">Chaque question commencée doit avoir 4 choix et une bonne réponse.</p>
+        ) : null}
         <StatusMessage message={state.message} ok={state.ok} />
       </div>
     </form>
@@ -1640,6 +1967,8 @@ export function ImageHuntAdminForm({
   initial?: ImageHuntExercise | null;
 }) {
   const [state, action, pending] = useActionState(upsertImageHuntAction, initialCrudState);
+  const [title, setTitle] = useState(initial?.title ?? "");
+  const { slug, setSlug, setSlugTouched } = useGeneratedAdminSlug(initial?.slug, "image-hunt");
   const [imageUrl, setImageUrl] = useState(initial?.imageUrl ?? "");
   const [targetLabelTa, setTargetLabelTa] = useState("");
   const [targetLabelEn, setTargetLabelEn] = useState("");
@@ -1810,7 +2139,8 @@ export function ImageHuntAdminForm({
             <input
               name="title"
               placeholder="Animals in the garden"
-              defaultValue={initial?.title}
+              value={title}
+              onChange={(event) => setTitle(event.target.value)}
               className={`${huntInputClass} text-base font-black`}
             />
           </label>
@@ -1819,7 +2149,11 @@ export function ImageHuntAdminForm({
             <input
               name="slug"
               placeholder="animals-garden"
-              defaultValue={initial?.slug}
+              value={slug}
+              onChange={(event) => {
+                setSlugTouched(true);
+                setSlug(slugify(event.target.value));
+              }}
               className={`${huntInputClass} font-mono`}
             />
           </label>

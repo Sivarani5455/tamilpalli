@@ -1,6 +1,6 @@
 "use client";
 
-import { useActionState, useState } from "react";
+import { useActionState, useEffect, useState } from "react";
 
 import { upsertDictionaryAction } from "@/app/[locale]/admin/content-actions";
 import { initialCrudState } from "@/lib/action-states";
@@ -22,6 +22,38 @@ function slugify(value: string) {
     .toLowerCase()
     .replace(/[^a-z0-9]+/g, "-")
     .replace(/^-+|-+$/g, "");
+}
+
+function createAdminSlug(prefix: string) {
+  const date = new Date();
+  const yyyymmdd = [
+    date.getFullYear(),
+    String(date.getMonth() + 1).padStart(2, "0"),
+    String(date.getDate()).padStart(2, "0"),
+  ].join("");
+  const suffix =
+    typeof crypto !== "undefined" && "randomUUID" in crypto
+      ? crypto.randomUUID().replace(/-/g, "").slice(0, 5)
+      : Math.random().toString(36).slice(2, 7);
+
+  return `${prefix}-${yyyymmdd}-${suffix.toLowerCase()}`;
+}
+
+function useGeneratedAdminSlug(initialSlug: string | undefined, prefix: string) {
+  const [slug, setSlug] = useState(initialSlug ?? "");
+  const [slugTouched, setSlugTouched] = useState(Boolean(initialSlug));
+
+  useEffect(() => {
+    if (!initialSlug && !slugTouched && slug.trim().length === 0) {
+      const timeoutId = window.setTimeout(() => {
+        setSlug((current) => current.trim().length > 0 ? current : createAdminSlug(prefix));
+      }, 0);
+
+      return () => window.clearTimeout(timeoutId);
+    }
+  }, [initialSlug, prefix, slug, slugTouched]);
+
+  return { slug, setSlug, setSlugTouched };
 }
 
 function StatusMessage({ message, ok }: { message: string; ok: boolean }) {
@@ -46,8 +78,7 @@ export function DictionaryAdminForm({
   const [entryType, setEntryType] = useState(initial?.type ?? "");
   const [example, setExample] = useState(initial?.example ?? "");
   const [tamilSynonyms, setTamilSynonyms] = useState(initial?.tamilSynonyms.join("\n") ?? "");
-  const [slug, setSlug] = useState(initial?.slug ?? "");
-  const [slugTouched, setSlugTouched] = useState(Boolean(initial?.slug));
+  const { slug, setSlug, setSlugTouched } = useGeneratedAdminSlug(initial?.slug, "dictionary");
 
   return (
     <form
@@ -77,12 +108,7 @@ export function DictionaryAdminForm({
                 name="wordEn"
                 value={wordEn}
                 onChange={(event) => {
-                  const nextValue = event.target.value;
-                  setWordEn(nextValue);
-
-                  if (!slugTouched) {
-                    setSlug(slugify(nextValue));
-                  }
+                  setWordEn(event.target.value);
                 }}
                 className="w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-950 shadow-sm outline-none transition focus:border-indigo-400 focus:ring-4 focus:ring-indigo-100"
                 placeholder="chair"

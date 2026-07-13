@@ -24,7 +24,13 @@ const gameItems = [
   { href: "/word-search", key: "wordSearch" },
   { href: "/fill-in-the-blanks", key: "fillBlanks" },
   { href: "/image-hunt", key: "imageHunt" },
-  { href: "/nimisham", key: "nimisham" },
+  { href: "/word-hunt", key: "wordHunt" },
+  { href: "/kural-vettai", key: "kuralVettai" },
+] as const;
+
+const literatureItems = [
+  { href: "/kathaigal", key: "kathaigal" },
+  { href: "/thirukkural", key: "thirukkural" },
 ] as const;
 
 type HeaderCopy = {
@@ -33,9 +39,11 @@ type HeaderCopy = {
   agarathi: string;
   nav: Record<(typeof navItems)[number]["key"], string>;
   games: Record<(typeof gameItems)[number]["key"], string>;
+  literature: Record<(typeof literatureItems)[number]["key"], string>;
   dropdown: {
     learning: string;
     games: string;
+    literature: string;
     learningEyebrow: string;
     learningEmpty: string;
     learningHint: string;
@@ -43,6 +51,10 @@ type HeaderCopy = {
     gamesHint: string;
     gamesListTitle: string;
     gameDescriptions: Record<(typeof gameItems)[number]["key"], string>;
+    literatureEyebrow: string;
+    literatureHint: string;
+    literatureListTitle: string;
+    literatureDescriptions: Record<(typeof literatureItems)[number]["key"], string>;
     newBadge: string;
     currentPage: string;
   };
@@ -63,11 +75,17 @@ const headerCopy: Record<Locale, HeaderCopy> = {
       wordSearch: "Word Search",
       fillBlanks: "Fill in the Blanks",
       imageHunt: "Image Hunt",
-      nimisham: "Nimisham",
+      wordHunt: "Word Hunt",
+      kuralVettai: "Kural Vettai",
+    },
+    literature: {
+      kathaigal: "Kathaigal",
+      thirukkural: "Thirukkural",
     },
     dropdown: {
       learning: "Learning",
-      games: "Games",
+      games: "Nimisham",
+      literature: "Ilakiyam",
       learningEyebrow: "Learning paths",
       learningEmpty: "New learning pages will appear here soon.",
       learningHint: "This space is ready for future lessons and structured practice.",
@@ -78,7 +96,15 @@ const headerCopy: Record<Locale, HeaderCopy> = {
         wordSearch: "Interactive Tamil vocabulary grids.",
         fillBlanks: "Sentence completion with guided feedback.",
         imageHunt: "Visual identification with Tamil labels.",
-        nimisham: "Timed word tapping by category.",
+        wordHunt: "Timed word tapping by category.",
+        kuralVettai: "Memorize and rebuild 10 kurals against the clock.",
+      },
+      literatureEyebrow: "Tamil literature",
+      literatureHint: "Read illustrated Tamil stories and literary practice pages.",
+      literatureListTitle: "Stories",
+      literatureDescriptions: {
+        kathaigal: "Tamil stories with images after every paragraph.",
+        thirukkural: "Learn kurals with porul, quiz and fill-in practice.",
       },
       newBadge: "New",
       currentPage: "Current page",
@@ -98,11 +124,17 @@ const headerCopy: Record<Locale, HeaderCopy> = {
       wordSearch: "Mots mêlés",
       fillBlanks: "Texte à trous",
       imageHunt: "Chasse aux images",
-      nimisham: "Nimisham",
+      wordHunt: "Chasse aux mots",
+      kuralVettai: "Kural Vettai",
+    },
+    literature: {
+      kathaigal: "Kathaigal",
+      thirukkural: "Thirukkural",
     },
     dropdown: {
       learning: "Learning",
-      games: "Jeux",
+      games: "Nimisham",
+      literature: "Ilakiyam",
       learningEyebrow: "Parcours",
       learningEmpty: "De nouvelles pages d'apprentissage apparaîtront ici bientôt.",
       learningHint: "Cet espace est prêt pour les prochains contenus d'apprentissage.",
@@ -113,7 +145,15 @@ const headerCopy: Record<Locale, HeaderCopy> = {
         wordSearch: "Grilles interactives de vocabulaire tamoul.",
         fillBlanks: "Complétion de phrases avec retours guidés.",
         imageHunt: "Repérage visuel avec libellés tamouls.",
-        nimisham: "Course contre la montre avec mots tamouls.",
+        wordHunt: "Course contre la montre avec mots tamouls.",
+        kuralVettai: "Mémorisez puis reconstituez 10 kurals contre la montre.",
+      },
+      literatureEyebrow: "Littérature tamoule",
+      literatureHint: "Lis des histoires illustrées en tamoul et des pages littéraires.",
+      literatureListTitle: "Histoires",
+      literatureDescriptions: {
+        kathaigal: "Histoires tamoules avec une image après chaque paragraphe.",
+        thirukkural: "Apprendre les kurals avec porul, quiz et textes à trous.",
       },
       newBadge: "Nouveau",
       currentPage: "Page active",
@@ -133,11 +173,17 @@ const headerCopy: Record<Locale, HeaderCopy> = {
       wordSearch: "சொல் தேடல்",
       fillBlanks: "காலியிடங்களை நிரப்பு",
       imageHunt: "பட வேட்டை",
-      nimisham: "நிமிடம்",
+      wordHunt: "சொல் வேட்டை",
+      kuralVettai: "குறள் வேட்டை",
+    },
+    literature: {
+      kathaigal: "கதைகள்",
+      thirukkural: "திருக்குறள்",
     },
     dropdown: {
       learning: "கற்றல்",
-      games: "விளையாட்டுகள்",
+      games: "Nimisham",
+      literature: "இலக்கியம்",
       learningEyebrow: "கற்றல் பாதைகள்",
       learningEmpty: "புதிய கற்றல் பக்கங்கள் விரைவில் இங்கே தோன்றும்.",
       learningHint: "எதிர்கால பாடங்களுக்கும் பயிற்சிகளுக்கும் இந்த இடம் தயார்.",
@@ -148,7 +194,15 @@ const headerCopy: Record<Locale, HeaderCopy> = {
         wordSearch: "தமிழ் சொற்களுக்கான தொடர்பாடல் கட்டங்கள்.",
         fillBlanks: "வழிகாட்டும் பின்னூட்டத்துடன் வாக்கிய நிரப்பு.",
         imageHunt: "தமிழ் குறிச்சொற்களுடன் காட்சி அடையாளம் காணல்.",
-        nimisham: "நேரத்துக்கு எதிராக சரியான சொற்களைத் தேர்வு செய்யுங்கள்.",
+        wordHunt: "நேரத்துக்கு எதிராக சரியான சொற்களைத் தேர்வு செய்யுங்கள்.",
+        kuralVettai: "10 குறள்களை மனப்பாடம் செய்து நேரத்திற்குள் மீண்டும் அமைக்கவும்.",
+      },
+      literatureEyebrow: "தமிழ் இலக்கியம்",
+      literatureHint: "படங்களுடன் தமிழ் கதைகள் மற்றும் இலக்கியப் பயிற்சிகளை வாசிக்கவும்.",
+      literatureListTitle: "கதைகள்",
+      literatureDescriptions: {
+        kathaigal: "ஒவ்வொரு பத்தியின் பின்னரும் படங்களுடன் தமிழ் கதைகள்.",
+        thirukkural: "பொருள், வினா, இடைவெளி நிரப்புதலுடன் குறளை கற்போம்.",
       },
       newBadge: "புதியது",
       currentPage: "நடப்பு பக்கம்",
@@ -156,7 +210,7 @@ const headerCopy: Record<Locale, HeaderCopy> = {
   },
 };
 
-type DesktopDropdown = "learning" | "games" | null;
+type DesktopDropdown = "learning" | "games" | "literature" | null;
 
 function navTextClass(isTamil: boolean) {
   return isTamil ? "font-black tracking-[0.01em]" : "font-black";
@@ -345,6 +399,81 @@ export function HeaderClient({
             ) : null}
           </div>
 
+          <div
+            className="relative"
+            onMouseEnter={() => setDesktopDropdown("literature")}
+            onMouseLeave={() => setDesktopDropdown((current) => (current === "literature" ? null : current))}
+          >
+            <button
+              type="button"
+              onClick={() => setDesktopDropdown((current) => (current === "literature" ? null : "literature"))}
+              className={cn(
+                "flex items-center gap-2 rounded-full border-2 border-transparent px-4 py-2 text-[0.98rem] text-[#180d2b] transition hover:-translate-y-0.5 hover:border-[#180d2b] hover:bg-[#eee5ff] hover:shadow-[2px_3px_0_#180d2b]",
+                desktopDropdown === "literature" && "border-[#180d2b] bg-[#eee5ff] shadow-[2px_3px_0_#180d2b]",
+                navTextClass(isTamil),
+              )}
+            >
+              <span>{copy.dropdown.literature}</span>
+              <span className={cn("text-xs transition", desktopDropdown === "literature" && "rotate-180")}>⌃</span>
+            </button>
+
+            {desktopDropdown === "literature" ? (
+              <div className="absolute left-1/2 top-full z-50 w-[44rem] max-w-[calc(100vw-4rem)] -translate-x-1/2 pt-4">
+                <div className="overflow-hidden rounded-[1.35rem] border-[3px] border-[#180d2b] bg-white shadow-[7px_8px_0_#180d2b]">
+                  <div className="grid gap-0 md:grid-cols-[0.82fr_1.18fr]">
+                    <div className="border-r-[3px] border-[#180d2b] bg-[#eee5ff] px-7 py-7">
+                      <p className="text-xs font-black uppercase tracking-[0.24em] text-[#7c3aed]">
+                        {copy.dropdown.literatureEyebrow}
+                      </p>
+                      <p className="mt-5 max-w-sm text-[1.55rem] font-black leading-tight tracking-[-0.02em] text-[#180d2b]">
+                        {copy.dropdown.literature}
+                      </p>
+                      <p className="mt-4 max-w-sm text-sm font-semibold leading-7 text-[#6f587f]">{copy.dropdown.literatureHint}</p>
+                    </div>
+                    <div className="px-7 py-7">
+                      <p className="mb-4 text-xs font-black uppercase tracking-[0.24em] text-[#8a6a9c]">
+                        {copy.dropdown.literatureListTitle}
+                      </p>
+                      <div className="grid gap-3">
+                        {literatureItems.map((item, index) => {
+                          const targetHref = `/${locale}${item.href}`;
+                          const isCurrentPage = pathname === targetHref;
+
+                          return (
+                            <Link
+                              key={item.href}
+                              href={targetHref}
+                              onClick={() => setDesktopDropdown(null)}
+                              className={cn(
+                                "group flex items-start justify-between gap-4 rounded-[1rem] border-[3px] border-[#180d2b] px-5 py-4 shadow-[3px_4px_0_#180d2b] transition hover:-translate-y-0.5",
+                                isCurrentPage ? "bg-[#eee5ff]" : "bg-[#fff8ec] hover:bg-white",
+                              )}
+                            >
+                              <div>
+                                <div className="flex items-center gap-3">
+                                  <span className="flex h-9 w-9 items-center justify-center rounded-full border-2 border-[#180d2b] bg-[#7c3aed] text-sm font-black text-white">
+                                    {index + 1}
+                                  </span>
+                                  <h3 className="text-lg font-black text-[#180d2b] transition group-hover:text-[#7c3aed]">
+                                    {copy.literature[item.key]}
+                                  </h3>
+                                </div>
+                                <p className="mt-3 pl-12 text-sm font-semibold leading-6 text-[#6f587f]">
+                                  {copy.dropdown.literatureDescriptions[item.key]}
+                                </p>
+                              </div>
+                              <span className="pt-2 text-[#7c3aed] transition group-hover:translate-x-1">→</span>
+                            </Link>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            ) : null}
+          </div>
+
           <button
             type="button"
             onClick={() => {
@@ -441,6 +570,27 @@ export function HeaderClient({
                   onClick={() => setOpen(false)}
                 >
                   {copy.games[item.key]}
+                </Link>
+              ))}
+            </div>
+          </div>
+
+          <div className="mt-2 rounded-[1rem] border-[3px] border-[#180d2b] bg-[#eee5ff] px-4 py-3 shadow-[3px_4px_0_#180d2b]">
+            <p className="text-xs font-black uppercase tracking-[0.24em] text-[#7c3aed]">
+              {copy.dropdown.literature}
+            </p>
+            <div className="mt-2 flex flex-col gap-1">
+              {literatureItems.map((item) => (
+                <Link
+                  key={item.href}
+                  href={`/${locale}${item.href}`}
+                  className={cn(
+                    "rounded-lg px-3 py-2 text-[#180d2b] transition hover:bg-white",
+                    isTamil ? "text-[0.98rem] font-black tracking-[0.01em]" : "text-sm font-black",
+                  )}
+                  onClick={() => setOpen(false)}
+                >
+                  {copy.literature[item.key]}
                 </Link>
               ))}
             </div>

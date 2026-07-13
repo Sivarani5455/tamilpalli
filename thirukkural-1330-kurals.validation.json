@@ -1,0 +1,50 @@
+{
+  "generatedAt": "2026-07-13T14:40:19.040Z",
+  "output": "thirukkural-1330-kurals.csv",
+  "encoding": "UTF-8 with BOM",
+  "sha256": "8452c756489d1b128b6c26c7c68b6836487f86f01143c452e5ac6e175a4c85ad",
+  "bytes": 802101,
+  "dataRows": 1330,
+  "firstNumber": 1,
+  "lastNumber": 1330,
+  "uniqueNumbers": 1330,
+  "uniqueVerses": 1330,
+  "sections": {
+    "அறத்துப்பால்": 380,
+    "பொருட்பால்": 700,
+    "காமத்துப்பால்": 250
+  },
+  "chapters": 133,
+  "kuralsPerChapter": 10,
+  "checks": {
+    "continuousNumbers": true,
+    "noDuplicateNumbers": true,
+    "noDuplicateVerses": true,
+    "allRequiredTamilFieldsPresent": true,
+    "noEmbeddedNewlines": true,
+    "noReplacementOrBidiControlCharacters": true,
+    "noInvalidOrReservedTamilCodepoints": true,
+    "normalizedUnicode": "NFC",
+    "compatibleWithProjectImporter": true
+  },
+  "source": {
+    "repository": "https://github.com/tk120404/thirukkural",
+    "license": "Apache-2.0",
+    "versesAndMuVaradarajanMeaning": "thirukkural.json",
+    "sectionAndChapterHierarchy": "detail.json",
+    "correctedUpstreamVerseTypos": [
+      90,
+      483,
+      599,
+      851,
+      913,
+      957,
+      1117,
+      1118,
+      1126,
+      1192,
+      1202,
+      1321
+    ]
+  }
+}

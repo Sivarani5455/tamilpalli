@@ -11,7 +11,9 @@ const adminLinks = [
   { href: "/admin/word-search", title: "Word Search admin", description: "Manage grids, scores and Tamil word packs.", icon: "grid", color: "#18b66f" },
   { href: "/admin/fill-in-the-blanks", title: "Fill in the Blanks admin", description: "Edit questions, options and grammar notes.", icon: "lines", color: "#4f7cff" },
   { href: "/admin/image-hunt", title: "Image Hunt admin", description: "Control hotspots, prompts and hint rules.", icon: "search", color: "#7c3aed" },
-  { href: "/admin/nimisham", title: "Nimisham admin", description: "Manage timed Tamil word tapping games.", icon: "clock", color: "#ff3b6f" },
+  { href: "/admin/word-hunt", title: "Word Hunt admin", description: "Manage timed Tamil word tapping games.", icon: "clock", color: "#ff3b6f" },
+  { href: "/admin/kathaigal", title: "Kathaigal admin", description: "Write Tamil stories with paragraph images.", icon: "book", color: "#20bf73" },
+  { href: "/admin/thirukkural", title: "Thirukkural admin", description: "Create kurals, porul, quiz and fill-blank practice.", icon: "book", color: "#f5a400" },
 ];
 
 function AdminIcon({ name }: { name: string }) {
