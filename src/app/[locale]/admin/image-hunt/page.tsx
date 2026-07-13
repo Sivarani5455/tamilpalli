@@ -1,6 +1,7 @@
 import Link from "next/link";
 
 import { DeleteContentButton } from "@/components/admin/delete-content-button";
+import { PublicationStatus } from "@/components/admin/publication-status";
 import { requireAdminUser } from "@/lib/auth";
 import { getAdminImageHuntExercises } from "@/lib/content-admin";
 import { getLocaleOrThrow } from "@/lib/i18n";
@@ -52,6 +53,7 @@ export default async function AdminImageHuntPage({
                 <div className="min-w-0">
                   <h2 className="truncate font-display text-2xl font-black leading-tight text-[#180d2b]">{exercise.title}</h2>
                   <p className="mt-1 text-sm font-semibold text-[#8a6a9c]">{exercise.targets.length} targets</p>
+                  <PublicationStatus publishDate={exercise.publishDate} isActive={exercise.isActive} locale={locale} />
                 </div>
               </div>
               <div className="flex items-center gap-3">

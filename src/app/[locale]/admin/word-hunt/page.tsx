@@ -1,6 +1,7 @@
 import Link from "next/link";
 
 import { DeleteContentButton } from "@/components/admin/delete-content-button";
+import { PublicationStatus } from "@/components/admin/publication-status";
 import { requireAdminUser } from "@/lib/auth";
 import { getAdminWordHuntExercises } from "@/lib/content-admin";
 import { getLocaleOrThrow } from "@/lib/i18n";
@@ -54,6 +55,7 @@ export default async function AdminWordHuntPage({
                 <p className="mt-1 text-sm font-semibold text-[#8a6a9c]">
                   {exercise.words.length} words · {exercise.words.filter((word) => word.isCorrect).length} targets · {exercise.timeLimitSeconds}s
                 </p>
+                <PublicationStatus publishDate={exercise.publishDate} isActive={exercise.isActive} locale={locale} />
                 </div>
               </div>
               <div className="flex items-center gap-3">

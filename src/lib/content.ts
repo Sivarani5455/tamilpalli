@@ -1,9 +1,10 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 
-import { categories, fillBlankExercises, homeSplashSlides, imageHuntExercises, kathaigalStories, thirukkuralLessons, wordHuntExercises, wordSearchGrids } from "@/lib/mock-data";
+import { categories, fillBlankExercises, imageHuntExercises, kathaigalStories, thirukkuralLessons, wordHuntExercises, wordSearchGrids } from "@/lib/mock-data";
 import { createSupabaseAdminClient } from "@/lib/supabase/admin";
 import { hasSupabaseEnv } from "@/lib/supabase/config";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
+import { getCurrentPublicationDate, isPublicationAvailable } from "@/lib/publication";
 import type {
   ContentCategory,
   DictionaryEntry,
@@ -15,7 +16,6 @@ import type {
   Locale,
   ThirukkuralLesson,
   WordHuntExercise,
-  SplashSlide,
   WordSearchGrid,
 } from "@/types";
 
@@ -49,6 +49,7 @@ type WordSearchRow = {
   time_limit_seconds: number;
   grid_data: string[][];
   words: WordSearchGrid["words"];
+  publish_date?: string | null;
   created_at?: string;
   allowed_plans?: Array<"discovery" | "standard" | "elite">;
 };
@@ -60,6 +61,8 @@ type FillBlankExerciseRow = {
   description: string;
   difficulty: FillBlankExercise["difficulty"];
   time_limit_seconds: number;
+  is_active?: boolean;
+  publish_date?: string | null;
   allowed_plans?: Array<"discovery" | "standard" | "elite">;
   fill_blank_questions: Array<{
     id: string;
@@ -82,6 +85,8 @@ type ImageHuntExerciseRow = {
   image_url: string | null;
   difficulty: ImageHuntExercise["difficulty"];
   time_limit_seconds: number;
+  is_active?: boolean;
+  publish_date?: string | null;
   allowed_plans?: Array<"discovery" | "standard" | "elite">;
   image_hunt_prompts: Array<{
     instruction_translation: Record<string, string>;
@@ -110,6 +115,7 @@ type WordHuntExerciseRow = {
   prompt_translation: Record<string, string>;
   words: WordHuntExercise["words"];
   is_active?: boolean;
+  publish_date?: string | null;
   created_at?: string;
   allowed_plans?: Array<"discovery" | "standard" | "elite">;
 };
@@ -124,6 +130,7 @@ type KathaigalStoryRow = {
   paragraphs: KathaigalStory["paragraphs"];
   questions?: KathaigalStory["questions"] | null;
   is_active?: boolean;
+  publish_date?: string | null;
   created_at?: string;
   allowed_plans?: Array<"discovery" | "standard" | "elite">;
 };
@@ -165,16 +172,6 @@ type DictionaryProgressRow = {
   views_count: number | null;
   learned_count: number | null;
   last_learned_day: number | null;
-};
-
-type SplashSlideRow = {
-  id: string;
-  kind: SplashSlide["kind"];
-  image_url: string;
-  sort_order: number;
-  is_active: boolean;
-  created_at: string;
-  updated_at: string;
 };
 
 function deriveRequiredPlanFromAllowed(
@@ -255,6 +252,7 @@ function mapWordSearchRows(rows: WordSearchRow[]) {
     timeLimitSeconds: row.time_limit_seconds,
     gridData: row.grid_data,
     words: row.words,
+    publishDate: row.publish_date ?? null,
     createdAt: row.created_at,
   }));
 }
@@ -266,6 +264,8 @@ function mapFillBlankRows(rows: FillBlankExerciseRow[]) {
     title: row.title,
     difficulty: row.difficulty,
     timeLimitSeconds: row.time_limit_seconds,
+    isActive: row.is_active,
+    publishDate: row.publish_date ?? null,
     questions:
       row.fill_blank_questions?.map((question) => ({
         id: question.id,
@@ -300,6 +300,8 @@ function mapImageHuntRows(rows: ImageHuntExerciseRow[]) {
     difficulty: row.difficulty,
     imageUrl: row.image_url,
     timeLimitSeconds: row.time_limit_seconds,
+    isActive: row.is_active,
+    publishDate: row.publish_date ?? null,
     instruction:
       (row.image_hunt_prompts[0]?.instruction_translation as ImageHuntExercise["instruction"]) ?? {
         en: row.description,
@@ -335,6 +337,7 @@ function mapWordHuntRows(rows: WordHuntExerciseRow[]) {
     prompt: row.prompt_translation as WordHuntExercise["prompt"],
     words: row.words,
     isActive: row.is_active,
+    publishDate: row.publish_date ?? null,
     createdAt: row.created_at,
   }));
 }
@@ -350,6 +353,7 @@ function mapKathaigalRows(rows: KathaigalStoryRow[]) {
     paragraphs: row.paragraphs,
     questions: row.questions ?? [],
     isActive: row.is_active,
+    publishDate: row.publish_date ?? null,
     createdAt: row.created_at,
   }));
 }
@@ -411,18 +415,6 @@ function mapDictionaryRows(rows: DictionaryEntryRow[]): DictionaryEntry[] {
   }));
 }
 
-function mapSplashRows(rows: SplashSlideRow[]): SplashSlide[] {
-  return rows.map((row) => ({
-    id: row.id,
-    kind: row.kind,
-    imageUrl: row.image_url,
-    sortOrder: row.sort_order,
-    isActive: row.is_active,
-    createdAt: row.created_at,
-    updatedAt: row.updated_at,
-  }));
-}
-
 export async function getContentCategories() {
   if (!hasSupabaseEnv()) {
     return categories;
@@ -469,19 +461,22 @@ export async function getContentCategories() {
 
 export async function getWordSearchGrids() {
   if (!hasSupabaseEnv()) {
-    return wordSearchGrids;
+    return wordSearchGrids.filter((grid) => isPublicationAvailable(grid.publishDate));
   }
 
   const supabase = await createSupabaseServerClient();
 
   if (!supabase) {
-    return wordSearchGrids;
+    return wordSearchGrids.filter((grid) => isPublicationAvailable(grid.publishDate));
   }
+
+  const currentDate = getCurrentPublicationDate();
 
   const { data } = await supabase
     .from("word_search_grids")
-    .select("id, slug, title, description, difficulty, time_limit_seconds, grid_data, words, created_at, allowed_plans")
+    .select("id, slug, title, description, difficulty, time_limit_seconds, grid_data, words, publish_date, created_at, allowed_plans")
     .eq("is_active", true)
+    .or(`publish_date.is.null,publish_date.lte.${currentDate}`)
     .order("created_at", { ascending: false });
 
   if (data && data.length > 0) {
@@ -496,8 +491,9 @@ export async function getWordSearchGrids() {
 
   const { data: adminData } = await adminClient
     .from("word_search_grids")
-    .select("id, slug, title, description, difficulty, time_limit_seconds, grid_data, words, created_at, allowed_plans")
+    .select("id, slug, title, description, difficulty, time_limit_seconds, grid_data, words, publish_date, created_at, allowed_plans")
     .eq("is_active", true)
+    .or(`publish_date.is.null,publish_date.lte.${currentDate}`)
     .order("created_at", { ascending: false });
 
   if (!adminData || adminData.length === 0) {
@@ -549,21 +545,24 @@ export async function getWordSearchGridUserScores() {
 
 export async function getFillBlankExercises() {
   if (!hasSupabaseEnv()) {
-    return fillBlankExercises;
+    return fillBlankExercises.filter((exercise) => isPublicationAvailable(exercise.publishDate));
   }
 
   const supabase = await createSupabaseServerClient();
 
   if (!supabase) {
-    return fillBlankExercises;
+    return fillBlankExercises.filter((exercise) => isPublicationAvailable(exercise.publishDate));
   }
+
+  const currentDate = getCurrentPublicationDate();
 
   const { data } = await supabase
     .from("fill_blank_exercises")
     .select(
-      "id, slug, title, description, difficulty, time_limit_seconds, allowed_plans, fill_blank_questions(id, sentence_template, sentence_translation, explanation, fill_blank_options(blank_key, option_text, is_correct))",
+      "id, slug, title, description, difficulty, time_limit_seconds, is_active, publish_date, allowed_plans, fill_blank_questions(id, sentence_template, sentence_translation, explanation, fill_blank_options(blank_key, option_text, is_correct))",
     )
     .eq("is_active", true)
+    .or(`publish_date.is.null,publish_date.lte.${currentDate}`)
     .order("created_at", { ascending: false });
 
   if (data && data.length > 0) {
@@ -573,19 +572,20 @@ export async function getFillBlankExercises() {
   const adminClient = createSupabaseAdminClient();
 
   if (!adminClient) {
-    return fillBlankExercises;
+    return fillBlankExercises.filter((exercise) => isPublicationAvailable(exercise.publishDate));
   }
 
   const { data: adminData } = await adminClient
     .from("fill_blank_exercises")
     .select(
-      "id, slug, title, description, difficulty, time_limit_seconds, allowed_plans, fill_blank_questions(id, sentence_template, sentence_translation, explanation, fill_blank_options(blank_key, option_text, is_correct))",
+      "id, slug, title, description, difficulty, time_limit_seconds, is_active, publish_date, allowed_plans, fill_blank_questions(id, sentence_template, sentence_translation, explanation, fill_blank_options(blank_key, option_text, is_correct))",
     )
     .eq("is_active", true)
+    .or(`publish_date.is.null,publish_date.lte.${currentDate}`)
     .order("created_at", { ascending: false });
 
   if (!adminData) {
-    return fillBlankExercises;
+    return fillBlankExercises.filter((exercise) => isPublicationAvailable(exercise.publishDate));
   }
 
   return mapFillBlankRows(adminData as FillBlankExerciseRow[]);
@@ -598,21 +598,24 @@ export async function getFillBlankExercise(id: string) {
 
 export async function getImageHuntExercises() {
   if (!hasSupabaseEnv()) {
-    return imageHuntExercises;
+    return imageHuntExercises.filter((exercise) => isPublicationAvailable(exercise.publishDate));
   }
 
   const supabase = await createSupabaseServerClient();
 
   if (!supabase) {
-    return imageHuntExercises;
+    return imageHuntExercises.filter((exercise) => isPublicationAvailable(exercise.publishDate));
   }
+
+  const currentDate = getCurrentPublicationDate();
 
   const { data } = await supabase
     .from("image_hunt_exercises")
     .select(
-      "id, slug, title, description, image_url, difficulty, time_limit_seconds, allowed_plans, image_hunt_prompts(instruction_translation), image_hunt_targets(id, label_ta, label_translation, coordinates)",
+      "id, slug, title, description, image_url, difficulty, time_limit_seconds, is_active, publish_date, allowed_plans, image_hunt_prompts(instruction_translation), image_hunt_targets(id, label_ta, label_translation, coordinates)",
     )
     .eq("is_active", true)
+    .or(`publish_date.is.null,publish_date.lte.${currentDate}`)
     .order("created_at", { ascending: false });
 
   if (data && data.length > 0) {
@@ -622,19 +625,20 @@ export async function getImageHuntExercises() {
   const adminClient = createSupabaseAdminClient();
 
   if (!adminClient) {
-    return imageHuntExercises;
+    return imageHuntExercises.filter((exercise) => isPublicationAvailable(exercise.publishDate));
   }
 
   const { data: adminData } = await adminClient
     .from("image_hunt_exercises")
     .select(
-      "id, slug, title, description, image_url, difficulty, time_limit_seconds, allowed_plans, image_hunt_prompts(instruction_translation), image_hunt_targets(id, label_ta, label_translation, coordinates)",
+      "id, slug, title, description, image_url, difficulty, time_limit_seconds, is_active, publish_date, allowed_plans, image_hunt_prompts(instruction_translation), image_hunt_targets(id, label_ta, label_translation, coordinates)",
     )
     .eq("is_active", true)
+    .or(`publish_date.is.null,publish_date.lte.${currentDate}`)
     .order("created_at", { ascending: false });
 
   if (!adminData) {
-    return imageHuntExercises;
+    return imageHuntExercises.filter((exercise) => isPublicationAvailable(exercise.publishDate));
   }
 
   return mapImageHuntRows(adminData as ImageHuntExerciseRow[]);
@@ -647,19 +651,22 @@ export async function getImageHuntExercise(id: string) {
 
 export async function getWordHuntExercises() {
   if (!hasSupabaseEnv()) {
-    return wordHuntExercises;
+    return wordHuntExercises.filter((exercise) => isPublicationAvailable(exercise.publishDate));
   }
 
   const supabase = await createSupabaseServerClient();
 
   if (!supabase) {
-    return wordHuntExercises;
+    return wordHuntExercises.filter((exercise) => isPublicationAvailable(exercise.publishDate));
   }
+
+  const currentDate = getCurrentPublicationDate();
 
   const { data } = await supabase
     .from("word_hunt_exercises")
-    .select("id, slug, title, description, difficulty, time_limit_seconds, prompt_translation, words, is_active, created_at, allowed_plans")
+    .select("id, slug, title, description, difficulty, time_limit_seconds, prompt_translation, words, is_active, publish_date, created_at, allowed_plans")
     .eq("is_active", true)
+    .or(`publish_date.is.null,publish_date.lte.${currentDate}`)
     .order("created_at", { ascending: false });
 
   if (data && data.length > 0) {
@@ -669,17 +676,18 @@ export async function getWordHuntExercises() {
   const adminClient = createSupabaseAdminClient();
 
   if (!adminClient) {
-    return wordHuntExercises;
+    return wordHuntExercises.filter((exercise) => isPublicationAvailable(exercise.publishDate));
   }
 
   const { data: adminData } = await adminClient
     .from("word_hunt_exercises")
-    .select("id, slug, title, description, difficulty, time_limit_seconds, prompt_translation, words, is_active, created_at, allowed_plans")
+    .select("id, slug, title, description, difficulty, time_limit_seconds, prompt_translation, words, is_active, publish_date, created_at, allowed_plans")
     .eq("is_active", true)
+    .or(`publish_date.is.null,publish_date.lte.${currentDate}`)
     .order("created_at", { ascending: false });
 
   if (!adminData) {
-    return wordHuntExercises;
+    return wordHuntExercises.filter((exercise) => isPublicationAvailable(exercise.publishDate));
   }
 
   return mapWordHuntRows(adminData as WordHuntExerciseRow[]);
@@ -692,19 +700,22 @@ export async function getWordHuntExercise(id: string) {
 
 export async function getKathaigalStories() {
   if (!hasSupabaseEnv()) {
-    return kathaigalStories;
+    return kathaigalStories.filter((story) => isPublicationAvailable(story.publishDate));
   }
 
   const supabase = await createSupabaseServerClient();
 
   if (!supabase) {
-    return kathaigalStories;
+    return kathaigalStories.filter((story) => isPublicationAvailable(story.publishDate));
   }
+
+  const currentDate = getCurrentPublicationDate();
 
   const { data } = await supabase
     .from("kathaigal_stories")
-    .select("id, slug, title, description, difficulty, cover_image_url, paragraphs, questions, is_active, created_at, allowed_plans")
+    .select("id, slug, title, description, difficulty, cover_image_url, paragraphs, questions, is_active, publish_date, created_at, allowed_plans")
     .eq("is_active", true)
+    .or(`publish_date.is.null,publish_date.lte.${currentDate}`)
     .order("created_at", { ascending: false });
 
   if (data && data.length > 0) {
@@ -714,17 +725,18 @@ export async function getKathaigalStories() {
   const adminClient = createSupabaseAdminClient();
 
   if (!adminClient) {
-    return kathaigalStories;
+    return kathaigalStories.filter((story) => isPublicationAvailable(story.publishDate));
   }
 
   const { data: adminData } = await adminClient
     .from("kathaigal_stories")
-    .select("id, slug, title, description, difficulty, cover_image_url, paragraphs, questions, is_active, created_at, allowed_plans")
+    .select("id, slug, title, description, difficulty, cover_image_url, paragraphs, questions, is_active, publish_date, created_at, allowed_plans")
     .eq("is_active", true)
+    .or(`publish_date.is.null,publish_date.lte.${currentDate}`)
     .order("created_at", { ascending: false });
 
   if (!adminData) {
-    return kathaigalStories;
+    return kathaigalStories.filter((story) => isPublicationAvailable(story.publishDate));
   }
 
   return mapKathaigalRows(adminData as KathaigalStoryRow[]);
@@ -953,50 +965,4 @@ export async function getDictionaryProgressSummary() {
     totalMastered: rows.filter((row) => Number(row.learned_count ?? 0) >= 3).length,
     reviewedToday: rows.filter((row) => Number(row.last_learned_day ?? -1) === today).length,
   } satisfies DictionaryProgressSummary;
-}
-
-export async function getHomeSplashSlides() {
-  if (!hasSupabaseEnv()) {
-    return homeSplashSlides;
-  }
-
-  const adminClient = createSupabaseAdminClient();
-
-  if (adminClient) {
-    try {
-      const { data } = await adminClient
-        .from("home_splash_slides")
-        .select("id, kind, image_url, sort_order, is_active, created_at, updated_at")
-        .eq("is_active", true)
-        .order("sort_order", { ascending: true })
-        .order("created_at", { ascending: true });
-
-      if (data) {
-        return mapSplashRows(data as SplashSlideRow[]);
-      }
-    } catch {}
-  }
-
-  const supabase = await createSupabaseServerClient();
-
-  if (!supabase) {
-    return homeSplashSlides;
-  }
-
-  try {
-    const { data } = await supabase
-      .from("home_splash_slides")
-      .select("id, kind, image_url, sort_order, is_active, created_at, updated_at")
-      .eq("is_active", true)
-      .order("sort_order", { ascending: true })
-      .order("created_at", { ascending: true });
-
-    if (data) {
-      return mapSplashRows(data as SplashSlideRow[]);
-    }
-  } catch {
-    return homeSplashSlides;
-  }
-
-  return homeSplashSlides;
 }

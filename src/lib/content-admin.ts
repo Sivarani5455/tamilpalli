@@ -1,6 +1,6 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 
-import { fillBlankExercises, homeSplashSlides, imageHuntExercises, kathaigalStories, thirukkuralLessons, wordHuntExercises, wordSearchGrids } from "@/lib/mock-data";
+import { fillBlankExercises, imageHuntExercises, kathaigalStories, thirukkuralLessons, wordHuntExercises, wordSearchGrids } from "@/lib/mock-data";
 import { createSupabaseAdminClient } from "@/lib/supabase/admin";
 import { hasSupabaseEnv } from "@/lib/supabase/config";
 import type {
@@ -12,7 +12,6 @@ import type {
   Locale,
   ThirukkuralLesson,
   WordHuntExercise,
-  SplashSlide,
   WordSearchGrid,
 } from "@/types";
 
@@ -26,6 +25,7 @@ type WordSearchRow = {
   grid_data: string[][];
   words: WordSearchGrid["words"];
   is_active: boolean;
+  publish_date: string | null;
 };
 
 type FillBlankExerciseRow = {
@@ -35,6 +35,8 @@ type FillBlankExerciseRow = {
   description: string;
   difficulty: FillBlankExercise["difficulty"];
   time_limit_seconds: number;
+  is_active: boolean;
+  publish_date: string | null;
   fill_blank_questions: Array<{
     id: string;
     sentence_template: string;
@@ -56,6 +58,8 @@ type ImageHuntExerciseRow = {
   image_url: string | null;
   difficulty: ImageHuntExercise["difficulty"];
   time_limit_seconds: number;
+  is_active: boolean;
+  publish_date: string | null;
   image_hunt_prompts: Array<{
     instruction_translation: Record<string, string>;
   }>;
@@ -83,6 +87,7 @@ type WordHuntExerciseRow = {
   prompt_translation: Record<string, string>;
   words: WordHuntExercise["words"];
   is_active: boolean;
+  publish_date: string | null;
   created_at?: string;
 };
 
@@ -96,6 +101,7 @@ type KathaigalStoryRow = {
   paragraphs: KathaigalStory["paragraphs"];
   questions?: KathaigalStory["questions"] | null;
   is_active: boolean;
+  publish_date: string | null;
   created_at?: string;
 };
 
@@ -155,16 +161,6 @@ type DictionaryProgressInsightRow = {
       }>;
 };
 
-type SplashSlideRow = {
-  id: string;
-  kind: SplashSlide["kind"];
-  image_url: string;
-  sort_order: number;
-  is_active: boolean;
-  created_at?: string;
-  updated_at?: string;
-};
-
 export async function getAdminWordSearchGrids() {
   if (!hasSupabaseEnv()) {
     return wordSearchGrids;
@@ -178,7 +174,7 @@ export async function getAdminWordSearchGrids() {
 
   const { data } = await supabase
     .from("word_search_grids")
-    .select("id, slug, title, description, difficulty, time_limit_seconds, grid_data, words, is_active")
+    .select("id, slug, title, description, difficulty, time_limit_seconds, grid_data, words, is_active, publish_date")
     .order("created_at", { ascending: false });
 
   if (!data) {
@@ -195,6 +191,7 @@ export async function getAdminWordSearchGrids() {
     gridData: row.grid_data,
     words: row.words,
     isActive: row.is_active,
+    publishDate: row.publish_date,
   }));
 }
 
@@ -217,7 +214,7 @@ export async function getAdminFillBlankExercises() {
   const { data } = await supabase
     .from("fill_blank_exercises")
     .select(
-      "id, slug, title, description, difficulty, time_limit_seconds, fill_blank_questions(id, sentence_template, sentence_translation, explanation, fill_blank_options(blank_key, option_text, is_correct))",
+      "id, slug, title, description, difficulty, time_limit_seconds, is_active, publish_date, fill_blank_questions(id, sentence_template, sentence_translation, explanation, fill_blank_options(blank_key, option_text, is_correct))",
     )
     .order("created_at", { ascending: false });
 
@@ -231,6 +228,8 @@ export async function getAdminFillBlankExercises() {
     title: row.title,
     difficulty: row.difficulty,
     timeLimitSeconds: row.time_limit_seconds,
+    isActive: row.is_active,
+    publishDate: row.publish_date,
     questions:
       row.fill_blank_questions?.map((question) => ({
         id: question.id,
@@ -276,7 +275,7 @@ export async function getAdminImageHuntExercises() {
   const { data } = await supabase
     .from("image_hunt_exercises")
     .select(
-      "id, slug, title, description, image_url, difficulty, time_limit_seconds, image_hunt_prompts(instruction_translation), image_hunt_targets(id, label_ta, label_translation, coordinates)",
+      "id, slug, title, description, image_url, difficulty, time_limit_seconds, is_active, publish_date, image_hunt_prompts(instruction_translation), image_hunt_targets(id, label_ta, label_translation, coordinates)",
     )
     .order("created_at", { ascending: false });
 
@@ -291,6 +290,8 @@ export async function getAdminImageHuntExercises() {
     difficulty: row.difficulty,
     imageUrl: row.image_url,
     timeLimitSeconds: row.time_limit_seconds,
+    isActive: row.is_active,
+    publishDate: row.publish_date,
     instruction:
       (row.image_hunt_prompts[0]?.instruction_translation as ImageHuntExercise["instruction"]) ?? {
         en: row.description,
@@ -333,7 +334,7 @@ export async function getAdminWordHuntExercises() {
 
   const { data } = await supabase
     .from("word_hunt_exercises")
-    .select("id, slug, title, description, difficulty, time_limit_seconds, prompt_translation, words, is_active, created_at")
+    .select("id, slug, title, description, difficulty, time_limit_seconds, prompt_translation, words, is_active, publish_date, created_at")
     .order("created_at", { ascending: false });
 
   if (!data) {
@@ -350,6 +351,7 @@ export async function getAdminWordHuntExercises() {
     prompt: row.prompt_translation as WordHuntExercise["prompt"],
     words: row.words,
     isActive: row.is_active,
+    publishDate: row.publish_date,
     createdAt: row.created_at,
   }));
 }
@@ -372,7 +374,7 @@ export async function getAdminKathaigalStories() {
 
   const { data } = await supabase
     .from("kathaigal_stories")
-    .select("id, slug, title, description, difficulty, cover_image_url, paragraphs, questions, is_active, created_at")
+    .select("id, slug, title, description, difficulty, cover_image_url, paragraphs, questions, is_active, publish_date, created_at")
     .order("created_at", { ascending: false });
 
   if (!data) {
@@ -389,6 +391,7 @@ export async function getAdminKathaigalStories() {
     paragraphs: row.paragraphs,
     questions: row.questions ?? [],
     isActive: row.is_active,
+    publishDate: row.publish_date,
     createdAt: row.created_at,
   }));
 }
@@ -587,40 +590,4 @@ export async function getAdminDictionaryInsights() {
 
     return b.viewsTotal - a.viewsTotal;
   });
-}
-
-export async function getAdminHomeSplashSlides() {
-  if (!hasSupabaseEnv()) {
-    return homeSplashSlides;
-  }
-
-  const supabase = createSupabaseAdminClient();
-
-  if (!supabase) {
-    return homeSplashSlides;
-  }
-
-  try {
-    const { data } = await supabase
-      .from("home_splash_slides")
-      .select("id, kind, image_url, sort_order, is_active, created_at, updated_at")
-      .order("sort_order", { ascending: true })
-      .order("created_at", { ascending: true });
-
-    if (!data) {
-      return [];
-    }
-
-    return (data as SplashSlideRow[]).map((row) => ({
-      id: row.id,
-      kind: row.kind,
-      imageUrl: row.image_url,
-      sortOrder: row.sort_order,
-      isActive: row.is_active,
-      createdAt: row.created_at,
-      updatedAt: row.updated_at,
-    }));
-  } catch {
-    return homeSplashSlides;
-  }
 }

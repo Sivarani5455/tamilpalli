@@ -37,6 +37,35 @@ function ClockIcon({ className }: { className?: string }) {
   );
 }
 
+function StarIcon({ className }: { className?: string }) {
+  return (
+    <svg {...iconProps(className)}>
+      <path d="m12 3 2.7 5.5 6.1.9-4.4 4.3 1 6.1-5.4-2.9-5.4 2.9 1-6.1-4.4-4.3 6.1-.9L12 3Z" />
+    </svg>
+  );
+}
+
+function FlameIcon({ className }: { className?: string }) {
+  return (
+    <svg {...iconProps(className)}>
+      <path d="M13.5 3.5c.5 3-1.8 4.2-1.8 6.4 0 1.1.7 1.9 1.7 1.9 1.4 0 2.3-1.3 2.1-3.1 1.8 1.6 3 3.7 3 6a6.5 6.5 0 0 1-13 0c0-3.6 2-6.7 5.4-9-.2 2.3.5 3.6 1.5 4.1-.2-2.1.1-4.3 1.1-6.3Z" />
+    </svg>
+  );
+}
+
+function ListChecksIcon({ className }: { className?: string }) {
+  return (
+    <svg {...iconProps(className)}>
+      <path d="m4 7 1.5 1.5L8 6" />
+      <path d="M11 7h9" />
+      <path d="m4 12 1.5 1.5L8 11" />
+      <path d="M11 12h9" />
+      <path d="m4 17 1.5 1.5L8 16" />
+      <path d="M11 17h9" />
+    </svg>
+  );
+}
+
 function PauseIcon({ className }: { className?: string }) {
   return (
     <svg {...iconProps(className)}>
@@ -103,16 +132,41 @@ function InfoIcon({ className }: { className?: string }) {
 }
 
 const PILL_COLORS = [
-  "#cc9a3c",
-  "#c1442e",
-  "#4fa6a0",
-  "#3f9a78",
-  "#f0ce86",
-  "#8fbab6",
-  "#d2a348",
-  "#a83b2b",
-  "#6bb8b1",
+  "#7c3aed",
+  "#0f766e",
+  "#be123c",
+  "#0369a1",
+  "#a16207",
+  "#15803d",
+  "#c2410c",
+  "#4338ca",
+  "#be185d",
+  "#0e7490",
+  "#4d7c0f",
+  "#9333ea",
+  "#b91c1c",
+  "#047857",
+  "#1d4ed8",
+  "#b45309",
+  "#6d28d9",
+  "#9f1239",
+  "#166534",
+  "#075985",
 ];
+
+function getFoundCellBackground(colorIndexes: number[]) {
+  if (colorIndexes.length === 1) {
+    return PILL_COLORS[colorIndexes[0] % PILL_COLORS.length];
+  }
+
+  const segmentSize = 100 / colorIndexes.length;
+  const stops = colorIndexes.flatMap((colorIndex, index) => {
+    const color = PILL_COLORS[colorIndex % PILL_COLORS.length];
+    return [`${color} ${index * segmentSize}%`, `${color} ${(index + 1) * segmentSize}%`];
+  });
+
+  return `linear-gradient(135deg, ${stops.join(", ")})`;
+}
 
 const MAX_ATTEMPTS = 3;
 const GAME_TIME_FALLBACK = 120;
@@ -193,7 +247,7 @@ export function WordSearchGame({
     "clamp(0.92rem, 1.75vmin, 1.3rem)";
 
   const [foundWords, setFoundWords] = useState<string[]>([]);
-  const [foundPlacements, setFoundPlacements] = useState<Record<string, number>>({});
+  const [foundPlacements, setFoundPlacements] = useState<Record<string, number[]>>({});
   const [dragging, setDragging] = useState(false);
   const [anchor, setAnchor] = useState<CellCoord | null>(null);
   const [hoverCell, setHoverCell] = useState<CellCoord | null>(null);
@@ -411,7 +465,9 @@ export function WordSearchGame({
           setFoundPlacements((current) => {
             const next = { ...current };
             line.forEach(([row, col]) => {
-              next[cellKey(row, col)] = colorIdx;
+              const key = cellKey(row, col);
+              const currentColors = next[key] ?? [];
+              next[key] = currentColors.includes(colorIdx) ? currentColors : [...currentColors, colorIdx];
             });
             return next;
           });
@@ -599,52 +655,175 @@ export function WordSearchGame({
         WebkitUserSelect: "none",
       }}
     >
-      <div className="pointer-events-none absolute left-20 top-3 h-4 w-4 rotate-12 rounded-[0.25rem] bg-[#b7ff2a]" />
-      <div className="pointer-events-none absolute left-1/2 top-5 h-3 w-3 rounded-full bg-[#ff3b6f]" />
-      <div className="pointer-events-none absolute right-20 top-4 h-3 w-3 rounded-full bg-[#7c3aed]" />
-
       <div className="relative mx-auto flex min-h-[calc(100dvh-32px)] max-w-[48rem] flex-col">
-        <header className="mb-4 flex flex-wrap items-start justify-between gap-3 sm:items-center lg:mb-3">
-          <div className="flex min-w-0 items-center gap-3">
-              <Link
-                href={`/${locale}/word-search`}
-              className="inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-full border-[3px] border-[#180d2b] bg-white text-[#180d2b] shadow-[4px_5px_0_#180d2b] transition hover:-translate-y-0.5 active:translate-y-0.5 active:shadow-[2px_2px_0_#180d2b]"
-                aria-label={copy.back}
-              >
-                <ChevronLeftIcon className="h-5 w-5" />
-              </Link>
+        <header className="-mx-3 -mt-4 mb-3 bg-[#fff7ec] px-3 pb-3 pt-4 sm:hidden">
+          <div className="grid grid-cols-[2.5rem_1fr_2.75rem] items-center gap-3">
+            <Link
+              href={`/${locale}/word-search`}
+              className="inline-flex h-10 w-10 items-center justify-center rounded-full border-2 border-[#180d2b] bg-white text-[#180d2b] shadow-[2px_3px_0_#180d2b] transition hover:bg-[#fff2cf] active:shadow-none"
+              aria-label={copy.back}
+            >
+              <ChevronLeftIcon className="h-5 w-5" />
+            </Link>
 
-              <div className="min-w-0">
-              <h1 className={`font-tamil truncate text-[#180d2b] ${isTamil ? "text-[1.55rem] font-black" : "text-[1.45rem] font-black"}`}>
-                  {grid.title}
-                </h1>
-              </div>
+            <div className={`flex items-center justify-center gap-1.5 text-sm font-black tabular-nums ${isLowTime ? "text-[#ff3b6f]" : "text-[#180d2b]"}`}>
+              <ClockIcon className="h-4 w-4 text-[#d8c998]" />
+              <span>{formatClock(timeLeft)}</span>
             </div>
 
-          <div className="flex w-full flex-wrap items-stretch gap-2 sm:w-auto sm:justify-end">
-            <div
-              className={`flex min-w-[70px] flex-1 flex-col gap-1 rounded-[0.85rem] border-[3px] border-[#180d2b] px-3 py-2 shadow-[3px_4px_0_#180d2b] transition-all duration-300 sm:flex-none ${
-                toastWord ? "scale-[1.04] text-white" : "bg-white"
-              }`}
-              style={toastWord ? { backgroundColor: toastWord.color } : undefined}
+            <button
+              type="button"
+              onClick={() => {
+                if (gameState !== "playing") {
+                  return;
+                }
+                setDragging(false);
+                setAnchor(null);
+                setHoverCell(null);
+                setIsPaused((current) => !current);
+              }}
+              className="inline-flex h-11 w-11 items-center justify-center rounded-full bg-[#2f7fdf] text-white transition hover:bg-[#3b8ced] active:scale-95"
+              aria-label={copy.pause}
             >
-              <span className={`font-display text-[0.58rem] font-black uppercase tracking-[0.13em] ${toastWord ? "text-white" : "text-[#7c3aed]"}`}>
-                  {copy.score}
-              </span>
-              <span className={`text-lg font-black tabular-nums ${toastWord ? "text-white" : "text-[#180d2b]"}`}>
-                  {toastWord ? `+${toastWord.points} ${copy.points}` : score}
-              </span>
-              </div>
+              {isPaused ? <PlayIcon className="h-5 w-5" /> : <PauseIcon className="h-5 w-5" />}
+            </button>
+          </div>
 
-            <div className="flex min-w-[82px] flex-1 flex-col gap-1 rounded-[0.85rem] border-[3px] border-[#180d2b] bg-white px-3 py-2 shadow-[3px_4px_0_#180d2b] sm:flex-none">
-              <span className="font-display text-[0.58rem] font-black uppercase tracking-[0.13em] text-[#7c3aed]">
-                Streak
-              </span>
-              <div className="flex h-[18px] items-center gap-1.5">
+          <div className="mt-3 grid grid-cols-2 gap-2">
+            <div className="rounded-[0.65rem] bg-[#181818] px-3 py-2.5">
+              <p className="text-xs font-medium text-[#e5e5e5]">{copy.score}</p>
+              <p className="mt-1 text-2xl font-medium leading-none tabular-nums text-white">
+                {toastWord ? `+${toastWord.points}` : score}
+              </p>
+            </div>
+
+            <div className="rounded-[0.65rem] bg-[#181818] px-3 py-2.5">
+              <p className="text-xs font-medium text-[#e5e5e5]">
+                {locale === "fr" ? "Série" : locale === "ta" ? "தொடர்" : "Streak"}
+              </p>
+              <div className="mt-2.5 flex h-3 items-center gap-1">
                 {Array.from({ length: MAX_ATTEMPTS }).map((_, index) => (
                   <span
                     key={index}
-                    className="h-[9px] w-[9px] rounded-full border transition"
+                    className={`h-2.5 w-2.5 rounded-full ${index < attemptsLeft ? "bg-[#ef4b55]" : "bg-[#555]"}`}
+                  />
+                ))}
+              </div>
+            </div>
+          </div>
+
+          <div className="mt-2 rounded-[0.65rem] bg-[#181818] px-3 py-2.5">
+            <div className="flex items-center justify-between gap-3 text-xs font-medium text-[#e5e5e5]">
+              <span>{copy.progress}</span>
+              <span className="font-black tabular-nums text-white">{foundCount}/{grid.words.length}</span>
+            </div>
+            <div className="mt-2 h-1.5 overflow-hidden rounded-full bg-[#444]">
+              <div
+                className="h-full rounded-full bg-[#2f7fdf] transition-[width] duration-300"
+                style={{ width: `${grid.words.length > 0 ? (foundCount / grid.words.length) * 100 : 0}%` }}
+              />
+            </div>
+          </div>
+        </header>
+
+        <header className="-mx-5 -mt-5 mb-3 hidden bg-[#fff7ec] px-4 py-2.5 sm:block">
+          <div className="grid w-full grid-cols-[2.5rem_repeat(4,minmax(0,1fr))_2.75rem] items-center gap-2.5">
+            <Link
+              href={`/${locale}/word-search`}
+              className="inline-flex h-10 w-10 items-center justify-center rounded-full border-2 border-[#180d2b] bg-white text-[#180d2b] shadow-[2px_3px_0_#180d2b] transition hover:bg-[#fff2cf] active:shadow-none"
+              aria-label={copy.back}
+            >
+              <ChevronLeftIcon className="h-5 w-5" />
+            </Link>
+
+            <div className="flex min-h-[4.5rem] min-w-0 flex-col items-center justify-center rounded-[0.65rem] border border-[#4b4b4b] bg-[#303030] px-1.5 py-1.5">
+              <StarIcon className="h-4 w-4 text-[#b7ae93]" />
+              <span className="mt-1 truncate text-[0.64rem] font-medium text-[#e5e5e5]">{copy.score}</span>
+              <span className="text-base font-medium leading-tight tabular-nums text-white">{toastWord ? `+${toastWord.points}` : score}</span>
+            </div>
+
+            <div className="flex min-h-[4.5rem] min-w-0 flex-col items-center justify-center rounded-[0.65rem] border border-[#4b4b4b] bg-[#303030] px-1.5 py-1.5">
+              <FlameIcon className="h-4 w-4 text-[#9d9d9d]" />
+              <span className="mt-1 truncate text-[0.64rem] font-medium text-[#e5e5e5]">
+                {locale === "fr" ? "Série" : locale === "ta" ? "தொடர்" : "Streak"}
+              </span>
+              <div className="mt-1 flex h-3 items-center gap-1">
+                {Array.from({ length: MAX_ATTEMPTS }).map((_, index) => (
+                  <span
+                    key={index}
+                    className={`h-2 w-2 rounded-full ${index < attemptsLeft ? "bg-[#ef4b55]" : "bg-[#666]"}`}
+                  />
+                ))}
+              </div>
+            </div>
+
+            <div className="flex min-h-[4.5rem] min-w-0 flex-col items-center justify-center rounded-[0.65rem] border border-[#4b4b4b] bg-[#303030] px-1.5 py-1.5">
+              <ListChecksIcon className="h-4 w-4 text-[#9d9d9d]" />
+              <span className="mt-1 truncate text-[0.64rem] font-medium text-[#e5e5e5]">{copy.progress}</span>
+              <span className="text-base font-medium leading-tight tabular-nums text-white">{foundCount}/{grid.words.length}</span>
+            </div>
+
+            <div className="flex min-h-[4.5rem] min-w-0 flex-col items-center justify-center rounded-[0.65rem] border border-[#4b4b4b] bg-[#303030] px-1.5 py-1.5">
+              <ClockIcon className="h-4 w-4 text-[#9d9d9d]" />
+              <span className="mt-1 truncate text-[0.64rem] font-medium text-[#e5e5e5]">{copy.time}</span>
+              <span className={`text-base font-medium leading-tight tabular-nums ${isLowTime ? "text-[#ff5b68]" : "text-white"}`}>
+                {formatClock(timeLeft)}
+              </span>
+            </div>
+
+            <button
+              type="button"
+              onClick={() => {
+                if (gameState !== "playing") {
+                  return;
+                }
+                setDragging(false);
+                setAnchor(null);
+                setHoverCell(null);
+                setIsPaused((current) => !current);
+              }}
+              className="inline-flex h-11 w-11 items-center justify-center rounded-full bg-[#2f7fdf] text-white transition hover:bg-[#3b8ced] active:scale-95"
+              aria-label={copy.pause}
+            >
+              {isPaused ? <PlayIcon className="h-5 w-5" /> : <PauseIcon className="h-5 w-5" />}
+            </button>
+          </div>
+        </header>
+
+        <header className="hidden">
+          <Link
+            href={`/${locale}/word-search`}
+            className="absolute left-0 top-1/2 inline-flex h-8 w-8 -translate-y-1/2 items-center justify-center rounded-full border-2 border-[#180d2b] bg-white text-[#180d2b] shadow-[2px_3px_0_#180d2b] transition hover:bg-[#fff2cf] active:shadow-none sm:h-9 sm:w-9 lg:h-11 lg:w-11 lg:border-[3px] lg:shadow-[4px_5px_0_#180d2b]"
+            aria-label={copy.back}
+          >
+            <ChevronLeftIcon className="h-4 w-4 lg:h-5 lg:w-5" />
+          </Link>
+
+          <div className="flex shrink-0 flex-nowrap items-stretch gap-2">
+            <div className="flex overflow-hidden rounded-[0.7rem] border-2 border-[#180d2b] bg-white shadow-[2px_3px_0_#180d2b] lg:gap-2 lg:overflow-visible lg:rounded-none lg:border-0 lg:bg-transparent lg:shadow-none">
+            <div
+              className={`flex w-[2.4rem] flex-col justify-center gap-0.5 border-r-2 border-[#180d2b] px-1 py-1 transition-all duration-300 sm:w-[3.1rem] sm:px-1.5 lg:w-auto lg:min-w-[70px] lg:gap-1 lg:rounded-[0.85rem] lg:border-[3px] lg:px-3 lg:py-2 lg:shadow-[3px_4px_0_#180d2b] ${
+                toastWord ? "text-white lg:scale-[1.04]" : "bg-white"
+              }`}
+              style={toastWord ? { backgroundColor: toastWord.color } : undefined}
+            >
+              <span className={`truncate font-display text-[0.42rem] font-black uppercase tracking-[0.03em] sm:text-[0.5rem] lg:text-[0.58rem] lg:tracking-[0.13em] ${toastWord ? "text-white" : "text-[#7c3aed]"}`}>
+                  {copy.score}
+              </span>
+              <span className={`truncate text-xs font-black tabular-nums sm:text-sm lg:text-lg ${toastWord ? "text-white" : "text-[#180d2b]"}`}>
+                  {toastWord ? `+${toastWord.points}` : score}
+              </span>
+              </div>
+
+            <div className="flex w-[2.65rem] flex-col justify-center gap-0.5 border-r-2 border-[#180d2b] bg-white px-1 py-1 sm:w-[3.6rem] sm:px-1.5 lg:w-auto lg:min-w-[82px] lg:gap-1 lg:rounded-[0.85rem] lg:border-[3px] lg:px-3 lg:py-2 lg:shadow-[3px_4px_0_#180d2b]">
+              <span className="truncate font-display text-[0.42rem] font-black uppercase tracking-[0.03em] text-[#7c3aed] sm:text-[0.5rem] lg:text-[0.58rem] lg:tracking-[0.13em]">
+                Streak
+              </span>
+              <div className="flex h-3 items-center gap-0.5 sm:h-4 sm:gap-1 lg:h-[18px] lg:gap-1.5">
+                {Array.from({ length: MAX_ATTEMPTS }).map((_, index) => (
+                  <span
+                    key={index}
+                    className="h-1.5 w-1.5 rounded-full border transition sm:h-2 sm:w-2 lg:h-[9px] lg:w-[9px]"
                     style={{
                       background: index < attemptsLeft ? "#c1442e" : "rgba(244,236,220,0.16)",
                       borderColor: index < attemptsLeft ? "#ff3b6f" : "#180d2b",
@@ -655,23 +834,24 @@ export function WordSearchGame({
               </div>
             </div>
 
-            <div className="flex min-w-[92px] flex-1 flex-col gap-1 rounded-[0.85rem] border-[3px] border-[#180d2b] bg-white px-3 py-2 shadow-[3px_4px_0_#180d2b] sm:flex-none">
-              <span className="font-display text-[0.58rem] font-black uppercase tracking-[0.13em] text-[#7c3aed]">
+            <div className="flex w-[2.95rem] flex-col justify-center gap-0.5 border-r-2 border-[#180d2b] bg-white px-1 py-1 sm:w-16 sm:px-1.5 lg:w-auto lg:min-w-[92px] lg:gap-1 lg:rounded-[0.85rem] lg:border-[3px] lg:px-3 lg:py-2 lg:shadow-[3px_4px_0_#180d2b]">
+              <span className="truncate font-display text-[0.42rem] font-black uppercase tracking-[0.03em] text-[#7c3aed] sm:text-[0.5rem] lg:text-[0.58rem] lg:tracking-[0.13em]">
                   {copy.progress}
               </span>
-              <span className="text-lg font-black tabular-nums text-[#180d2b]">
+              <span className="text-xs font-black tabular-nums text-[#180d2b] sm:text-sm lg:text-lg">
                   {foundCount}/{grid.words.length}
               </span>
               </div>
 
-            <div className="flex min-w-[78px] flex-1 flex-col gap-1 rounded-[0.85rem] border-[3px] border-[#180d2b] bg-white px-3 py-2 shadow-[3px_4px_0_#180d2b] sm:flex-none">
-              <span className="font-display text-[0.58rem] font-black uppercase tracking-[0.13em] text-[#7c3aed]">
+            <div className="flex w-[3.1rem] flex-col justify-center gap-0.5 bg-white px-1 py-1 sm:w-[3.75rem] sm:px-1.5 lg:w-auto lg:min-w-[78px] lg:gap-1 lg:rounded-[0.85rem] lg:border-[3px] lg:border-[#180d2b] lg:px-3 lg:py-2 lg:shadow-[3px_4px_0_#180d2b]">
+              <span className="truncate font-display text-[0.42rem] font-black uppercase tracking-[0.03em] text-[#7c3aed] sm:text-[0.5rem] lg:text-[0.58rem] lg:tracking-[0.13em]">
                   {copy.time}
               </span>
-              <span className={`text-lg font-black tabular-nums ${isLowTime ? "text-[#ff3b6f]" : "text-[#180d2b]"}`}>
+              <span className={`text-xs font-black tabular-nums sm:text-sm lg:text-lg ${isLowTime ? "text-[#ff3b6f]" : "text-[#180d2b]"}`}>
                   {formatClock(timeLeft)}
               </span>
               </div>
+            </div>
 
               <button
                 type="button"
@@ -684,19 +864,23 @@ export function WordSearchGame({
                   setHoverCell(null);
                   setIsPaused((current) => !current);
                 }}
-              className={`inline-flex min-h-[54px] min-w-[52px] items-center justify-center rounded-full border-[3px] border-[#180d2b] px-4 text-[#180d2b] shadow-[4px_5px_0_#180d2b] transition hover:-translate-y-0.5 active:translate-y-0.5 active:shadow-[2px_2px_0_#180d2b] ${
+              className={`inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-full border-2 border-[#180d2b] text-[#180d2b] shadow-[2px_3px_0_#180d2b] transition hover:-translate-y-0.5 active:translate-y-0.5 sm:h-10 sm:w-10 lg:min-h-[54px] lg:min-w-[52px] lg:border-[3px] lg:px-4 lg:shadow-[4px_5px_0_#180d2b] lg:active:shadow-[2px_2px_0_#180d2b] ${
                   isPaused
                   ? "bg-[#b7ff2a]"
                   : "bg-[#ffc43d]"
                 }`}
               aria-label={copy.pause}
               >
-              {isPaused ? <PlayIcon className="h-6 w-6" /> : <PauseIcon className="h-6 w-6" />}
+              {isPaused ? <PlayIcon className="h-3.5 w-3.5 sm:h-4 sm:w-4 lg:h-6 lg:w-6" /> : <PauseIcon className="h-3.5 w-3.5 sm:h-4 sm:w-4 lg:h-6 lg:w-6" />}
               </button>
             </div>
         </header>
 
-        <main className="flex flex-1 flex-col items-center justify-center gap-4 lg:flex-none lg:justify-start">
+        <main
+          className={`flex flex-1 flex-col items-center gap-4 lg:flex-none lg:justify-start ${
+            isPaused ? "justify-start pt-1" : "justify-center"
+          }`}
+        >
               {isPaused ? (
             <section className="w-full max-w-[32.5rem] rounded-[1.4rem] border-[3px] border-[#180d2b] bg-white p-8 text-center shadow-[8px_9px_0_#180d2b]">
               <p className="font-display text-xs font-black uppercase tracking-[0.14em] text-[#7c3aed]">
@@ -720,7 +904,7 @@ export function WordSearchGame({
               ) : (
             <>
                     <div
-                className="relative w-full max-w-[32.5rem] rounded-[1.4rem] border-[3px] border-[#180d2b] bg-white p-4 shadow-[8px_9px_0_#180d2b] sm:p-5"
+                className="relative w-full max-w-[32.5rem] rounded-[1rem] border border-[#d2d0ca] bg-[#f1f0ec] p-3 sm:p-4"
                 style={{ maxWidth: boardWidth }}
                     >
                     <div
@@ -752,8 +936,8 @@ export function WordSearchGame({
                             ([selectedRow, selectedCol]) =>
                               selectedRow === rowIndex && selectedCol === colIndex,
                           );
-                          const foundColorIdx = foundPlacements[key];
-                          const found = foundColorIdx !== undefined;
+                          const foundColorIndexes = foundPlacements[key] ?? [];
+                          const found = foundColorIndexes.length > 0;
                           const wrong = Boolean(wrongKeys[key]);
 
                           return (
@@ -784,7 +968,7 @@ export function WordSearchGame({
                                 setAnchor([rowIndex, colIndex]);
                                 setHoverCell([rowIndex, colIndex]);
                               }}
-                          className="font-tamil flex aspect-square items-center justify-center rounded-[1rem] border-[3px] border-[#180d2b] font-black text-white shadow-[4px_5px_0_#180d2b] transition-all duration-150"
+                          className="font-tamil flex aspect-square items-center justify-center rounded-[0.45rem] border border-[#c9c7c2] bg-[#f8f8f6] font-black text-[#181818] transition-[background-color,border-color,box-shadow] duration-150"
                               aria-label={`cell ${rowIndex}-${colIndex} ${letter}`}
                               style={{
                                 fontSize:
@@ -792,33 +976,26 @@ export function WordSearchGame({
                                     ? `calc(${boardFontSize} - 0.06rem)`
                                     : boardFontSize,
                                 lineHeight: 1,
-                            color: found || selected ? "#180d2b" : "#ffffff",
+                            color: found ? "#ffffff" : "#181818",
                             background: found
-                              ? "#b7ff2a"
+                              ? getFoundCellBackground(foundColorIndexes)
                               : selected
-                                ? "#ffc43d"
+                                ? "#ececea"
                                 : wrong
-                                  ? "#ff7b7b"
-                                  : colIndex % 4 === 0
-                                    ? "#7c3aed"
-                                    : colIndex % 4 === 1
-                                      ? "#22a6b3"
-                                      : colIndex % 4 === 2
-                                        ? "#ff3b6f"
-                                        : "#18b66f",
-                            borderColor: "#180d2b",
+                                  ? "#f0f0ed"
+                                  : "#f8f8f6",
+                            borderColor: found
+                              ? "#181818"
+                              : selected
+                                ? "#181818"
+                                : wrong
+                                  ? "#8e8b85"
+                                  : "#c9c7c2",
                                 boxShadow: found
-                              ? "4px 5px 0 #180d2b"
+                              ? "inset 0 0 0 1px rgba(255,255,255,0.35)"
                                   : selected
-                                ? "2px 3px 0 #180d2b"
-                                : "4px 5px 0 #180d2b",
-                                transform: found
-                              ? "scale(1)"
-                                  : selected
-                                ? "scale(0.96)"
-                                    : wrong
-                                      ? "scale(0.97)"
-                                      : "scale(1)",
+                                ? "inset 0 0 0 1px #181818"
+                                : "none",
                                 position: selected ? "relative" : "static",
                                 zIndex: selected ? 10 : "auto",
                               }}

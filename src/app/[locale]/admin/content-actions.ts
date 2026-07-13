@@ -9,6 +9,11 @@ import { createSupabaseAdminClient } from "@/lib/supabase/admin";
 import { hasSupabaseEnv } from "@/lib/supabase/config";
 import type { AuthState } from "@/types";
 
+const publicationDateSchema = z.union([
+  z.literal(""),
+  z.string().regex(/^\d{4}-\d{2}-\d{2}$/, "Invalid publication date"),
+]);
+
 const wordSearchSchema = z.object({
   id: z.string().optional(),
   locale: z.string(),
@@ -17,6 +22,7 @@ const wordSearchSchema = z.object({
   description: z.string().min(2),
   difficulty: z.enum(["beginner", "intermediate", "advanced"]),
   timeLimitSeconds: z.coerce.number().int().positive(),
+  publishDate: publicationDateSchema,
   gridData: z.string().min(2),
   words: z.string().min(2),
 });
@@ -28,6 +34,7 @@ const fillBlankSchema = z.object({
   slug: z.string().min(2),
   difficulty: z.enum(["beginner", "intermediate", "advanced"]),
   timeLimitSeconds: z.coerce.number().int().positive(),
+  publishDate: publicationDateSchema,
   questions: z.string().min(2),
 });
 
@@ -68,6 +75,7 @@ const imageHuntSchema = z.object({
   slug: z.string().min(2),
   difficulty: z.enum(["beginner", "intermediate", "advanced"]),
   timeLimitSeconds: z.coerce.number().int().positive(),
+  publishDate: publicationDateSchema,
   imageUrl: z.string().optional().default(""),
   instructionEn: z.string().min(2),
   targets: z.string().min(2),
@@ -81,6 +89,7 @@ const wordHuntSchema = z.object({
   description: z.string().min(2),
   difficulty: z.enum(["beginner", "intermediate", "advanced"]),
   timeLimitSeconds: z.coerce.number().int().positive(),
+  publishDate: publicationDateSchema,
   promptEn: z.string().min(2),
   promptFr: z.string().min(2),
   promptTa: z.string().min(2),
@@ -108,6 +117,7 @@ const kathaigalSchema = z.object({
   slug: z.string().min(2),
   description: z.string().min(2),
   difficulty: z.enum(["beginner", "intermediate", "advanced"]),
+  publishDate: publicationDateSchema,
   coverImageUrl: z.string().optional().default(""),
   paragraphs: z.string().min(2),
   questions: z.string().optional().default("[]"),
@@ -221,21 +231,6 @@ const dictionaryCsvRowSchema = z.object({
   tamil_synonyms: z.string().optional().default(""),
   tamil_description: z.string().min(1),
   image_url: z.string().url().optional().or(z.literal("")),
-});
-
-const splashSlideSchema = z.object({
-  id: z.string().optional(),
-  locale: z.string(),
-  kind: z.enum(["intro", "fullscreen"]),
-  imageUrl: z.string().url(),
-  sortOrder: z.coerce.number().int().min(0),
-  isActive: z.string().optional(),
-});
-
-const splashMoveSchema = z.object({
-  id: z.string().min(1),
-  locale: z.string().min(2),
-  direction: z.enum(["up", "down"]),
 });
 
 function parseDictionarySynonyms(value: string) {
@@ -411,13 +406,6 @@ function requireAdminClient() {
   return supabase;
 }
 
-function revalidateSharedSplashPaths() {
-  for (const locale of ["en", "ta", "fr"] as const) {
-    revalidatePath(`/${locale}`);
-    revalidatePath(`/${locale}/admin/splash`);
-  }
-}
-
 export async function upsertWordSearchAction(
   _prev: AuthState,
   formData: FormData,
@@ -454,6 +442,7 @@ export async function upsertWordSearchAction(
       time_limit_seconds: parsed.data.timeLimitSeconds,
       grid_data: parseJsonField<string[][]>(parsed.data.gridData, "Grid data"),
       words,
+      publish_date: parsed.data.publishDate || null,
       is_active: true,
     };
 
@@ -475,6 +464,7 @@ export async function upsertWordSearchAction(
     }
 
     revalidatePath(`/${parsed.data.locale}/admin/word-search`);
+    revalidatePath(`/${parsed.data.locale}/word-search`);
     redirect(`/${parsed.data.locale}/admin/word-search`);
   } catch (error) {
     if (isRedirectLikeError(error)) {
@@ -535,6 +525,7 @@ export async function upsertFillBlankAction(
       description: parsed.data.title,
       difficulty: parsed.data.difficulty,
       time_limit_seconds: parsed.data.timeLimitSeconds,
+      publish_date: parsed.data.publishDate || null,
     };
 
     let exerciseId = parsed.data.id;
@@ -613,6 +604,7 @@ export async function upsertFillBlankAction(
     }
 
     revalidatePath(`/${parsed.data.locale}/admin/fill-in-the-blanks`);
+    revalidatePath(`/${parsed.data.locale}/fill-in-the-blanks`);
     redirect(`/${parsed.data.locale}/admin/fill-in-the-blanks`);
   } catch (error) {
     if (isRedirectLikeError(error)) {
@@ -659,6 +651,7 @@ export async function upsertImageHuntAction(
       image_url: parsed.data.imageUrl || null,
       difficulty: parsed.data.difficulty,
       time_limit_seconds: parsed.data.timeLimitSeconds,
+      publish_date: parsed.data.publishDate || null,
     };
 
     let exerciseId = parsed.data.id;
@@ -817,6 +810,7 @@ export async function upsertWordHuntAction(
         ta: parsed.data.promptTa,
       },
       words,
+      publish_date: parsed.data.publishDate || null,
       is_active: true,
     };
 
@@ -928,6 +922,7 @@ export async function upsertKathaigalAction(
       cover_image_url: normalizeImageUrl(parsed.data.coverImageUrl) || null,
       paragraphs,
       questions,
+      publish_date: parsed.data.publishDate || null,
       is_active: true,
     };
 
@@ -1446,113 +1441,4 @@ export async function deleteDictionaryAction(formData: FormData) {
   }
 
   revalidatePath(`/${locale}/admin/dictionary`);
-}
-
-export async function upsertHomeSplashSlideAction(
-  _prev: AuthState,
-  formData: FormData,
-): Promise<AuthState> {
-  const parsed = splashSlideSchema.safeParse(Object.fromEntries(formData));
-
-  if (!parsed.success) {
-    return stateError(parsed.error.issues[0]?.message);
-  }
-
-  if (!hasSupabaseEnv()) {
-    return missingSupabaseState("Splash slide");
-  }
-
-  try {
-    const supabase = requireAdminClient();
-    const payload = {
-      kind: parsed.data.kind,
-      image_url: parsed.data.imageUrl,
-      sort_order: parsed.data.sortOrder,
-      is_active: parsed.data.isActive === "on",
-    };
-
-    if (parsed.data.id) {
-      const { error } = await supabase.from("home_splash_slides").update(payload).eq("id", parsed.data.id);
-
-      if (error) {
-        throw new Error(error.message);
-      }
-    } else {
-      const { error } = await supabase.from("home_splash_slides").insert(payload);
-
-      if (error) {
-        throw new Error(error.message);
-      }
-    }
-
-    revalidateSharedSplashPaths();
-    redirect(`/${parsed.data.locale}/admin/splash`);
-  } catch (error) {
-    if (isRedirectLikeError(error)) {
-      throw error;
-    }
-
-    return stateError(error);
-  }
-}
-
-export async function deleteHomeSplashSlideAction(formData: FormData) {
-  const id = String(formData.get("id") ?? "");
-  const locale = String(formData.get("locale") ?? "en");
-
-  if (hasSupabaseEnv()) {
-    const supabase = requireAdminClient();
-    await supabase.from("home_splash_slides").delete().eq("id", id);
-  }
-
-  revalidateSharedSplashPaths();
-  revalidatePath(`/${locale}/admin/splash`);
-}
-
-export async function moveHomeSplashSlideAction(formData: FormData) {
-  const parsed = splashMoveSchema.safeParse(Object.fromEntries(formData));
-
-  if (!parsed.success || !hasSupabaseEnv()) {
-    return;
-  }
-
-  const supabase = requireAdminClient();
-
-  const { data } = await supabase
-    .from("home_splash_slides")
-    .select("id, sort_order, created_at")
-    .order("sort_order", { ascending: true })
-    .order("created_at", { ascending: true });
-
-  if (!data || data.length < 2) {
-    return;
-  }
-
-  const currentIndex = data.findIndex((slide) => slide.id === parsed.data.id);
-
-  if (currentIndex === -1) {
-    return;
-  }
-
-  const targetIndex =
-    parsed.data.direction === "up"
-      ? Math.max(0, currentIndex - 1)
-      : Math.min(data.length - 1, currentIndex + 1);
-
-  if (targetIndex === currentIndex) {
-    return;
-  }
-
-  const reordered = [...data];
-  const [moved] = reordered.splice(currentIndex, 1);
-  reordered.splice(targetIndex, 0, moved);
-
-  await Promise.all(
-    reordered.map((slide, index) =>
-      supabase.from("home_splash_slides").update({ sort_order: index }).eq("id", slide.id),
-    ),
-  );
-
-  revalidateSharedSplashPaths();
-  revalidatePath(`/${parsed.data.locale}/admin/splash`);
 }

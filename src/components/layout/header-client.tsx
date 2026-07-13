@@ -6,6 +6,7 @@ import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 
 import { isAgarathiDailyQuizComplete } from "@/lib/agarathi-daily";
+import { appName } from "@/lib/constants";
 import { cn } from "@/lib/utils";
 import type { DictionaryEntry, Locale } from "@/types";
 
@@ -221,6 +222,51 @@ function navTextClass(isTamil: boolean) {
   return isTamil ? "font-black tracking-[0.01em]" : "font-black";
 }
 
+function MobileFlameIcon() {
+  return (
+    <svg aria-hidden="true" viewBox="0 0 24 24" className="h-3.5 w-3.5" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M13.5 3.5c.5 3-1.8 4.2-1.8 6.4 0 1.1.7 1.9 1.7 1.9 1.4 0 2.3-1.3 2.1-3.1 1.8 1.6 3 3.7 3 6a6.5 6.5 0 0 1-13 0c0-3.6 2-6.7 5.4-9-.2 2.3.5 3.6 1.5 4.1-.2-2.1.1-4.3 1.1-6.3Z" />
+    </svg>
+  );
+}
+
+function MobileBellIcon() {
+  return (
+    <svg aria-hidden="true" viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9" />
+      <path d="M10 21h4" />
+    </svg>
+  );
+}
+
+function MobileSearchIcon() {
+  return (
+    <svg aria-hidden="true" viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+      <circle cx="11" cy="11" r="6.5" />
+      <path d="m16 16 4 4" />
+    </svg>
+  );
+}
+
+function MobileMenuIcon({ open }: { open: boolean }) {
+  return (
+    <svg aria-hidden="true" viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round">
+      {open ? (
+        <>
+          <path d="M6 6l12 12" />
+          <path d="M18 6 6 18" />
+        </>
+      ) : (
+        <>
+          <path d="M7 8h10" />
+          <path d="M7 12h10" />
+          <path d="M7 16h10" />
+        </>
+      )}
+    </svg>
+  );
+}
+
 export function HeaderClient({
   locale,
   isLoggedIn,
@@ -234,10 +280,31 @@ export function HeaderClient({
   const router = useRouter();
   const rootRef = useRef<HTMLDivElement | null>(null);
   const [open, setOpen] = useState(false);
+  const [mobileSearchOpen, setMobileSearchOpen] = useState(false);
+  const [mobileSearchQuery, setMobileSearchQuery] = useState("");
+  const [streakDays, setStreakDays] = useState(1);
   const [agarathiModalOpen, setAgarathiModalOpen] = useState(false);
   const [desktopDropdown, setDesktopDropdown] = useState<DesktopDropdown>(null);
   const copy = headerCopy[locale];
   const isTamil = locale === "ta";
+  const mobileLabels =
+    locale === "fr"
+      ? { streak: "jours consécutifs", notifications: "Notifications", search: "Rechercher", placeholder: "Rechercher un contenu…", noResults: "Aucun contenu trouvé" }
+      : locale === "ta"
+        ? { streak: "தொடர்ச்சியான நாட்கள்", notifications: "அறிவிப்புகள்", search: "தேடல்", placeholder: "உள்ளடக்கத்தைத் தேடுங்கள்…", noResults: "உள்ளடக்கம் இல்லை" }
+        : { streak: "day streak", notifications: "Notifications", search: "Search", placeholder: "Search content…", noResults: "No content found" };
+  const mobileSearchItems = [
+    { href: "", label: copy.nav.home },
+    ...gameItems.map((item) => ({ href: item.href, label: copy.games[item.key] })),
+    ...literatureItems.map((item) => ({ href: item.href, label: copy.literature[item.key] })),
+    { href: "/agarathi", label: copy.agarathi },
+    { href: "/pricing", label: copy.nav.pricing },
+    ...(isLoggedIn ? [{ href: "/dashboard", label: copy.nav.dashboard }] : []),
+  ];
+  const normalizedMobileSearch = mobileSearchQuery.trim().toLocaleLowerCase(locale);
+  const mobileSearchResults = normalizedMobileSearch
+    ? mobileSearchItems.filter((item) => item.label.toLocaleLowerCase(locale).includes(normalizedMobileSearch))
+    : [];
 
   function openAgarathiGate() {
     if (dictionaryEntries.length === 0 || isAgarathiDailyQuizComplete()) {
@@ -259,13 +326,93 @@ export function HeaderClient({
     return () => document.removeEventListener("mousedown", handlePointerDown);
   }, []);
 
+  useEffect(() => {
+    const storageKey = "kalvikoodam-daily-streak";
+    const now = new Date();
+    const today = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}-${String(now.getDate()).padStart(2, "0")}`;
+    let count = 1;
+
+    try {
+      const saved = JSON.parse(window.localStorage.getItem(storageKey) ?? "null") as { count?: number; lastVisit?: string } | null;
+      count = Math.max(1, Number(saved?.count) || 1);
+
+      if (saved?.lastVisit && saved.lastVisit !== today) {
+        const [year, month, day] = saved.lastVisit.split("-").map(Number);
+        const lastVisitDay = Date.UTC(year, month - 1, day) / 86_400_000;
+        const todayDay = Date.UTC(now.getFullYear(), now.getMonth(), now.getDate()) / 86_400_000;
+        count = todayDay - lastVisitDay === 1 ? count + 1 : 1;
+      }
+
+      window.localStorage.setItem(storageKey, JSON.stringify({ count, lastVisit: today }));
+    } catch {}
+
+    const frame = window.requestAnimationFrame(() => setStreakDays(count));
+    return () => window.cancelAnimationFrame(frame);
+  }, []);
+
   return (
-    <header className="sticky top-0 z-50 border-b-[3px] border-[#180d2b] bg-[#fbf1e2] xl:bg-[#fbf1e2]/95 xl:backdrop-blur-xl">
+    <header className="sticky top-0 z-50 border-b border-[#180d2b]/15 bg-[#fbf1e2]/95 backdrop-blur-xl xl:border-b-[3px] xl:border-[#180d2b]">
       <div
         ref={rootRef}
-        className="relative mx-auto flex min-h-[72px] w-full max-w-[120rem] items-center gap-3 px-4 sm:min-h-[88px] sm:gap-5 sm:px-6 xl:px-8"
+        className="relative mx-auto flex min-h-[64px] w-full max-w-[120rem] items-center gap-3 px-2 sm:min-h-[72px] sm:px-6 xl:min-h-[88px] xl:gap-5 xl:px-8"
       >
-        <Link href={`/${locale}`} className="shrink-0">
+        <div className="mx-auto flex w-full max-w-[48rem] items-center gap-1 rounded-[1.1rem] border border-white/80 bg-white/70 p-1.5 shadow-[0_8px_24px_-18px_rgba(24,13,43,0.7)] backdrop-blur-xl sm:gap-2 sm:p-2 xl:hidden">
+          <Link href={`/${locale}`} className="flex min-w-0 flex-1 items-center gap-1.5">
+            <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full border-2 border-[#180d2b] bg-[#ffc43d] font-tamil text-base font-black leading-none text-[#180d2b] sm:h-9 sm:w-9 sm:text-lg">
+              அ
+            </span>
+            <span className="truncate font-display text-[0.82rem] font-black leading-none text-[#180d2b] sm:text-base">{appName}</span>
+          </Link>
+
+          <div className="flex shrink-0 items-center gap-1">
+            <span
+              className="inline-flex h-8 items-center gap-1 rounded-full bg-[#241a13] px-2 text-[0.72rem] font-black tabular-nums text-[#ffc43d]"
+              aria-label={`${streakDays} ${mobileLabels.streak}`}
+              title={`${streakDays} ${mobileLabels.streak}`}
+            >
+              <MobileFlameIcon />
+              {streakDays}
+            </span>
+
+            <Link
+              href={`/${locale}/dashboard`}
+              className="relative inline-flex h-8 w-8 items-center justify-center rounded-full border border-[#180d2b]/10 bg-[#fffaf0] text-[#180d2b] transition hover:bg-white"
+              aria-label={mobileLabels.notifications}
+              onClick={() => setOpen(false)}
+            >
+              <MobileBellIcon />
+              <span className="absolute right-1 top-1 h-1.5 w-1.5 rounded-full bg-[#ef4444] ring-1 ring-white" />
+            </Link>
+
+            <button
+              type="button"
+              className="inline-flex h-8 w-8 items-center justify-center rounded-full border border-[#180d2b]/10 bg-[#fffaf0] text-[#180d2b] transition hover:bg-white"
+              aria-label={mobileLabels.search}
+              aria-expanded={mobileSearchOpen}
+              onClick={() => {
+                setOpen(false);
+                setMobileSearchOpen((current) => !current);
+              }}
+            >
+              <MobileSearchIcon />
+            </button>
+          </div>
+
+          <button
+            type="button"
+            className="ml-0.5 inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[#211936] text-white transition hover:bg-[#30234c]"
+            aria-label={copy.menu}
+            aria-expanded={open}
+            onClick={() => {
+              setMobileSearchOpen(false);
+              setOpen((value) => !value);
+            }}
+          >
+            <MobileMenuIcon open={open} />
+          </button>
+        </div>
+
+        <Link href={`/${locale}`} className="hidden shrink-0 xl:block">
           <BrandMark compact />
         </Link>
 
@@ -509,7 +656,7 @@ export function HeaderClient({
           ))}
         </nav>
 
-        <div className="ml-auto hidden items-center gap-3 lg:flex">
+        <div className="ml-auto hidden items-center gap-3 xl:flex">
           {!isLoggedIn ? (
             <Link
               href={`/${locale}/auth/login`}
@@ -530,7 +677,7 @@ export function HeaderClient({
         <button
           type="button"
           className={cn(
-            "ml-auto rounded-full border-[3px] border-[#180d2b] bg-white px-4 py-2 text-[#180d2b] shadow-[3px_4px_0_#180d2b] transition hover:-translate-y-0.5 hover:bg-[#ffc43d] xl:hidden",
+            "ml-auto hidden rounded-full border-[3px] border-[#180d2b] bg-white px-4 py-2 text-[#180d2b] shadow-[3px_4px_0_#180d2b] transition hover:-translate-y-0.5 hover:bg-[#ffc43d]",
             isTamil ? "text-[0.98rem] font-black tracking-[0.01em]" : "text-sm font-black",
           )}
           onClick={() => setOpen((value) => !value)}
@@ -539,8 +686,48 @@ export function HeaderClient({
         </button>
       </div>
 
-      <div className={cn("max-h-[calc(100dvh-72px)] overflow-y-auto overscroll-contain border-t-[3px] border-[#180d2b] bg-[#fbf1e2] sm:max-h-[calc(100dvh-88px)] xl:hidden", open ? "block" : "hidden")}>
-        <div className="mx-auto flex max-w-[120rem] flex-col gap-1 px-4 py-4 sm:px-6">
+      {mobileSearchOpen ? (
+        <div className="px-2 pb-2 sm:px-6 xl:hidden">
+          <div className="mx-auto max-w-[48rem] rounded-[1rem] border border-[#180d2b]/10 bg-white/85 p-2 shadow-[0_14px_30px_-22px_rgba(24,13,43,0.8)] backdrop-blur-xl">
+            <div className="flex items-center gap-2 rounded-[0.75rem] bg-[#fffaf0] px-3 py-2 text-[#180d2b]">
+              <MobileSearchIcon />
+              <input
+                autoFocus
+                type="search"
+                value={mobileSearchQuery}
+                onChange={(event) => setMobileSearchQuery(event.target.value)}
+                placeholder={mobileLabels.placeholder}
+                className="min-w-0 flex-1 bg-transparent text-sm font-semibold outline-none placeholder:text-[#8a7d70]"
+              />
+            </div>
+
+            {normalizedMobileSearch ? (
+              <div className="mt-2 grid max-h-52 gap-1 overflow-y-auto">
+                {mobileSearchResults.length > 0 ? (
+                  mobileSearchResults.map((item) => (
+                    <Link
+                      key={item.href || "home"}
+                      href={`/${locale}${item.href}`}
+                      className="rounded-[0.7rem] px-3 py-2 text-sm font-black text-[#180d2b] transition hover:bg-[#fff2cf]"
+                      onClick={() => {
+                        setMobileSearchOpen(false);
+                        setMobileSearchQuery("");
+                      }}
+                    >
+                      {item.label}
+                    </Link>
+                  ))
+                ) : (
+                  <p className="px-3 py-2 text-sm font-semibold text-[#8a7d70]">{mobileLabels.noResults}</p>
+                )}
+              </div>
+            ) : null}
+          </div>
+        </div>
+      ) : null}
+
+      <div className={cn("max-h-[calc(100dvh-64px)] overflow-y-auto overscroll-contain border-t border-[#180d2b]/15 bg-[#fbf1e2] sm:max-h-[calc(100dvh-72px)] xl:hidden", open ? "block" : "hidden")}>
+        <div className="mx-auto flex max-w-[48rem] flex-col gap-1 px-4 py-4 sm:px-6">
           <Link
             href={`/${locale}`}
             className={cn(
@@ -561,7 +748,7 @@ export function HeaderClient({
 
           <div className="mt-2 rounded-[1rem] border-[3px] border-[#180d2b] bg-[#fff2cf] px-4 py-3 shadow-[3px_4px_0_#180d2b]">
             <p className="text-xs font-black uppercase tracking-[0.24em] text-[#ff9f1c]">
-              {copy.dropdown.gamesEyebrow}
+              {copy.dropdown.games}
             </p>
             <div className="mt-2 flex flex-col gap-1">
               {gameItems.map((item) => (

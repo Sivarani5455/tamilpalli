@@ -728,7 +728,7 @@ export function WordSearchAdminForm({
             />
           </label>
 
-          <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-[0.95fr_0.95fr_1.1fr]">
+          <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
             <label className="space-y-1.5">
               <span className={fieldLabelClass}>Difficulte</span>
               <select
@@ -750,6 +750,19 @@ export function WordSearchAdminForm({
                 defaultValue={initial?.timeLimitSeconds ?? 180}
                 className={inputClass}
               />
+            </label>
+
+            <label className="space-y-1.5">
+              <span className={fieldLabelClass}>Date de publication</span>
+              <input
+                name="publishDate"
+                type="date"
+                defaultValue={initial?.publishDate ?? ""}
+                className={inputClass}
+              />
+              <span className="block text-xs font-semibold leading-5 text-[#8a6a9c]">
+                Facultatif. La grille restera masquée jusqu’à cette date.
+              </span>
             </label>
 
             <div className="space-y-2 sm:col-span-2 xl:col-span-1">
@@ -1216,6 +1229,18 @@ export function FillBlankAdminForm({
               />
             </label>
           </div>
+          <label className="block border-t-[2px] border-[#180d2b] px-4 py-3">
+            <span className={fieldLabelClass}>Date de publication</span>
+            <input
+              name="publishDate"
+              type="date"
+              defaultValue={initial?.publishDate ?? ""}
+              className={`${flushInputClass} font-mono`}
+            />
+            <span className="mt-2 block text-xs font-semibold text-[#8a6a9c]">
+              Facultatif. L’exercice restera masqué jusqu’à cette date.
+            </span>
+          </label>
         </div>
       </section>
 
@@ -1586,6 +1611,16 @@ export function WordHuntAdminForm({
             className={`${wordHuntInputClass} font-mono text-base font-black`}
           />
         </label>
+        <label className={`${wordHuntFieldClass} md:col-span-2 xl:col-span-1`}>
+          <span className={wordHuntLabelClass}>Date de publication</span>
+          <input
+            name="publishDate"
+            type="date"
+            defaultValue={initial?.publishDate ?? ""}
+            className={`${wordHuntInputClass} font-mono`}
+          />
+          <span className="mt-2 block text-xs font-semibold text-[#8a6a9c]">Facultatif · publication automatique</span>
+        </label>
         <label className={`${wordHuntFieldClass} md:col-span-2 xl:col-span-4`}>
           <span className={wordHuntLabelClass}>Description</span>
           <input
@@ -1812,6 +1847,16 @@ export function KathaigalAdminForm({
           <span className="mt-2 block text-xs font-semibold leading-5 text-[#8a6a9c]">
             Use a direct image URL. Wikimedia media links are converted automatically.
           </span>
+        </label>
+        <label className={`${fieldClass} md:col-span-2 xl:col-span-1`}>
+          <span className={labelClass}>Date de publication</span>
+          <input
+            name="publishDate"
+            type="date"
+            defaultValue={initial?.publishDate ?? ""}
+            className={`${inputClass} font-mono`}
+          />
+          <span className="mt-2 block text-xs font-semibold text-[#8a6a9c]">Facultatif · histoire masquée avant cette date</span>
         </label>
         <label className={`${fieldClass} md:col-span-2 xl:col-span-4`}>
           <span className={labelClass}>Description</span>
@@ -2177,6 +2222,16 @@ export function ImageHuntAdminForm({
               defaultValue={initial?.timeLimitSeconds ?? 240}
               className={`${huntInputClass} font-mono text-base font-black`}
             />
+          </label>
+          <label className={`${huntFieldClass} md:col-span-2 xl:col-span-1`}>
+            <span className={huntLabelClass}>Date de publication</span>
+            <input
+              name="publishDate"
+              type="date"
+              defaultValue={initial?.publishDate ?? ""}
+              className={`${huntInputClass} font-mono`}
+            />
+            <span className="mt-2 block text-xs font-semibold text-[#8a6a9c]">Facultatif · exercice masqué avant cette date</span>
           </label>
           <label className={`${huntFieldClass} md:col-span-2 xl:col-span-4`}>
             <span className={huntLabelClass}>Image URL</span>

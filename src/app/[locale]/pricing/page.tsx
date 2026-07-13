@@ -59,9 +59,6 @@ export default async function PricingPage({
 
   return (
     <div className="relative min-h-screen overflow-hidden bg-[#fbf1e2] px-4 py-8 text-[#180d2b] sm:px-6 xl:px-8">
-      <div className="pointer-events-none absolute left-[8%] top-16 h-4 w-4 rotate-12 rounded-[0.25rem] bg-[#c6ff2e]" />
-      <div className="pointer-events-none absolute right-[16%] top-24 h-3 w-3 rounded-full bg-[#7c3aed]" />
-      <div className="pointer-events-none absolute bottom-20 left-[12%] h-4 w-4 rotate-45 rounded-[0.25rem] bg-[#ffc43d]" />
       <div className="mx-auto max-w-[76rem]">
         <section className="relative mb-8 overflow-hidden rounded-[1.5rem] border-[3px] border-[#180d2b] bg-white p-6 shadow-[7px_8px_0_#180d2b] sm:p-8">
           <div className="pointer-events-none absolute -right-10 -top-12 h-36 w-36 rounded-full bg-[#7c3aed]" />

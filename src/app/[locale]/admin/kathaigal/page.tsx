@@ -1,6 +1,7 @@
 import Link from "next/link";
 
 import { DeleteContentButton } from "@/components/admin/delete-content-button";
+import { PublicationStatus } from "@/components/admin/publication-status";
 import { requireAdminUser } from "@/lib/auth";
 import { getAdminKathaigalStories } from "@/lib/content-admin";
 import { getLocaleOrThrow } from "@/lib/i18n";
@@ -39,6 +40,7 @@ export default async function AdminKathaigalPage({
                 <p className="mt-1 text-sm font-semibold text-[#8a6a9c]">
                   {story.paragraphs.length} paragraphs · {story.difficulty}
                 </p>
+                <PublicationStatus publishDate={story.publishDate} isActive={story.isActive} locale={locale} />
               </div>
               <div className="flex items-center gap-3">
                 <Link

@@ -91,6 +91,7 @@ export type WordSearchGrid = {
   gridData: string[][];
   words: WordSearchWord[];
   isActive?: boolean;
+  publishDate?: string | null;
   createdAt?: string;
 };
 
@@ -115,6 +116,8 @@ export type FillBlankExercise = {
   difficulty: Difficulty;
   timeLimitSeconds: number;
   questions: FillBlankQuestion[];
+  isActive?: boolean;
+  publishDate?: string | null;
 };
 
 export type ImageHuntTarget = {
@@ -137,6 +140,8 @@ export type ImageHuntExercise = {
   instruction: Record<Locale, string>;
   timeLimitSeconds: number;
   targets: ImageHuntTarget[];
+  isActive?: boolean;
+  publishDate?: string | null;
 };
 
 export type ImageHuntProgress = {
@@ -162,6 +167,7 @@ export type WordHuntExercise = {
   prompt: Record<Locale, string>;
   words: WordHuntWord[];
   isActive?: boolean;
+  publishDate?: string | null;
   createdAt?: string;
 };
 
@@ -189,6 +195,7 @@ export type KathaigalStory = {
   paragraphs: KathaigalParagraph[];
   questions: KathaigalQuestion[];
   isActive?: boolean;
+  publishDate?: string | null;
   createdAt?: string;
 };
 
@@ -255,16 +262,4 @@ export type AdminDictionaryInsight = {
   viewsTotal: number;
   learnedTotal: number;
   learnerCount: number;
-};
-
-export type SplashSlideKind = "intro" | "fullscreen";
-
-export type SplashSlide = {
-  id: string;
-  kind: SplashSlideKind;
-  imageUrl: string;
-  sortOrder: number;
-  isActive: boolean;
-  createdAt?: string;
-  updatedAt?: string;
 };

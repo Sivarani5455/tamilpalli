@@ -6,7 +6,6 @@ import { getLocaleOrThrow } from "@/lib/i18n";
 const adminLinks = [
   { href: "/admin/users", title: "Users", description: "Inspect roles, plans and renewal windows.", icon: "user", color: "#7c3aed" },
   { href: "/admin/content", title: "Content access", description: "Map plans to categories and lock premium content.", icon: "card", color: "#ff3b6f" },
-  { href: "/admin/splash", title: "Splash admin", description: "Manage the intro screen and unlimited fullscreen splash images.", icon: "image", color: "#f5a400" },
   { href: "/admin/dictionary", title: "Dictionary admin", description: "Manage multilingual vocabulary entries and image references.", icon: "book", color: "#22a6b3" },
   { href: "/admin/word-search", title: "Word Search admin", description: "Manage grids, scores and Tamil word packs.", icon: "grid", color: "#18b66f" },
   { href: "/admin/fill-in-the-blanks", title: "Fill in the Blanks admin", description: "Edit questions, options and grammar notes.", icon: "lines", color: "#4f7cff" },
@@ -33,15 +32,6 @@ function AdminIcon({ name }: { name: string }) {
       <svg aria-hidden="true" viewBox="0 0 24 24" className={common} fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round">
         <rect x="5" y="6" width="14" height="12" rx="2" />
         <path d="M8 10h8M8 14h5" />
-      </svg>
-    );
-  }
-
-  if (name === "image") {
-    return (
-      <svg aria-hidden="true" viewBox="0 0 24 24" className={common} fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round">
-        <rect x="4" y="6" width="16" height="12" rx="2" />
-        <path d="m7 15 3-3 2 2 3-4 2 5" />
       </svg>
     );
   }

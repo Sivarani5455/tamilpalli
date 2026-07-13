@@ -325,17 +325,6 @@ function persistProgressSnapshot(progress: ProgressSnapshot) {
   window.localStorage.setItem("agarathi-progress", JSON.stringify(progress));
 }
 
-function Shapes() {
-  return (
-    <div className="pointer-events-none absolute inset-0 overflow-hidden">
-      <div className="absolute left-[8%] top-16 h-4 w-4 rotate-12 rounded-[0.25rem] bg-[#c6ff2e]" />
-      <div className="absolute right-[18%] top-24 h-3 w-3 rounded-full bg-[#7c3aed]" />
-      <div className="absolute bottom-24 left-[12%] h-3 w-8 -rotate-12 rounded-full bg-[#ff3b6f]" />
-      <div className="absolute bottom-36 right-[10%] h-4 w-4 rotate-45 rounded-[0.2rem] bg-[#ffc43d]" />
-    </div>
-  );
-}
-
 function WordThumbnail({
   entry,
   locale,
@@ -1035,7 +1024,6 @@ export function DictionaryIndex({
 
     return (
       <div className="relative min-h-screen overflow-hidden bg-[#fbf1e2] pb-16 text-[#180d2b]">
-        <Shapes />
         <div className="relative z-10 mx-auto max-w-[31rem] px-4 pt-6">
           <div className="rounded-[1.75rem] border-[3px] border-[#180d2b] bg-white p-3 shadow-[7px_8px_0_#180d2b]">
             <div className="mb-3 flex items-center rounded-[1.5rem] px-1">
@@ -1141,7 +1129,6 @@ export function DictionaryIndex({
 
   return (
     <div className="relative min-h-screen overflow-hidden bg-[#fbf1e2] pb-20 text-[#180d2b]">
-      <Shapes />
       <div className="relative z-10 mx-auto max-w-[70rem] px-4 pt-6 lg:px-6">
         <div className="rounded-[1.5rem] border-[3px] border-[#180d2b] bg-white p-4 shadow-[7px_8px_0_#180d2b] lg:p-5">
           {panelCount > 1 ? (

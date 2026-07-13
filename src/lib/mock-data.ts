@@ -1,7 +1,6 @@
 import type {
   AppUser,
   ContentCategory,
-  SplashSlide,
   FillBlankExercise,
   ImageHuntExercise,
   KathaigalStory,
@@ -300,12 +299,12 @@ export const kathaigalStories: KathaigalStory[] = [
     title: "சிறிய குருவியின் துணிவு",
     description: "ஒரு சிறிய குருவி தன் நண்பர்களைக் காப்பாற்ற கற்ற துணிவான கதை.",
     difficulty: "beginner",
-    coverImageUrl: "/thiruvalluvar-splash-2.png",
+    coverImageUrl: "/thiruvalluvar-story-2.png",
     paragraphs: [
       {
         id: "para-1",
         textTa: "ஒரு அழகான கிராமத்தில் சிறிய குருவி ஒன்று வாழ்ந்தது. அது தினமும் மரங்களின் மீது பறந்து நண்பர்களுடன் மகிழ்ச்சியாக விளையாடியது.",
-        imageUrl: "/thiruvalluvar-splash-2.png",
+        imageUrl: "/thiruvalluvar-story-2.png",
         imageAlt: {
           en: "A peaceful village morning",
           fr: "Un matin paisible au village",
@@ -315,7 +314,7 @@ export const kathaigalStories: KathaigalStory[] = [
       {
         id: "para-2",
         textTa: "ஒரு நாள் பெரிய காற்று வீசியது. குருவியின் நண்பர்கள் பயந்தனர். ஆனால் சிறிய குருவி அமைதியாக இருந்து எல்லோரையும் பாதுகாப்பான இடத்துக்கு அழைத்துச் சென்றது.",
-        imageUrl: "/thiruvalluvar-splash-3.png",
+        imageUrl: "/thiruvalluvar-story-3.png",
         imageAlt: {
           en: "Wind moving through trees",
           fr: "Le vent dans les arbres",
@@ -365,43 +364,5 @@ export const thirukkuralLessons: ThirukkuralLesson[] = [
     ],
     isActive: true,
     createdAt: "2026-07-13",
-  },
-];
-
-export const homeSplashSlides: SplashSlide[] = [
-  {
-    id: "splash-intro",
-    kind: "intro",
-    imageUrl: "/thiruvalluvar-splash.png",
-    sortOrder: 0,
-    isActive: true,
-  },
-  {
-    id: "splash-2",
-    kind: "fullscreen",
-    imageUrl: "/thiruvalluvar-splash-2.png",
-    sortOrder: 1,
-    isActive: true,
-  },
-  {
-    id: "splash-3",
-    kind: "fullscreen",
-    imageUrl: "/thiruvalluvar-splash-3.png",
-    sortOrder: 2,
-    isActive: true,
-  },
-  {
-    id: "splash-4",
-    kind: "fullscreen",
-    imageUrl: "/thiruvalluvar-splash-4.png",
-    sortOrder: 3,
-    isActive: true,
-  },
-  {
-    id: "splash-5",
-    kind: "fullscreen",
-    imageUrl: "/thiruvalluvar-splash-5.png",
-    sortOrder: 4,
-    isActive: true,
   },
 ];

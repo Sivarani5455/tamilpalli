@@ -1,6 +1,7 @@
 import Link from "next/link";
 
 import { DeleteContentButton } from "@/components/admin/delete-content-button";
+import { PublicationStatus } from "@/components/admin/publication-status";
 import { requireAdminUser } from "@/lib/auth";
 import { getAdminWordSearchGrids } from "@/lib/content-admin";
 import { getLocaleOrThrow } from "@/lib/i18n";
@@ -52,19 +53,11 @@ export default async function AdminWordSearchPage({
               <div className="flex min-w-0 items-center gap-4">
                 <GridBadge />
                 <div className="min-w-0">
-                <div className="flex min-w-0 items-center gap-3">
+                <div className="flex min-w-0 flex-wrap items-center gap-3">
                   <h2 className="truncate font-display text-2xl font-black leading-tight text-[#180d2b]">{grid.title}</h2>
-                  <span
-                    className={`shrink-0 rounded-full border-[2px] border-[#180d2b] px-3 py-1 text-xs font-black ${
-                      grid.isActive === false
-                        ? "bg-[#fff5cf] text-[#9a6a2f]"
-                        : "bg-[#c6ff2e] text-[#180d2b]"
-                    }`}
-                  >
-                    {grid.isActive === false ? "Inactive" : "Active"}
-                  </span>
                 </div>
                 <p className="mt-1 line-clamp-2 text-sm font-semibold text-[#8a6a9c]">{grid.description}</p>
+                <PublicationStatus publishDate={grid.publishDate} isActive={grid.isActive} locale={locale} />
                 </div>
               </div>
               <div className="flex items-center gap-3">

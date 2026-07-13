@@ -228,9 +228,6 @@ export function ImageHuntGame({
   function renderProgressPanel(className = "") {
     return (
       <div className={`relative px-1 pb-2 pt-2 ${className}`}>
-        <span className="absolute left-8 top-0 h-3 w-3 rotate-12 rounded-[0.25rem] bg-[#ffc43d]" />
-        <span className="absolute right-8 top-1 h-2.5 w-2.5 rounded-full bg-[#7c3aed] sm:right-10 sm:top-2 sm:h-3 sm:w-3" />
-
         <div className="relative rounded-[1.35rem] border-[3px] border-[#180d2b] bg-white px-4 py-4 shadow-[7px_8px_0_#180d2b]">
           <div className="mb-4 flex flex-wrap items-center justify-between gap-2">
             <div className="inline-flex items-center gap-2 rounded-full border-[3px] border-[#180d2b] bg-[#efe6ff] px-3 py-1 text-[0.68rem] font-black uppercase tracking-[0.16em] text-[#7c3aed] shadow-[3px_4px_0_#180d2b]">
@@ -349,9 +346,6 @@ export function ImageHuntGame({
             hasInteracted ? "hidden xl:block" : ""
           }`}
         >
-          <span className="absolute right-20 top-[-0.35rem] h-3 w-3 rotate-12 rounded-[0.25rem] bg-[#ffc43d] sm:top-[-0.45rem] sm:h-4 sm:w-4" />
-          <span className="absolute right-9 top-[-0.15rem] h-2.5 w-2.5 rounded-full bg-[#ff3b7d] sm:h-3 sm:w-3" />
-          <span className="absolute bottom-[-0.65rem] left-16 h-3 w-11 -rotate-12 rounded-full bg-[#b7ff2a] sm:bottom-[-0.85rem] sm:h-4 sm:w-14" />
           <span className="absolute -right-2 -top-1 flex h-11 w-11 items-center justify-center rounded-full border-[3px] border-[#180d2b] bg-[#7c3aed] text-white shadow-[3px_4px_0_#180d2b]">
             <svg aria-hidden="true" className="h-5 w-5" viewBox="0 0 24 24" fill="none">
               <path
@@ -390,9 +384,6 @@ export function ImageHuntGame({
 
         <div className="rounded-[1.35rem] border border-[#ead5b8] bg-[#fff8ec] p-2 shadow-[0_24px_70px_-55px_rgba(74,51,36,0.48)] sm:p-3">
           <div className="relative mb-3 pt-3">
-            <span className="absolute left-7 top-0 h-3 w-3 rotate-12 rounded-[0.25rem] bg-[#b7ff2a] sm:h-4 sm:w-4" />
-            <span className="absolute right-20 top-1 h-2.5 w-2.5 rounded-full bg-[#7c3aed] sm:top-2 sm:h-3 sm:w-3" />
-            <span className="absolute bottom-[-0.55rem] right-28 h-3 w-3 rotate-12 bg-[#19bf74] sm:bottom-[-0.75rem] sm:h-4 sm:w-4" />
             <span className="absolute -left-2 top-4 z-10 flex h-11 w-11 items-center justify-center rounded-full border-[3px] border-[#180d2b] bg-[#ff3b7d] text-white shadow-[3px_4px_0_#180d2b]">
               <svg aria-hidden="true" className="h-5 w-5" viewBox="0 0 24 24" fill="none">
                 <circle cx="12" cy="12" r="7" stroke="currentColor" strokeWidth="2.4" />
@@ -430,6 +421,7 @@ export function ImageHuntGame({
                 src={exercise.imageUrl}
                 alt=""
                 fill
+                unoptimized={/^https?:\/\//i.test(exercise.imageUrl)}
                 sizes="(max-width: 1280px) calc(100vw - 48px), 70vw"
                 className="object-cover"
               />
@@ -473,11 +465,6 @@ export function ImageHuntGame({
         {renderProgressPanel("hidden xl:block")}
 
         <div className="relative min-h-[8rem] px-2 pb-2 pt-4">
-          <span className="absolute left-3 top-7 h-3 w-3 rounded-full bg-[#f2c23d]" />
-          <span className="absolute right-5 top-5 h-4 w-4 rounded-full bg-[#7c3aed]" />
-          <span className="absolute bottom-3 left-12 h-2 w-10 rounded-full bg-[#9be15d]" />
-          <span className="absolute bottom-7 right-1 h-5 w-5 rotate-45 rounded-[0.3rem] bg-[#ff4f78]" />
-
           <div
             className={`relative rotate-[-1.4deg] rounded-[1.35rem] border-[3px] bg-white px-5 py-5 shadow-[8px_9px_0_#180d2b] ${
               feedbackTone === "correct"

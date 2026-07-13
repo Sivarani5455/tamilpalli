@@ -142,10 +142,6 @@ export function FillBlanksGame({
 
   return (
     <section className="relative mx-auto max-w-5xl">
-      <span className="absolute left-10 top-[-1rem] hidden h-4 w-4 rotate-12 rounded-[0.25rem] bg-[#b7ff2a] sm:block" />
-      <span className="absolute left-1/2 top-[-1.15rem] hidden h-3 w-3 rounded-full bg-[#ff3b6f] sm:block" />
-      <span className="absolute bottom-[-0.8rem] right-16 hidden h-3 w-12 -rotate-12 rounded-full bg-[#7c3aed] sm:block" />
-
       <article className="relative rounded-[1.1rem] border-[2px] border-[#180d2b] bg-white px-3 py-3 shadow-[5px_6px_0_#180d2b] sm:rounded-[1.45rem] sm:border-[3px] sm:px-5 sm:py-4 sm:shadow-[8px_9px_0_#180d2b]">
         <div className="grid gap-3 lg:grid-cols-[minmax(0,1.05fr)_minmax(18rem,0.75fr)] lg:items-start">
           <div className="min-w-0">

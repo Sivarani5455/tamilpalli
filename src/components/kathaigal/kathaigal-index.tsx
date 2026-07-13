@@ -34,7 +34,6 @@ export function KathaigalIndex({ stories, locale }: { stories: KathaigalStory[];
     <main className="min-h-screen bg-[#fbf1e2] px-4 py-8 text-[#180d2b] sm:px-6">
       <section className="mx-auto max-w-5xl">
         <div className="relative overflow-hidden rounded-[1.5rem] border-[3px] border-[#180d2b] bg-white p-6 shadow-[7px_8px_0_#180d2b] sm:p-8">
-          <span className="absolute right-8 top-6 h-4 w-4 rounded-full bg-[#ff3b6f]" />
           <p className="inline-flex rounded-full border-2 border-[#180d2b] bg-[#eee5ff] px-4 py-1 text-xs font-black uppercase tracking-[0.22em] text-[#7c3aed] shadow-[2px_3px_0_#180d2b]">
             {labels.eyebrow}
           </p>

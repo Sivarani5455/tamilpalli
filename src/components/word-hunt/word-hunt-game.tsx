@@ -134,8 +134,6 @@ export function WordHuntGame({
 
   return (
     <section className="relative mx-auto max-w-6xl">
-      <span className="absolute left-10 top-[-1rem] hidden h-4 w-4 rotate-12 rounded-[0.25rem] bg-[#b7ff2a] sm:block" />
-      <span className="absolute left-1/2 top-[-1.15rem] hidden h-3 w-3 rounded-full bg-[#ff3b6f] sm:block" />
       <article className="relative rounded-[1.45rem] border-[3px] border-[#180d2b] bg-white px-4 py-4 shadow-[8px_9px_0_#180d2b] sm:px-5">
         <header className="flex flex-wrap items-start justify-between gap-3">
           <div className="flex min-w-0 items-center gap-3">
