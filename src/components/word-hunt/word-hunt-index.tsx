@@ -1,8 +1,10 @@
 "use client";
 
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useMemo, useState } from "react";
 
+import { CatalogShuffleButton } from "@/components/ui/catalog-shuffle-button";
 import type { Difficulty, Locale, WordHuntExercise } from "@/types";
 
 type IconName = "clock" | "grid" | "layers" | "search" | "sliders" | "trophy";
@@ -96,6 +98,7 @@ export function WordHuntIndex({
   exercises: WordHuntExercise[];
   locale: Locale;
 }) {
+  const router = useRouter();
   const [query, setQuery] = useState("");
   const [showFilters, setShowFilters] = useState(false);
   const [difficultyFilter, setDifficultyFilter] = useState<DifficultyFilter>("ALL");
@@ -104,6 +107,7 @@ export function WordHuntIndex({
     locale === "ta"
       ? {
           search: "தேடுக...",
+          shuffle: "சீரற்ற விளையாட்டு",
           filters: "வடிகட்டிகள்",
           results: "முடிவுகள்",
           result: "முடிவு",
@@ -117,6 +121,7 @@ export function WordHuntIndex({
       : locale === "fr"
         ? {
             search: "Rechercher...",
+            shuffle: "Aléatoire",
             filters: "Filtres",
             results: "résultats",
             result: "résultat",
@@ -129,6 +134,7 @@ export function WordHuntIndex({
           }
         : {
             search: "Search...",
+            shuffle: "Shuffle",
             filters: "Filters",
             results: "results",
             result: "result",
@@ -151,6 +157,12 @@ export function WordHuntIndex({
     });
   }, [difficultyFilter, exercises, locale, query]);
 
+  const openRandomExercise = () => {
+    if (filteredExercises.length === 0) return;
+    const exercise = filteredExercises[Math.floor(Math.random() * filteredExercises.length)];
+    router.push(`/${locale}/word-hunt/${exercise.id}`);
+  };
+
   return (
     <div className="min-h-screen bg-[#fbefd8] px-2 py-2 text-[#211b14] sm:px-5 sm:py-5 lg:px-8 lg:py-7">
       <main className="mx-auto max-w-[90rem]">
@@ -164,6 +176,7 @@ export function WordHuntIndex({
               className="h-10 w-full rounded-lg border border-[#d8c7a9] bg-white pl-9 pr-3 text-xs font-medium text-[#211b14] outline-none transition placeholder:text-[#9a8b73] focus:border-[#55409a] focus:ring-2 focus:ring-[#55409a]/10 sm:text-sm"
             />
           </div>
+          <CatalogShuffleButton label={copy.shuffle} disabled={filteredExercises.length === 0} onClick={openRandomExercise} />
           <button
             type="button"
             onClick={() => setShowFilters((value) => !value)}
@@ -171,6 +184,7 @@ export function WordHuntIndex({
           >
             <Icon name="sliders" className="h-3.5 w-3.5" />
             {copy.filters}
+            {difficultyFilter !== "ALL" ? <span className="absolute -right-1.5 -top-1.5 flex h-5 w-5 items-center justify-center rounded-full bg-[#ffc43d] text-[10px] font-black text-[#211b14] ring-2 ring-[#fbefd8]">1</span> : null}
           </button>
         </div>
 

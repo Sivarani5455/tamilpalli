@@ -1,8 +1,10 @@
 "use client";
 
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useMemo, useState } from "react";
 
+import { CatalogShuffleButton } from "@/components/ui/catalog-shuffle-button";
 import type { Difficulty, KathaigalStory, Locale } from "@/types";
 
 const difficultyMeta: Record<Difficulty, { label: Record<Locale, string>; level: Record<Locale, string>; tone: string }> = {
@@ -32,12 +34,13 @@ function FilterIcon() {
 }
 
 const copy = {
-  en: { search: "Search...", filters: "Filters", results: "results", result: "result", all: "All", open: "Open", paragraphs: "paragraphs", questions: "questions", empty: "No stories are available yet." },
-  fr: { search: "Rechercher...", filters: "Filtres", results: "résultats", result: "résultat", all: "Tous", open: "Ouvrir", paragraphs: "paragraphes", questions: "questions", empty: "Aucune histoire n'est disponible pour le moment." },
-  ta: { search: "தேடுக...", filters: "வடிகட்டிகள்", results: "முடிவுகள்", result: "முடிவு", all: "அனைத்தும்", open: "திற", paragraphs: "பத்திகள்", questions: "கேள்விகள்", empty: "இப்போது கதைகள் எதுவும் இல்லை." },
+  en: { search: "Search...", shuffle: "Shuffle", filters: "Filters", results: "results", result: "result", all: "All", open: "Open", paragraphs: "paragraphs", questions: "questions", empty: "No stories are available yet." },
+  fr: { search: "Rechercher...", shuffle: "Aléatoire", filters: "Filtres", results: "résultats", result: "résultat", all: "Tous", open: "Ouvrir", paragraphs: "paragraphes", questions: "questions", empty: "Aucune histoire n'est disponible pour le moment." },
+  ta: { search: "தேடுக...", shuffle: "சீரற்ற கதை", filters: "வடிகட்டிகள்", results: "முடிவுகள்", result: "முடிவு", all: "அனைத்தும்", open: "திற", paragraphs: "பத்திகள்", questions: "கேள்விகள்", empty: "இப்போது கதைகள் எதுவும் இல்லை." },
 } satisfies Record<Locale, Record<string, string>>;
 
 export function KathaigalIndex({ stories, locale }: { stories: KathaigalStory[]; locale: Locale }) {
+  const router = useRouter();
   const labels = copy[locale];
   const [query, setQuery] = useState("");
   const [showFilters, setShowFilters] = useState(false);
@@ -51,6 +54,12 @@ export function KathaigalIndex({ stories, locale }: { stories: KathaigalStory[];
     });
   }, [difficulty, locale, query, stories]);
 
+  const openRandomStory = () => {
+    if (filteredStories.length === 0) return;
+    const story = filteredStories[Math.floor(Math.random() * filteredStories.length)];
+    router.push(`/${locale}/kathaigal/${story.id}`);
+  };
+
   return (
     <main className="min-h-screen bg-[#fbefd8] px-2 py-2 text-[#211b14] sm:px-5 sm:py-5 lg:px-8 lg:py-7">
       <section className="mx-auto max-w-[90rem]">
@@ -59,8 +68,10 @@ export function KathaigalIndex({ stories, locale }: { stories: KathaigalStory[];
             <span className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-[#9a8b73]"><SearchIcon /></span>
             <input value={query} onChange={(event) => setQuery(event.target.value)} placeholder={labels.search} className="h-10 w-full rounded-lg border border-[#d8c7a9] bg-white pl-9 pr-3 text-xs font-medium outline-none transition placeholder:text-[#9a8b73] focus:border-[#55409a] focus:ring-2 focus:ring-[#55409a]/10 sm:text-sm" />
           </div>
-          <button type="button" onClick={() => setShowFilters((value) => !value)} className="flex h-10 shrink-0 items-center gap-1.5 rounded-lg bg-[#55409a] px-3 text-xs font-bold text-white transition-colors hover:bg-[#493584]">
+          <CatalogShuffleButton label={labels.shuffle} disabled={filteredStories.length === 0} onClick={openRandomStory} />
+          <button type="button" onClick={() => setShowFilters((value) => !value)} className="relative flex h-10 shrink-0 items-center gap-1.5 rounded-lg bg-[#55409a] px-3 text-xs font-bold text-white transition-colors hover:bg-[#493584]">
             <FilterIcon /> {labels.filters}
+            {difficulty !== "ALL" ? <span className="absolute -right-1.5 -top-1.5 flex h-5 w-5 items-center justify-center rounded-full bg-[#ffc43d] text-[10px] font-black text-[#211b14] ring-2 ring-[#fbefd8]">1</span> : null}
           </button>
         </div>
 

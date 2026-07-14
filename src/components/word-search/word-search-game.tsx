@@ -170,8 +170,18 @@ function getFoundCellBackground(colorIndexes: number[]) {
 
 const MAX_ATTEMPTS = 3;
 const GAME_TIME_FALLBACK = 120;
+const TOUCH_SELECTION_DELAY_MS = 220;
+const TOUCH_GESTURE_THRESHOLD_PX = 10;
 
 type CellCoord = [number, number];
+type TouchGesture = {
+  mode: "pending" | "scrolling" | "selecting";
+  startX: number;
+  startY: number;
+  lastY: number;
+  anchor: CellCoord;
+  selectionTimer: number;
+};
 
 const cellKey = (row: number, col: number) => `${row},${col}`;
 
@@ -262,6 +272,7 @@ export function WordSearchGame({
   const [toastWord, setToastWord] = useState<{ word: string; points: number; color: string } | null>(null);
   const [saveState, saveAction] = useActionState(saveWordSearchScoreAction, initialGameState);
   const draggingRef = useRef(false);
+  const touchGestureRef = useRef<TouchGesture | null>(null);
   const autoSaveFormRef = useRef<HTMLFormElement | null>(null);
   const hasSubmittedScoreRef = useRef(false);
 
@@ -404,6 +415,16 @@ export function WordSearchGame({
   }, [dragging]);
 
   useEffect(() => {
+    return () => {
+      const gesture = touchGestureRef.current;
+
+      if (gesture) {
+        window.clearTimeout(gesture.selectionTimer);
+      }
+    };
+  }, []);
+
+  useEffect(() => {
     if (gameState !== "playing" || isPaused) {
       return;
     }
@@ -439,8 +460,27 @@ export function WordSearchGame({
   }, [gameState]);
 
   useEffect(() => {
-    const finishSelection = () => {
+    const finishSelection = (event: MouseEvent | TouchEvent) => {
+      if (event.type === "touchend" || event.type === "touchcancel") {
+        const gesture = touchGestureRef.current;
+
+        if (gesture) {
+          window.clearTimeout(gesture.selectionTimer);
+        }
+
+        touchGestureRef.current = null;
+
+        if (event.type === "touchcancel" || gesture?.mode !== "selecting") {
+          draggingRef.current = false;
+          setDragging(false);
+          setAnchor(null);
+          setHoverCell(null);
+          return;
+        }
+      }
+
       if (!draggingRef.current || !anchor || !hoverCell || gameState !== "playing" || isPaused) {
+        draggingRef.current = false;
         setDragging(false);
         setAnchor(null);
         setHoverCell(null);
@@ -503,6 +543,7 @@ export function WordSearchGame({
         }
       }
 
+      draggingRef.current = false;
       setDragging(false);
       setAnchor(null);
       setHoverCell(null);
@@ -510,10 +551,12 @@ export function WordSearchGame({
 
     window.addEventListener("mouseup", finishSelection);
     window.addEventListener("touchend", finishSelection);
+    window.addEventListener("touchcancel", finishSelection);
 
     return () => {
       window.removeEventListener("mouseup", finishSelection);
       window.removeEventListener("touchend", finishSelection);
+      window.removeEventListener("touchcancel", finishSelection);
     };
   }, [anchor, columnCount, foundWords, gameState, grid.gridData, grid.words, hoverCell, isPaused, rowCount]);
 
@@ -916,7 +959,50 @@ export function WordSearchGame({
                       }}
                       onTouchMove={(event) => {
                         event.preventDefault();
+                        const gesture = touchGestureRef.current;
                         const touch = event.touches[0];
+
+                        if (!gesture || !touch) {
+                          return;
+                        }
+
+                        const deltaX = touch.clientX - gesture.startX;
+                        const deltaY = touch.clientY - gesture.startY;
+
+                        if (gesture.mode === "pending") {
+                          const isVerticalScroll =
+                            Math.abs(deltaY) >= TOUCH_GESTURE_THRESHOLD_PX &&
+                            Math.abs(deltaY) > Math.abs(deltaX) * 1.2;
+                          const isSelectionDrag =
+                            Math.hypot(deltaX, deltaY) >= TOUCH_GESTURE_THRESHOLD_PX;
+
+                          if (isVerticalScroll) {
+                            window.clearTimeout(gesture.selectionTimer);
+                            gesture.mode = "scrolling";
+                            draggingRef.current = false;
+                            setDragging(false);
+                            setAnchor(null);
+                            setHoverCell(null);
+                          } else if (isSelectionDrag) {
+                            window.clearTimeout(gesture.selectionTimer);
+                            gesture.mode = "selecting";
+                            draggingRef.current = true;
+                            setDragging(true);
+                            setAnchor(gesture.anchor);
+                            setHoverCell(gesture.anchor);
+                          }
+                        }
+
+                        if (gesture.mode === "scrolling") {
+                          window.scrollBy({ top: gesture.lastY - touch.clientY, behavior: "auto" });
+                          gesture.lastY = touch.clientY;
+                          return;
+                        }
+
+                        if (gesture.mode !== "selecting") {
+                          return;
+                        }
+
                         const element = document.elementFromPoint(
                           touch.clientX,
                           touch.clientY,
@@ -950,6 +1036,7 @@ export function WordSearchGame({
                                 if (gameState !== "playing" || isPaused) {
                                   return;
                                 }
+                                draggingRef.current = true;
                                 setDragging(true);
                                 setAnchor([rowIndex, colIndex]);
                                 setHoverCell([rowIndex, colIndex]);
@@ -960,13 +1047,44 @@ export function WordSearchGame({
                                 }
                               }}
                               onTouchStart={(event) => {
-                                event.preventDefault();
                                 if (gameState !== "playing" || isPaused) {
                                   return;
                                 }
-                                setDragging(true);
-                                setAnchor([rowIndex, colIndex]);
-                                setHoverCell([rowIndex, colIndex]);
+
+                                const touch = event.touches[0];
+
+                                if (!touch) {
+                                  return;
+                                }
+
+                                const currentGesture = touchGestureRef.current;
+
+                                if (currentGesture) {
+                                  window.clearTimeout(currentGesture.selectionTimer);
+                                }
+
+                                const nextGesture: TouchGesture = {
+                                  mode: "pending",
+                                  startX: touch.clientX,
+                                  startY: touch.clientY,
+                                  lastY: touch.clientY,
+                                  anchor: [rowIndex, colIndex],
+                                  selectionTimer: 0,
+                                };
+
+                                nextGesture.selectionTimer = window.setTimeout(() => {
+                                  if (touchGestureRef.current !== nextGesture || nextGesture.mode !== "pending") {
+                                    return;
+                                  }
+
+                                  nextGesture.mode = "selecting";
+                                  draggingRef.current = true;
+                                  setDragging(true);
+                                  setAnchor(nextGesture.anchor);
+                                  setHoverCell(nextGesture.anchor);
+                                }, TOUCH_SELECTION_DELAY_MS);
+
+                                touchGestureRef.current = nextGesture;
                               }}
                           className="font-tamil flex aspect-square items-center justify-center rounded-[0.45rem] border border-[#c9c7c2] bg-[#f8f8f6] font-black text-[#181818] transition-[background-color,border-color,box-shadow] duration-150"
                               aria-label={`cell ${rowIndex}-${colIndex} ${letter}`}

@@ -113,10 +113,6 @@ export function KathaigalStoryPage({ story, locale }: { story: KathaigalStory; l
           })}
         </div>
 
-        <footer className="px-2 pt-1 text-center text-[0.7rem] font-bold text-[#6b6580]">
-          {story.title} · {labels.story}
-        </footer>
-
         <KathaigalQuiz questions={story.questions} locale={locale} />
       </article>
     </main>

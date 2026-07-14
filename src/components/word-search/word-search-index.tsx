@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useMemo, useState } from "react";
 
 import type { Difficulty, Locale, WordSearchGrid } from "@/types";
@@ -9,7 +10,7 @@ type LevelFilter = "ALL" | "BEGINNER" | "INTERMEDIATE" | "ADVANCED";
 type DifficultyFilter = "ALL" | "EASY" | "MEDIUM" | "HARD";
 type StatusFilter = "ALL" | "PLAYED" | "UNPLAYED";
 type SortOption = "date_desc" | "date_asc" | "title_asc" | "score_desc";
-type IconName = "calendar" | "chevron-down" | "clock" | "grid" | "layers" | "search" | "sliders" | "trophy" | "x";
+type IconName = "calendar" | "chevron-down" | "clock" | "grid" | "layers" | "search" | "shuffle" | "sliders" | "trophy" | "x";
 
 const difficultyToLevel: Record<Difficulty, Exclude<LevelFilter, "ALL">> = {
   beginner: "BEGINNER",
@@ -79,6 +80,15 @@ const iconPaths: Record<IconName, React.ReactNode> = {
     <>
       <circle cx="11" cy="11" r="7" />
       <path d="m20 20-3.5-3.5" />
+    </>
+  ),
+  shuffle: (
+    <>
+      <path d="M3 7h3c4 0 5 10 9 10h6" />
+      <path d="m18 14 3 3-3 3" />
+      <path d="M3 17h3c1.7 0 2.9-1.8 4-3.9" />
+      <path d="M14 7h7" />
+      <path d="m18 4 3 3-3 3" />
     </>
   ),
   sliders: (
@@ -177,6 +187,7 @@ export function WordSearchIndex({
   locale: Locale;
   userScores: Record<string, number>;
 }) {
+  const router = useRouter();
   const [query, setQuery] = useState("");
   const [showFilters, setShowFilters] = useState(false);
   const [levelFilter, setLevelFilter] = useState<LevelFilter>("ALL");
@@ -189,6 +200,7 @@ export function WordSearchIndex({
     locale === "ta"
       ? {
           search: "தேடுக...",
+          shuffle: "சீரற்ற கட்டம்",
           filters: "வடிகட்டிகள்",
           level: "நிலை",
           difficulty: "சிரமம்",
@@ -218,6 +230,7 @@ export function WordSearchIndex({
       : locale === "fr"
         ? {
             search: "Rechercher...",
+            shuffle: "Aléatoire",
             filters: "Filtres",
             level: "Niveau",
             difficulty: "Difficulté",
@@ -246,6 +259,7 @@ export function WordSearchIndex({
           }
         : {
             search: "Search...",
+            shuffle: "Shuffle",
             filters: "Filters",
             level: "Level",
             difficulty: "Difficulty",
@@ -340,6 +354,15 @@ export function WordSearchIndex({
       });
   }, [dateFilter, difficultyFilter, grids, levelFilter, query, sortBy, statusFilter, userScores]);
 
+  const openRandomGrid = () => {
+    if (filteredGrids.length === 0) {
+      return;
+    }
+
+    const randomGrid = filteredGrids[Math.floor(Math.random() * filteredGrids.length)];
+    router.push(`/${locale}/word-search/${randomGrid.id}`);
+  };
+
   return (
     <div className="min-h-screen bg-[#fbefd8] px-2 py-2 text-[#211b14] sm:px-5 sm:py-5 lg:px-8 lg:py-7">
       <main className="mx-auto max-w-[90rem]">
@@ -356,6 +379,17 @@ export function WordSearchIndex({
               className="h-10 w-full rounded-lg border border-[#d8c7a9] bg-white pl-9 pr-3 text-xs font-medium text-[#211b14] outline-none transition placeholder:text-[#9a8b73] focus:border-[#5b3fa3] focus:ring-2 focus:ring-[#5b3fa3]/10 sm:text-sm"
             />
           </div>
+          <button
+            type="button"
+            onClick={openRandomGrid}
+            disabled={filteredGrids.length === 0}
+            className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-lg border border-[#d8c7a9] bg-white text-[#55409a] transition-colors hover:border-[#55409a] hover:bg-[#f4efff] disabled:cursor-not-allowed disabled:opacity-40 sm:w-auto sm:gap-1.5 sm:px-3"
+            aria-label={copy.shuffle}
+            title={copy.shuffle}
+          >
+            <Icon name="shuffle" className="h-3.5 w-3.5" />
+            <span className="hidden text-xs font-bold sm:inline">{copy.shuffle}</span>
+          </button>
           <button
             type="button"
             onClick={() => setShowFilters((value) => !value)}

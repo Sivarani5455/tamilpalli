@@ -1,5 +1,4 @@
 import { Header } from "@/components/layout/header";
-import { HomeFooterGate } from "@/components/layout/home-footer-gate";
 import { I18nProvider } from "@/components/providers/i18n-provider";
 import { getLocaleOrThrow, getMessages } from "@/lib/i18n";
 
@@ -27,7 +26,6 @@ export default async function LocaleLayout({
       <div className={`min-h-screen bg-transparent text-[var(--brand-ink)] ${locale === "ta" ? "locale-ta" : ""}`}>
         <Header locale={locale} />
         <main>{children}</main>
-        <HomeFooterGate />
       </div>
     </I18nProvider>
   );
