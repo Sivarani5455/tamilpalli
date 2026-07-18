@@ -1,6 +1,6 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 
-import { fillBlankExercises, imageHuntExercises, kathaigalStories, thirukkuralLessons, wordHuntExercises, wordSearchGrids } from "@/lib/mock-data";
+import { fillBlankExercises, imageHuntExercises, kathaigalStories, pictureSentenceGames, thirukkuralLessons, wordHuntExercises, wordSearchGrids } from "@/lib/mock-data";
 import { createSupabaseAdminClient } from "@/lib/supabase/admin";
 import { hasSupabaseEnv } from "@/lib/supabase/config";
 import type {
@@ -10,6 +10,7 @@ import type {
   ImageHuntExercise,
   KathaigalStory,
   Locale,
+  PictureSentenceGame,
   ThirukkuralLesson,
   WordHuntExercise,
   WordSearchGrid,
@@ -86,6 +87,19 @@ type WordHuntExerciseRow = {
   time_limit_seconds: number;
   prompt_translation: Record<string, string>;
   words: WordHuntExercise["words"];
+  is_active: boolean;
+  publish_date: string | null;
+  created_at?: string;
+};
+
+type PictureSentenceGameRow = {
+  id: string;
+  slug: string;
+  title: string;
+  description: string;
+  difficulty: PictureSentenceGame["difficulty"];
+  time_per_image_seconds: number;
+  cards: PictureSentenceGame["cards"];
   is_active: boolean;
   publish_date: string | null;
   created_at?: string;
@@ -359,6 +373,45 @@ export async function getAdminWordHuntExercises() {
 export async function getAdminWordHuntExercise(id: string) {
   const exercises = await getAdminWordHuntExercises();
   return exercises.find((item) => item.id === id) ?? null;
+}
+
+export async function getAdminPictureSentenceGames() {
+  if (!hasSupabaseEnv()) {
+    return pictureSentenceGames;
+  }
+
+  const supabase = createSupabaseAdminClient();
+
+  if (!supabase) {
+    return pictureSentenceGames;
+  }
+
+  const { data } = await supabase
+    .from("picture_sentence_games")
+    .select("id, slug, title, description, difficulty, time_per_image_seconds, cards, is_active, publish_date, created_at")
+    .order("created_at", { ascending: false });
+
+  if (!data) {
+    return [];
+  }
+
+  return (data as PictureSentenceGameRow[]).map((row) => ({
+    id: row.id,
+    slug: row.slug,
+    title: row.title,
+    description: row.description,
+    difficulty: row.difficulty,
+    timePerImageSeconds: row.time_per_image_seconds,
+    cards: row.cards ?? [],
+    isActive: row.is_active,
+    publishDate: row.publish_date,
+    createdAt: row.created_at,
+  }));
+}
+
+export async function getAdminPictureSentenceGame(id: string) {
+  const games = await getAdminPictureSentenceGames();
+  return games.find((game) => game.id === id) ?? null;
 }
 
 export async function getAdminKathaigalStories() {

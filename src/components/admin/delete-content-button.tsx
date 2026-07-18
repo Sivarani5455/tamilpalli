@@ -3,6 +3,7 @@ import {
   deleteFillBlankAction,
   deleteImageHuntAction,
   deleteKathaigalAction,
+  deletePictureSentenceAction,
   deleteThirukkuralAction,
   deleteWordHuntAction,
   deleteWordSearchAction,
@@ -17,7 +18,7 @@ export function DeleteContentButton({
 }: {
   locale: Locale;
   id: string;
-  kind: "word-search" | "fill-in-the-blanks" | "image-hunt" | "word_hunt" | "kathaigal" | "thirukkural" | "dictionary";
+  kind: "word-search" | "fill-in-the-blanks" | "image-hunt" | "picture-sentence" | "word_hunt" | "kathaigal" | "thirukkural" | "dictionary";
   className?: string;
 }) {
   const action =
@@ -27,6 +28,8 @@ export function DeleteContentButton({
         ? deleteFillBlankAction
         : kind === "image-hunt"
           ? deleteImageHuntAction
+          : kind === "picture-sentence"
+            ? deletePictureSentenceAction
           : kind === "word_hunt"
             ? deleteWordHuntAction
             : kind === "kathaigal"

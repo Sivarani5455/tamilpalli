@@ -46,6 +46,10 @@ const literatureItems = [
   { href: "/thirukkural", key: "thirukkural" },
 ] as const;
 
+const visualItems = [
+  { href: "/oviyam/padam-vakkiyam", key: "pictureSentence" },
+] as const;
+
 type HeaderCopy = {
   login: string;
   menu: string;
@@ -53,10 +57,12 @@ type HeaderCopy = {
   nav: Record<(typeof navItems)[number]["key"], string>;
   games: Record<(typeof gameItems)[number]["key"], string>;
   literature: Record<(typeof literatureItems)[number]["key"], string>;
+  visual: Record<(typeof visualItems)[number]["key"], string>;
   dropdown: {
     learning: string;
     games: string;
     literature: string;
+    visual: string;
     learningEyebrow: string;
     learningEmpty: string;
     learningHint: string;
@@ -68,6 +74,9 @@ type HeaderCopy = {
     literatureHint: string;
     literatureListTitle: string;
     literatureDescriptions: Record<(typeof literatureItems)[number]["key"], string>;
+    visualEyebrow: string;
+    visualHint: string;
+    visualDescriptions: Record<(typeof visualItems)[number]["key"], string>;
     newBadge: string;
     currentPage: string;
   };
@@ -95,10 +104,12 @@ const headerCopy: Record<Locale, HeaderCopy> = {
       kathaigal: "Kathaigal",
       thirukkural: "Thirukkural",
     },
+    visual: { pictureSentence: "Picture + Sentence" },
     dropdown: {
       learning: "Learning",
       games: "Nimisham",
       literature: "Ilakiyam",
+      visual: "Oviyam",
       learningEyebrow: "Learning paths",
       learningEmpty: "New learning pages will appear here soon.",
       learningHint: "This space is ready for future lessons and structured practice.",
@@ -119,6 +130,9 @@ const headerCopy: Record<Locale, HeaderCopy> = {
         kathaigal: "Tamil stories with images after every paragraph.",
         thirukkural: "Learn kurals with porul, quiz and fill-in practice.",
       },
+      visualEyebrow: "Visual Tamil",
+      visualHint: "Learn to connect images with complete Tamil sentences.",
+      visualDescriptions: { pictureSentence: "Choose every sentence that correctly describes the picture." },
       newBadge: "New",
       currentPage: "Current page",
     },
@@ -144,10 +158,12 @@ const headerCopy: Record<Locale, HeaderCopy> = {
       kathaigal: "Kathaigal",
       thirukkural: "Thirukkural",
     },
+    visual: { pictureSentence: "Image + Phrase" },
     dropdown: {
       learning: "Learning",
       games: "Nimisham",
       literature: "Ilakiyam",
+      visual: "Oviyam",
       learningEyebrow: "Parcours",
       learningEmpty: "De nouvelles pages d'apprentissage apparaîtront ici bientôt.",
       learningHint: "Cet espace est prêt pour les prochains contenus d'apprentissage.",
@@ -168,6 +184,9 @@ const headerCopy: Record<Locale, HeaderCopy> = {
         kathaigal: "Histoires tamoules avec une image après chaque paragraphe.",
         thirukkural: "Apprendre les kurals avec porul, quiz et textes à trous.",
       },
+      visualEyebrow: "Tamoul visuel",
+      visualHint: "Associez des images à des phrases tamoules complètes.",
+      visualDescriptions: { pictureSentence: "Sélectionnez toutes les phrases qui décrivent correctement l’image." },
       newBadge: "Nouveau",
       currentPage: "Page active",
     },
@@ -193,10 +212,12 @@ const headerCopy: Record<Locale, HeaderCopy> = {
       kathaigal: "கதைகள்",
       thirukkural: "திருக்குறள்",
     },
+    visual: { pictureSentence: "படம் + வாக்கியம்" },
     dropdown: {
       learning: "கற்றல்",
       games: "Nimisham",
       literature: "இலக்கியம்",
+      visual: "ஓவியம்",
       learningEyebrow: "கற்றல் பாதைகள்",
       learningEmpty: "புதிய கற்றல் பக்கங்கள் விரைவில் இங்கே தோன்றும்.",
       learningHint: "எதிர்கால பாடங்களுக்கும் பயிற்சிகளுக்கும் இந்த இடம் தயார்.",
@@ -217,13 +238,16 @@ const headerCopy: Record<Locale, HeaderCopy> = {
         kathaigal: "ஒவ்வொரு பத்தியின் பின்னரும் படங்களுடன் தமிழ் கதைகள்.",
         thirukkural: "பொருள், வினா, இடைவெளி நிரப்புதலுடன் குறளை கற்போம்.",
       },
+      visualEyebrow: "காட்சித் தமிழ்",
+      visualHint: "படங்களையும் முழுமையான தமிழ் வாக்கியங்களையும் இணைத்துக் கற்கவும்.",
+      visualDescriptions: { pictureSentence: "படத்திற்குப் பொருந்தும் எல்லா வாக்கியங்களையும் தேர்ந்தெடுக்கவும்." },
       newBadge: "புதியது",
       currentPage: "நடப்பு பக்கம்",
     },
   },
 };
 
-type DesktopDropdown = "learning" | "games" | "literature" | null;
+type DesktopDropdown = "learning" | "games" | "literature" | "visual" | null;
 
 function navTextClass(isTamil: boolean) {
   return isTamil ? "font-black tracking-[0.01em]" : "font-black";
@@ -331,7 +355,7 @@ export function HeaderClient({
   const router = useRouter();
   const rootRef = useRef<HTMLDivElement | null>(null);
   const [open, setOpen] = useState(false);
-  const [mobileMenuSection, setMobileMenuSection] = useState<"games" | "literature" | null>("games");
+  const [mobileMenuSection, setMobileMenuSection] = useState<"games" | "literature" | "visual" | null>("games");
   const [mobileSearchOpen, setMobileSearchOpen] = useState(false);
   const [mobileSearchQuery, setMobileSearchQuery] = useState("");
   const [streakDays, setStreakDays] = useState(1);
@@ -355,6 +379,7 @@ export function HeaderClient({
     { href: "", label: copy.nav.home },
     ...gameItems.map((item) => ({ href: item.href, label: copy.games[item.key] })),
     ...literatureItems.map((item) => ({ href: item.href, label: copy.literature[item.key] })),
+    ...visualItems.map((item) => ({ href: item.href, label: copy.visual[item.key] })),
     { href: "/agarathi", label: copy.agarathi },
     { href: "/pricing", label: copy.nav.pricing },
     ...(isLoggedIn ? [{ href: "/dashboard", label: copy.nav.dashboard }] : []),
@@ -689,6 +714,55 @@ export function HeaderClient({
             ) : null}
           </div>
 
+          <div
+            className="relative"
+            onMouseEnter={() => setDesktopDropdown("visual")}
+            onMouseLeave={() => setDesktopDropdown((current) => (current === "visual" ? null : current))}
+          >
+            <button
+              type="button"
+              onClick={() => setDesktopDropdown((current) => (current === "visual" ? null : "visual"))}
+              className={cn(
+                "flex items-center gap-1.5 rounded-lg px-3 py-2 text-sm text-[#180d2b] transition hover:bg-white/75",
+                desktopDropdown === "visual" && "bg-white/75",
+                navTextClass(isTamil),
+              )}
+            >
+              <span>{copy.dropdown.visual}</span>
+              <span className={cn("text-[10px] transition", desktopDropdown === "visual" && "rotate-180")}>⌄</span>
+            </button>
+
+            {desktopDropdown === "visual" ? (
+              <div className="absolute left-0 top-full z-50 w-[34rem] max-w-[calc(100vw-4rem)] pt-2">
+                <div className="grid overflow-hidden rounded-xl border border-[#180d2b]/15 bg-[#fffaf0]/98 shadow-[0_18px_45px_-24px_rgba(24,13,43,0.65)] backdrop-blur-xl md:grid-cols-[0.82fr_1.18fr]">
+                  <div className="border-r border-[#180d2b]/10 bg-[#ffe5f1] px-5 py-5">
+                    <p className="text-[10px] font-black uppercase tracking-[0.18em] text-[#db2777]">{copy.dropdown.visualEyebrow}</p>
+                    <p className="mt-2 text-lg font-black text-[#180d2b]">{copy.dropdown.visual}</p>
+                    <p className="mt-2 text-xs font-medium leading-5 text-[#6f587f]">{copy.dropdown.visualHint}</p>
+                  </div>
+                  <div className="p-3">
+                    {visualItems.map((item) => {
+                      const targetHref = `/${locale}${item.href}`;
+                      const isCurrentPage = pathname.startsWith(targetHref);
+                      return (
+                        <Link key={item.href} href={targetHref} onClick={() => setDesktopDropdown(null)} className={cn("group flex items-start justify-between gap-3 rounded-lg border px-3 py-3 transition", isCurrentPage ? "border-[#ec4899]/30 bg-[#ffe5f1]" : "border-transparent hover:bg-white")}>
+                          <div>
+                            <div className="flex items-center gap-3">
+                              <span className="flex h-7 w-7 items-center justify-center rounded-full bg-[#ec4899] text-xs font-black text-white">◫</span>
+                              <h3 className="font-tamil text-sm font-black text-[#180d2b]">{copy.visual[item.key]}</h3>
+                            </div>
+                            <p className="mt-1 pl-10 text-[10px] font-medium leading-4 text-[#6f587f]">{copy.dropdown.visualDescriptions[item.key]}</p>
+                          </div>
+                          <span className="pt-1 text-[#ec4899]">→</span>
+                        </Link>
+                      );
+                    })}
+                  </div>
+                </div>
+              </div>
+            ) : null}
+          </div>
+
           <button
             type="button"
             onClick={() => {
@@ -944,6 +1018,31 @@ export function HeaderClient({
                     <Link key={item.href} href={`/${locale}${item.href}`} className="flex items-center gap-2 rounded-[0.55rem] px-2 py-2 text-xs font-medium transition hover:bg-white" onClick={() => setOpen(false)}>
                       <MobileNavIcon kind="book" />
                       {copy.literature[item.key]}
+                    </Link>
+                  ))}
+                </div>
+              ) : null}
+            </div>
+
+            <div className="mt-2 overflow-hidden rounded-[0.7rem] border border-[#dfd5c2] bg-white">
+              <button
+                type="button"
+                className="flex w-full items-center gap-2 px-3 py-2.5 text-left text-xs font-medium"
+                aria-expanded={mobileMenuSection === "visual"}
+                onClick={() => setMobileMenuSection((current) => (current === "visual" ? null : "visual"))}
+              >
+                <MobileNavIcon kind="image" />
+                <span className={isTamil ? "font-tamil" : ""}>{copy.dropdown.visual}</span>
+                <span className="text-[9px] text-[#a38f74]">Visual</span>
+                <span className={`ml-auto transition ${mobileMenuSection === "visual" ? "rotate-180" : ""}`}>⌄</span>
+              </button>
+
+              {mobileMenuSection === "visual" ? (
+                <div className="border-t border-[#eadfcb] bg-[#fff1f7] px-2 py-1.5">
+                  {visualItems.map((item) => (
+                    <Link key={item.href} href={`/${locale}${item.href}`} className="flex items-center gap-2 rounded-[0.55rem] px-2 py-2 font-tamil text-xs font-medium transition hover:bg-white" onClick={() => setOpen(false)}>
+                      <MobileNavIcon kind="image" />
+                      {copy.visual[item.key]}
                     </Link>
                   ))}
                 </div>

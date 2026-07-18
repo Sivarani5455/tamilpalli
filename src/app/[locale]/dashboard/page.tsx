@@ -598,7 +598,7 @@ export default async function DashboardPage({
 
                         {category.accessible ? (
                           <Link
-                            href={`/${locale}/${category.slug}`}
+                            href={category.slug === "padam-vakkiyam" ? `/${locale}/oviyam/padam-vakkiyam` : `/${locale}/${category.slug}`}
                             className="mt-5 inline-flex w-full items-center justify-center rounded-full border-[3px] border-[#180d2b] bg-[#180d2b] px-4 py-3 text-sm font-black uppercase tracking-[0.18em] text-white shadow-[3px_4px_0_#ffc43d]"
                           >
                             {copy.start}

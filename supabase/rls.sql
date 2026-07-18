@@ -5,6 +5,7 @@ alter table public.fill_blank_scores enable row level security;
 alter table public.fill_blank_user_answers enable row level security;
 alter table public.image_hunt_scores enable row level security;
 alter table public.image_hunt_user_clicks enable row level security;
+alter table public.picture_sentence_scores enable row level security;
 alter table public.payments enable row level security;
 
 create policy "profiles_select_self_or_admin"
@@ -63,6 +64,14 @@ using (auth.uid() = user_id);
 
 create policy "image_clicks_insert_self"
 on public.image_hunt_user_clicks for insert
+with check (auth.uid() = user_id);
+
+create policy "picture_sentence_scores_select_self"
+on public.picture_sentence_scores for select
+using (auth.uid() = user_id);
+
+create policy "picture_sentence_scores_insert_self"
+on public.picture_sentence_scores for insert
 with check (auth.uid() = user_id);
 
 create policy "payments_select_self_or_admin"

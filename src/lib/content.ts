@@ -1,6 +1,6 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 
-import { categories, fillBlankExercises, imageHuntExercises, kathaigalStories, thirukkuralLessons, wordHuntExercises, wordSearchGrids } from "@/lib/mock-data";
+import { categories, fillBlankExercises, imageHuntExercises, kathaigalStories, pictureSentenceGames, thirukkuralLessons, wordHuntExercises, wordSearchGrids } from "@/lib/mock-data";
 import { createSupabaseAdminClient } from "@/lib/supabase/admin";
 import { hasSupabaseEnv } from "@/lib/supabase/config";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
@@ -14,6 +14,7 @@ import type {
   ImageHuntProgress,
   KathaigalStory,
   Locale,
+  PictureSentenceGame,
   ThirukkuralLesson,
   WordHuntExercise,
   WordSearchGrid,
@@ -118,6 +119,19 @@ type WordHuntExerciseRow = {
   publish_date?: string | null;
   created_at?: string;
   allowed_plans?: Array<"discovery" | "standard" | "elite">;
+};
+
+type PictureSentenceGameRow = {
+  id: string;
+  slug: string;
+  title: string;
+  description: string;
+  difficulty: PictureSentenceGame["difficulty"];
+  time_per_image_seconds: number;
+  cards: PictureSentenceGame["cards"];
+  is_active?: boolean;
+  publish_date?: string | null;
+  created_at?: string;
 };
 
 type KathaigalStoryRow = {
@@ -336,6 +350,21 @@ function mapWordHuntRows(rows: WordHuntExerciseRow[]) {
     timeLimitSeconds: row.time_limit_seconds,
     prompt: row.prompt_translation as WordHuntExercise["prompt"],
     words: row.words,
+    isActive: row.is_active,
+    publishDate: row.publish_date ?? null,
+    createdAt: row.created_at,
+  }));
+}
+
+function mapPictureSentenceRows(rows: PictureSentenceGameRow[]): PictureSentenceGame[] {
+  return rows.map((row) => ({
+    id: row.id,
+    slug: row.slug,
+    title: row.title,
+    description: row.description,
+    difficulty: row.difficulty,
+    timePerImageSeconds: row.time_per_image_seconds,
+    cards: row.cards ?? [],
     isActive: row.is_active,
     publishDate: row.publish_date ?? null,
     createdAt: row.created_at,
@@ -696,6 +725,49 @@ export async function getWordHuntExercises() {
 export async function getWordHuntExercise(id: string) {
   const exercises = await getWordHuntExercises();
   return exercises.find((entry) => entry.id === id) ?? null;
+}
+
+export async function getPictureSentenceGames() {
+  if (!hasSupabaseEnv()) {
+    return pictureSentenceGames.filter((game) => isPublicationAvailable(game.publishDate));
+  }
+
+  const currentDate = getCurrentPublicationDate();
+  const select = "id, slug, title, description, difficulty, time_per_image_seconds, cards, is_active, publish_date, created_at";
+  const supabase = await createSupabaseServerClient();
+
+  if (supabase) {
+    const { data } = await supabase
+      .from("picture_sentence_games")
+      .select(select)
+      .eq("is_active", true)
+      .or(`publish_date.is.null,publish_date.lte.${currentDate}`)
+      .order("created_at", { ascending: false });
+
+    if (data && data.length > 0) {
+      return mapPictureSentenceRows(data as PictureSentenceGameRow[]);
+    }
+  }
+
+  const adminClient = createSupabaseAdminClient();
+
+  if (!adminClient) {
+    return pictureSentenceGames.filter((game) => isPublicationAvailable(game.publishDate));
+  }
+
+  const { data } = await adminClient
+    .from("picture_sentence_games")
+    .select(select)
+    .eq("is_active", true)
+    .or(`publish_date.is.null,publish_date.lte.${currentDate}`)
+    .order("created_at", { ascending: false });
+
+  return data ? mapPictureSentenceRows(data as PictureSentenceGameRow[]) : [];
+}
+
+export async function getPictureSentenceGame(id: string) {
+  const games = await getPictureSentenceGames();
+  return games.find((game) => game.id === id || game.slug === id) ?? null;
 }
 
 export async function getKathaigalStories() {

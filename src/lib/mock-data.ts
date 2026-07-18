@@ -4,6 +4,7 @@ import type {
   FillBlankExercise,
   ImageHuntExercise,
   KathaigalStory,
+  PictureSentenceGame,
   ThirukkuralLesson,
   WordHuntExercise,
   Plan,
@@ -92,6 +93,15 @@ export const categories: ContentCategory[] = [
     isActive: true,
   },
   {
+    id: "category-picture-sentence",
+    slug: "padam-vakkiyam",
+    title: "படம் + வாக்கியம்",
+    description: "Choose every Tamil sentence that correctly describes each picture.",
+    type: "picture_sentence",
+    requiredPlan: "standard",
+    isActive: true,
+  },
+  {
     id: "category-word-hunt",
     slug: "word-hunt",
     title: "Word Hunt",
@@ -146,6 +156,8 @@ export const categories: ContentCategory[] = [
     isActive: true,
   },
 ];
+
+export const pictureSentenceGames: PictureSentenceGame[] = [];
 
 export const wordSearchGrids: WordSearchGrid[] = [
   {

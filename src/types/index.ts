@@ -8,6 +8,7 @@ export type ContentType =
   | "fill_in_the_blanks"
   | "image_hunt"
   | "word_hunt"
+  | "picture_sentence"
   | "kathaigal"
   | "thirukkural"
   | "quiz"
@@ -148,6 +149,32 @@ export type ImageHuntProgress = {
   foundTargetIds: string[];
   wrongClicks: number;
   timeUsedSeconds: number;
+};
+
+export type PictureSentenceChoice = {
+  id: string;
+  text: string;
+  isCorrect: boolean;
+};
+
+export type PictureSentenceCard = {
+  id: string;
+  imageUrl: string;
+  imageAlt: string;
+  choices: PictureSentenceChoice[];
+};
+
+export type PictureSentenceGame = {
+  id: string;
+  slug: string;
+  title: string;
+  description: string;
+  difficulty: Difficulty;
+  timePerImageSeconds: number;
+  cards: PictureSentenceCard[];
+  isActive?: boolean;
+  publishDate?: string | null;
+  createdAt?: string;
 };
 
 export type WordHuntWord = {

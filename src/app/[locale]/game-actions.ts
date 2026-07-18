@@ -121,3 +121,35 @@ export async function saveImageHuntScoreAction(
   revalidatePath(String(formData.get("path") ?? "/"));
   return { ok: true, message: "Image Hunt progress saved." };
 }
+
+export async function savePictureSentenceScoreAction(
+  _prev: AuthState,
+  formData: FormData,
+): Promise<AuthState> {
+  if (!hasSupabaseEnv()) {
+    return { ok: true, message: "Result saved in demo mode only. Configure Supabase to persist it." };
+  }
+
+  const { supabase, userId } = await getUserId();
+
+  if (!supabase || !userId) {
+    return { ok: false, message: "You must be logged in to save your result." };
+  }
+
+  const { error } = await supabase.from("picture_sentence_scores").insert({
+    user_id: userId,
+    game_id: String(formData.get("gameId")),
+    score: Number(formData.get("score") ?? 0),
+    correct_choices: Number(formData.get("correctChoices") ?? 0),
+    total_correct_choices: Number(formData.get("totalCorrectChoices") ?? 0),
+    completed_images: Number(formData.get("completedImages") ?? 0),
+    time_used_seconds: Number(formData.get("timeUsedSeconds") ?? 0),
+  });
+
+  if (error) {
+    return { ok: false, message: error.message };
+  }
+
+  revalidatePath(String(formData.get("path") ?? "/"));
+  return { ok: true, message: "Picture + Sentence result saved." };
+}

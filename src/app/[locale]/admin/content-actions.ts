@@ -81,6 +81,36 @@ const imageHuntSchema = z.object({
   targets: z.string().min(2),
 });
 
+const pictureSentenceSchema = z.object({
+  id: z.string().optional(),
+  locale: z.string(),
+  title: z.string().min(2),
+  slug: z.string().min(2),
+  description: z.string().min(2),
+  difficulty: z.enum(["beginner", "intermediate", "advanced"]),
+  timePerImageSeconds: z.coerce.number().int().min(5).max(300),
+  publishDate: publicationDateSchema,
+  cards: z.string().min(2),
+});
+
+const pictureSentenceCardSchema = z.object({
+  id: z.string().min(1),
+  imageUrl: z.string().trim().min(1),
+  imageAlt: z.string().trim().min(1),
+  choices: z
+    .array(
+      z.object({
+        id: z.string().min(1),
+        text: z.string().trim().min(1),
+        isCorrect: z.boolean(),
+      }),
+    )
+    .length(10),
+}).refine((card) => card.choices.some((choice) => choice.isCorrect), {
+  message: "Chaque image doit avoir au moins une bonne phrase.",
+  path: ["choices"],
+});
+
 const wordHuntSchema = z.object({
   id: z.string().optional(),
   locale: z.string(),
@@ -753,6 +783,93 @@ export async function deleteImageHuntAction(formData: FormData) {
   }
 
   revalidatePath(`/${locale}/admin/image-hunt`);
+}
+
+export async function upsertPictureSentenceAction(
+  _prev: AuthState,
+  formData: FormData,
+): Promise<AuthState> {
+  const parsed = pictureSentenceSchema.safeParse(Object.fromEntries(formData));
+
+  if (!parsed.success) {
+    return stateError(parsed.error.issues[0]?.message);
+  }
+
+  let cards: Array<z.infer<typeof pictureSentenceCardSchema>>;
+
+  try {
+    const rawCards = parseJsonField<unknown>(parsed.data.cards, "Images et phrases");
+    const parsedCards = z.array(pictureSentenceCardSchema).length(10).safeParse(rawCards);
+
+    if (!parsedCards.success) {
+      return stateError(parsedCards.error.issues[0]?.message ?? "Les 10 images sont obligatoires.");
+    }
+
+    cards = parsedCards.data.map((card) => ({
+      ...card,
+      imageUrl: normalizeImageUrl(card.imageUrl),
+    }));
+  } catch (error) {
+    return stateError(error);
+  }
+
+  if (!hasSupabaseEnv()) {
+    return missingSupabaseState("Picture + Sentence game");
+  }
+
+  try {
+    const supabase = requireAdminClient();
+    const payload = {
+      title: parsed.data.title,
+      slug: parsed.data.slug,
+      description: parsed.data.description,
+      difficulty: parsed.data.difficulty,
+      time_per_image_seconds: parsed.data.timePerImageSeconds,
+      cards,
+      publish_date: parsed.data.publishDate || null,
+      is_active: true,
+    };
+
+    if (parsed.data.id) {
+      const { error } = await supabase
+        .from("picture_sentence_games")
+        .update(payload)
+        .eq("id", parsed.data.id);
+
+      if (error) {
+        throw new Error(error.message);
+      }
+    } else {
+      const { error } = await supabase.from("picture_sentence_games").insert(payload);
+
+      if (error) {
+        throw new Error(error.message);
+      }
+    }
+
+    revalidatePath(`/${parsed.data.locale}/admin/padam-vakkiyam`);
+    revalidatePath(`/${parsed.data.locale}/oviyam/padam-vakkiyam`);
+    redirect(`/${parsed.data.locale}/admin/padam-vakkiyam`);
+  } catch (error) {
+    if (isRedirectLikeError(error)) {
+      throw error;
+    }
+
+    return stateError(error);
+  }
+}
+
+export async function deletePictureSentenceAction(formData: FormData) {
+  const id = String(formData.get("id") ?? "");
+  const locale = String(formData.get("locale") ?? "en");
+
+  if (hasSupabaseEnv()) {
+    const supabase = requireAdminClient();
+    await supabase.from("picture_sentence_games").delete().eq("id", id);
+  }
+
+  revalidatePath(`/${locale}/admin/padam-vakkiyam`);
+  revalidatePath(`/${locale}/oviyam/padam-vakkiyam`);
 }
 
 export async function upsertWordHuntAction(
